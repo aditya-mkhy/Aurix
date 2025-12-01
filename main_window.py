@@ -22,6 +22,145 @@ from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import QSize, Qt
 
+from PyQt5.QtWidgets import QScrollArea, QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt
+
+class PlaylistArea(QScrollArea):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setStyleSheet("""
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: #1d1d1d;
+                width: 8px;
+                margin: 6px 0;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical {
+                background: #555;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #777;
+            }
+            QScrollBar::add-line,
+            QScrollBar::sub-line {
+                background: none;
+                height: 0px;
+            }
+        """)
+
+        self.setWidgetResizable(True)
+
+        self.container = QWidget()
+        self.layout = QVBoxLayout(self.container)
+
+        # IMPORTANT → align items at top
+        self.layout.setAlignment(Qt.AlignTop)
+
+        self.layout.setContentsMargins(10, 10, 10, 10)
+        self.layout.setSpacing(8)
+
+        self.setWidget(self.container)
+
+    def add_playlist(self, item_widget):
+        self.layout.addWidget(item_widget)
+
+
+
+class PlaylistItem(QWidget):
+    def __init__(self, title: str, subtitle: str, parent=None):
+        super().__init__(parent)
+        self.title_text = title
+
+        self.setFixedHeight(68)
+        self.setAttribute(Qt.WA_StyledBackground, True)  # so bg color works
+
+        main = QHBoxLayout(self)
+        main.setContentsMargins(14, 8, 14, 8)
+        main.setSpacing(10)
+
+        # ---- Left side: title + subtitle ----
+        text_box = QVBoxLayout()
+        text_box.setSpacing(2)
+        text_box.setContentsMargins(0, 0, 0, 0)
+
+        title_lbl = QLabel(title)
+        title_lbl.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        title_lbl.setStyleSheet("color: #FFFFFF;")
+
+        subtitle_lbl = QLabel(subtitle)
+        subtitle_lbl.setFont(QFont("Segoe UI", 10))
+        subtitle_lbl.setStyleSheet("color: #b3b3b3;")
+
+        text_box.addWidget(title_lbl)
+        text_box.addWidget(subtitle_lbl)
+
+        main.addLayout(text_box, 1)
+
+        # ---- Right side: circular play button ----
+        self.play_btn = QPushButton()
+        self.play_btn.setCursor(Qt.PointingHandCursor)
+        self.play_btn.setFixedSize(34, 34)
+        self.play_btn.setIcon(QIcon("res/play_filled.png"))  # or use your icon
+        self.play_btn.setIconSize(QSize(18, 18))
+        self.play_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FFFFFF;
+                border-radius: 17px;
+                border: none;
+                color: #000000;
+            }
+            QPushButton:hover {
+                background-color: #e5e5e5;
+            }
+            QPushButton:pressed {
+                background-color: #d1d1d1;
+            }
+        """)
+        self.play_btn.clicked.connect(self._on_play_clicked)
+
+        main.addWidget(self.play_btn, 0, Qt.AlignVCenter)
+
+        # ---- Card background ----
+        self.normal_style = """
+            QWidget {
+                background-color: #212121;
+                border-radius: 12px;
+            }
+        """
+        self.hover_style = """
+            QWidget {
+                background-color: #2a2a2a;
+                border-radius: 12px;
+            }
+        """
+        self.setStyleSheet(self.normal_style)
+
+    # ---------- interactions ----------
+    def mousePressEvent(self, event):
+        # click on card area (excluding play button) = open playlist
+        if event.button() == Qt.LeftButton:
+            # if click NOT inside play button
+            if not self.play_btn.geometry().contains(event.pos()):
+                print(f"[UI] open playlist: {self.title_text}")
+        super().mousePressEvent(event)
+
+    def _on_play_clicked(self):
+        print(f"[UI] play playlist: {self.title_text}")
+
+    def enterEvent(self, event):
+        self.setStyleSheet(self.hover_style)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.setStyleSheet(self.normal_style)
+        super().leaveEvent(event)
+
 
 class NavButton(QPushButton):
     def __init__(self, text, icon):
@@ -225,7 +364,7 @@ class MusicMainWindow(QMainWindow):
         logo_btn.setFont(QFont("Segoe UI", 20, QFont.Black))
         logo_btn.setIcon(QIcon("./res/pulse.png"))
         logo_btn.setIconSize(QSize(52, 52))
-        logo_btn.setFixedSize(176, 56)  # wider now to fit both
+        logo_btn.setFixedSize(180, 56)  # wider now to fit both
         logo_btn.setCursor(Qt.PointingHandCursor)
 
         logo_btn.setStyleSheet("""
@@ -343,52 +482,18 @@ class MusicMainWindow(QMainWindow):
         layout.addWidget(self.add_playlist)
 
 
-
-        # # Add files button
-        # self.btn_add_files = QPushButton("+  Add audio files")
-        # self.btn_add_files.setCursor(Qt.PointingHandCursor)
-        # self.btn_add_files.setFixedHeight(32)
-        # self.btn_add_files.setStyleSheet("""
-        #     QPushButton {
-        #         background-color: #ffffff;
-        #         color: #000000;
-        #         border-radius: 16px;
-        #         border: none;
-        #         font-weight: 600;
-        #         font-size: 12px;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #f1f1f1;
-        #     }
-        # """)
-        # layout.addWidget(self.btn_add_files)
         layout.addSpacing(12)
 
-        # Playlist list
-        lbl = QLabel("Your Tracks")
-        lbl.setStyleSheet("color: #b3b3b3; font-size: 13px;")
-        layout.addWidget(lbl)
+        playlist_scroll = PlaylistArea()
+        layout.addWidget(playlist_scroll)
 
-        self.playlist_widget = QListWidget()
-        self.playlist_widget.setStyleSheet("""
-            QListWidget {
-                background: transparent;
-                border: none;
-                color: #e0e0e0;
-                font-size: 13px;
-            }
-            QListWidget::item {
-                padding: 6px 0px;
-            }
-            QListWidget::item:selected {
-                background: #262626;
-            }
-        """)
-        layout.addWidget(self.playlist_widget, 1)
 
-        # connections
-        # self.btn_add_files.clicked.connect(self.on_add_files)
-        # self.playlist_widget.itemDoubleClicked.connect(self.on_playlist_double_clicked)
+        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+
 
         return side
 
