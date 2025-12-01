@@ -251,30 +251,16 @@ class MusicMainWindow(QMainWindow):
 
         profile_btn = QPushButton()
         profile_btn.setObjectName("profileButton")
-        profile_btn.setFixedSize(36, 36)
+        profile_btn.setFixedSize(40, 40)
         profile_btn.setCursor(Qt.PointingHandCursor)
 
         profile_btn.setStyleSheet("""
             QPushButton#profileButton {
                 border: none;
                 padding: 0;
+                border-radius: 20px;
                 background-color: transparent;
-
-                /* circle */
-                border-radius: 18px;
-
-                /* image fill (like CSS background) */
-                background-image: url("res/profile.png");
-                background-repeat: no-repeat;
-                background-position: center;
-                /* Qt doesn't support background-size: cover; 
-                so make your image roughly square & similar size */
-            }
-            QPushButton#profileButton:hover {
-                background-color: rgba(255,255,255,0.06);
-            }
-            QPushButton#profileButton:pressed {
-                background-color: rgba(255,255,255,0.10);
+                border-image: url("res/profile.png") 0 fill;
             }
         """)
 
