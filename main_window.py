@@ -18,6 +18,10 @@ from PyQt5.QtGui import QPixmap, QIcon, QPainter, QRegion, QBitmap
 
 # from player import PlayerEngine
 
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import QSize, Qt
+
 
 class NavButton(QPushButton):
     def __init__(self, text, icon):
@@ -270,7 +274,8 @@ class MusicMainWindow(QMainWindow):
 
         h.addSpacing(80)
         return top
-
+    
+    
     # ========== SIDEBAR (left) ==========
 
     def build_sidebar(self):
@@ -287,14 +292,13 @@ class MusicMainWindow(QMainWindow):
     
         home_nav_btn = NavButton(text="Home", icon="./res/home.png")
         layout.addWidget(home_nav_btn)
-        # home_nav_btn.activate()
+        home_nav_btn.activate()
 
         explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
         layout.addWidget(explore_nav_btn)
 
         library_nav_btn = NavButton(text="Library", icon="./res/library.png")
         layout.addWidget(library_nav_btn)
-        library_nav_btn.activate()
 
         layout.addSpacing(30)
 
@@ -306,24 +310,58 @@ class MusicMainWindow(QMainWindow):
         layout.addSpacing(20)
 
 
-        # Add files button
-        self.btn_add_files = QPushButton("+  Add audio files")
-        self.btn_add_files.setCursor(Qt.PointingHandCursor)
-        self.btn_add_files.setFixedHeight(32)
-        self.btn_add_files.setStyleSheet("""
+        # close sidebar button
+        self.add_playlist = QPushButton(" New Playlist")       
+        self.add_playlist.setFixedHeight(55)
+
+        self.add_playlist.setFont(QFont("Segoe UI", 12, QFont.Black))
+        self.add_playlist.setCursor(Qt.PointingHandCursor)
+        self.add_playlist.setIcon(QIcon("./res/plus.png"))
+        self.add_playlist.setIconSize(QSize(22, 22))
+
+
+        self.add_playlist.setStyleSheet("""
             QPushButton {
-                background-color: #ffffff;
-                color: #000000;
-                border-radius: 16px;
+                text-align: left;
+                color: #ffffff;
+                background-color: #151515;
+                font-weight: 500;
                 border: none;
-                font-weight: 600;
-                font-size: 12px;
+                border-radius: 25px;
+                padding-left: 40px;
+                margin-left: 20px;
+                margin-right: 20px;
             }
             QPushButton:hover {
-                background-color: #f1f1f1;
+                background-color: #404040;
+            }
+            QPushButton:pressed {
+                background-color: #1f1f1f;
             }
         """)
-        layout.addWidget(self.btn_add_files)
+
+        layout.addWidget(self.add_playlist)
+
+
+
+        # # Add files button
+        # self.btn_add_files = QPushButton("+  Add audio files")
+        # self.btn_add_files.setCursor(Qt.PointingHandCursor)
+        # self.btn_add_files.setFixedHeight(32)
+        # self.btn_add_files.setStyleSheet("""
+        #     QPushButton {
+        #         background-color: #ffffff;
+        #         color: #000000;
+        #         border-radius: 16px;
+        #         border: none;
+        #         font-weight: 600;
+        #         font-size: 12px;
+        #     }
+        #     QPushButton:hover {
+        #         background-color: #f1f1f1;
+        #     }
+        # """)
+        # layout.addWidget(self.btn_add_files)
         layout.addSpacing(12)
 
         # Playlist list
@@ -349,8 +387,8 @@ class MusicMainWindow(QMainWindow):
         layout.addWidget(self.playlist_widget, 1)
 
         # connections
-        self.btn_add_files.clicked.connect(self.on_add_files)
-        self.playlist_widget.itemDoubleClicked.connect(self.on_playlist_double_clicked)
+        # self.btn_add_files.clicked.connect(self.on_add_files)
+        # self.playlist_widget.itemDoubleClicked.connect(self.on_playlist_double_clicked)
 
         return side
 
