@@ -288,10 +288,10 @@ class MusicMainWindow(QMainWindow):
 
         explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
         layout.addWidget(explore_nav_btn)
-        explore_nav_btn.activate()
 
         library_nav_btn = NavButton(text="Library", icon="./res/library.png")
         layout.addWidget(library_nav_btn)
+        library_nav_btn.activate()
 
         layout.addSpacing(30)
 
