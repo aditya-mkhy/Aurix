@@ -9,31 +9,52 @@ from PyQt5.QtWidgets import (
     QLineEdit, QScrollArea, QSlider, QFileDialog
 )
 
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QSize
+
 # from player import PlayerEngine
 
 
 class NavButton(QPushButton):
-    def __init__(self, text, bold=False):
-        super().__init__(text)
-        weight = "600" if bold else "500"
+    def __init__(self, text, icon):
+        super().__init__(f"   {text}")
+        self.setFixedHeight(66)
+
+        self.setFont(QFont("Segoe UI", 13, QFont.Black))
         self.setCursor(Qt.PointingHandCursor)
-        self.setFixedHeight(42)
-        self.setStyleSheet(f"""
-            QPushButton {{
+        self.setIcon(QIcon(icon))
+        self.setIconSize(QSize(30, 30))
+
+
+        self.setStyleSheet("""
+            QPushButton {
                 text-align: left;
-                padding-left: 18px;
                 color: #ffffff;
                 background-color: transparent;
-                font-weight: {weight};
-                font-size: 14px;
+                font-weight: 500;
                 border: none;
-            }}
-            QPushButton:hover {{
-                background-color: #272727;
-            }}
-            QPushButton:pressed {{
+                border-radius: 12px;
+                padding-left: 28px;
+            }
+            QPushButton:hover {
+                background-color: #404040;
+            }
+            QPushButton:pressed {
                 background-color: #1f1f1f;
-            }}
+            }
+        """)
+
+
+    def activate(self):
+        self.setStyleSheet("""
+            QPushButton {
+                text-align: left;
+                color: #ffffff;
+                background-color: #262626;
+                border: none;
+                border-radius: 12px;
+                padding-left: 28px;
+            }
         """)
 
 
@@ -95,8 +116,8 @@ def make_section(section_name, cards_data):
 class MusicMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("AURIX")
-        self.resize(1300, 780)
+        self.setWindowTitle("Aurix - Music Player")
+        self.resize(1500, 880)
 
         # ---- engine & playlist state ----
         # self.engine = PlayerEngine(self)
@@ -144,20 +165,69 @@ class MusicMainWindow(QMainWindow):
 
     def build_top_bar(self):
         top = QFrame()
-        top.setFixedHeight(70)
+        top.setFixedHeight(90)
         top.setStyleSheet("background-color: #000000; border-bottom: 1px solid #262626;")
 
         h = QHBoxLayout(top)
         h.setContentsMargins(18, 10, 18, 10)
-        h.setSpacing(16)
+        h.setSpacing(20)
+
+        h.addSpacing(10)
+
+
+        # close sidebar button
+        sidebar_btn = QPushButton()
+        sidebar_btn.setIcon(QIcon("./res/menu.png"))
+        sidebar_btn.setIconSize(QSize(34, 34))
+        sidebar_btn.setFixedSize(56, 56)
+        sidebar_btn.setCursor(Qt.PointingHandCursor)
+
+        sidebar_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 28px;
+            }
+            QPushButton:hover {
+                background-color: #1f1f1f;
+                border-radius: 28px;
+            }
+            QPushButton:pressed {
+                background-color: #262626;
+                border-radius: 28px;
+            }
+        """)
+
+   
+        h.addWidget(sidebar_btn)
+
+
 
         # Left: logo (AURIX + pulse icon could go here)
-        logo_label = QLabel("AURIX")
-        logo_label.setFont(QFont("Segoe UI", 20, QFont.Black))
-        logo_label.setStyleSheet("color: white; letter-spacing: 2px;")
-        h.addWidget(logo_label)
 
-        h.addSpacing(20)
+        logo_btn = QPushButton("AURIX")  # <-- text added here
+        logo_btn.setFont(QFont("Segoe UI", 20, QFont.Black))
+        logo_btn.setIcon(QIcon("./res/pulse.png"))
+        logo_btn.setIconSize(QSize(52, 52))
+        logo_btn.setFixedSize(176, 56)  # wider now to fit both
+        logo_btn.setCursor(Qt.PointingHandCursor)
+
+        logo_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                color: white;
+                text-align: left;
+                color: white; 
+                letter-spacing: 2px;
+            }
+        """)
+
+        logo_btn.setLayoutDirection(Qt.RightToLeft)  # Ensures icon left, text right
+
+        h.addWidget(logo_btn)
+
+        # h.addSpacing(20)
 
         # Center: search bar
         self.search_box = QLineEdit()
@@ -194,16 +264,25 @@ class MusicMainWindow(QMainWindow):
 
     def build_sidebar(self):
         side = QFrame()
-        side.setFixedWidth(260)
-        side.setStyleSheet("background-color: #121212; border-right: 1px solid #262626;")
+        side.setFixedWidth(320) #0f0f0f
+        side.setStyleSheet("background-color: #000000; border-right: 1px solid #262626;")
 
         layout = QVBoxLayout(side)
-        layout.setContentsMargins(18, 12, 18, 12)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(1)
 
-        # Nav buttons
-        for text, bold in [("Home", True), ("Explore", False), ("Library", False), ("Upgrade", False)]:
-            layout.addWidget(NavButton(text, bold))
+        # ("Explore", False), ("Library", False), ("Upgrade", False)
+
+    
+        home_nav_btn = NavButton(text="Home", icon="./res/home.png")
+        layout.addWidget(home_nav_btn)
+        home_nav_btn.activate()
+
+        explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
+        layout.addWidget(explore_nav_btn)
+
+        library_nav_btn = NavButton(text="Library", icon="./res/library.png")
+        layout.addWidget(library_nav_btn)
 
         layout.addSpacing(20)
 
