@@ -18,11 +18,13 @@ from PyQt5.QtCore import QSize
 class NavButton(QPushButton):
     def __init__(self, text, icon):
         super().__init__(f"   {text}")
+        self.icon_path = icon
         self.setFixedHeight(66)
+
 
         self.setFont(QFont("Segoe UI", 13, QFont.Black))
         self.setCursor(Qt.PointingHandCursor)
-        self.setIcon(QIcon(icon))
+        self.setIcon(QIcon(self.icon_path))
         self.setIconSize(QSize(30, 30))
 
 
@@ -56,6 +58,12 @@ class NavButton(QPushButton):
                 padding-left: 28px;
             }
         """)
+
+        active_icon_path = f"{os.path.dirname(self.icon_path)}/active-{os.path.basename(self.icon_path)}"
+        if os.path.exists(active_icon_path):
+            self.setIcon(QIcon(active_icon_path))
+
+
 
 
 class Card(QFrame):
@@ -276,10 +284,11 @@ class MusicMainWindow(QMainWindow):
     
         home_nav_btn = NavButton(text="Home", icon="./res/home.png")
         layout.addWidget(home_nav_btn)
-        home_nav_btn.activate()
+        # home_nav_btn.activate()
 
         explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
         layout.addWidget(explore_nav_btn)
+        explore_nav_btn.activate()
 
         library_nav_btn = NavButton(text="Library", icon="./res/library.png")
         layout.addWidget(library_nav_btn)
