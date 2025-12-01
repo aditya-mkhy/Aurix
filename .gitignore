@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 t.html
+t.py
 
 # Distribution / packaging
 .Python

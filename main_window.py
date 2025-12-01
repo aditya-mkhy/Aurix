@@ -11,6 +11,10 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
+from search import SearchBox
+from PyQt5.QtWidgets import QPushButton, QSpacerItem, QSizePolicy
+from PyQt5.QtGui import QPixmap, QIcon, QPainter, QRegion, QBitmap
+
 
 # from player import PlayerEngine
 
@@ -235,37 +239,50 @@ class MusicMainWindow(QMainWindow):
 
         h.addWidget(logo_btn)
 
-        # h.addSpacing(20)
+        h.addSpacing(80)
 
         # Center: search bar
-        self.search_box = QLineEdit()
-        self.search_box.setPlaceholderText("Search songs, albums, artists...")
-        self.search_box.setFixedHeight(38)
-        self.search_box.setStyleSheet("""
-            QLineEdit {
-                background-color: #202020;
-                border-radius: 20px;
-                border: 1px solid #3a3a3a;
-                padding-left: 16px;
-                color: #ffffff;
-                font-size: 14px;
+        self.search_box = SearchBox()
+        h.addWidget(self.search_box)
+
+        # Add spacer before the profile button
+        h.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+
+        profile_btn = QPushButton()
+        profile_btn.setObjectName("profileButton")
+        profile_btn.setFixedSize(36, 36)
+        profile_btn.setCursor(Qt.PointingHandCursor)
+
+        profile_btn.setStyleSheet("""
+            QPushButton#profileButton {
+                border: none;
+                padding: 0;
+                background-color: transparent;
+
+                /* circle */
+                border-radius: 18px;
+
+                /* image fill (like CSS background) */
+                background-image: url("res/profile.png");
+                background-repeat: no-repeat;
+                background-position: center;
+                /* Qt doesn't support background-size: cover; 
+                so make your image roughly square & similar size */
             }
-            QLineEdit:focus {
-                border: 1px solid #ffffff;
+            QPushButton#profileButton:hover {
+                background-color: rgba(255,255,255,0.06);
+            }
+            QPushButton#profileButton:pressed {
+                background-color: rgba(255,255,255,0.10);
             }
         """)
-        h.addWidget(self.search_box, 1)
 
-        # Right: dummy icons (cast + profile)
-        cast = QLabel("📡")
-        cast.setStyleSheet("font-size: 18px; color: #f1f1f1;")
-        h.addWidget(cast)
+        h.addWidget(profile_btn)
 
-        profile = QFrame()
-        profile.setFixedSize(32, 32)
-        profile.setStyleSheet("background-color: #444444; border-radius: 16px;")
-        h.addWidget(profile)
+        profile_btn.clicked.connect(lambda: print("Profile button clicked!"))
 
+        h.addSpacing(80)
         return top
 
     # ========== SIDEBAR (left) ==========
@@ -538,6 +555,21 @@ class MusicMainWindow(QMainWindow):
         # self.btn_next.clicked.connect(self.on_next_clicked)
 
         return bar
+    
+    def create_circle_image(self, path, size=36):
+        """Returns a circular masked pixmap from image path"""
+        img = QPixmap(path).scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+
+        mask = QBitmap(size, size)
+        mask.fill(Qt.color0)
+
+        painter = QPainter(mask)
+        painter.setBrush(Qt.color1)
+        painter.drawEllipse(0, 0, size, size)
+        painter.end()
+
+        img.setMask(mask)
+        return img
 
     # ===== ENGINE <-> UI HANDLERS (same as before) =====
 
