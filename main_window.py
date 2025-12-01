@@ -284,7 +284,15 @@ class MusicMainWindow(QMainWindow):
         library_nav_btn = NavButton(text="Library", icon="./res/library.png")
         layout.addWidget(library_nav_btn)
 
+        layout.addSpacing(30)
+
+        line = QFrame()
+        line.setStyleSheet("background-color: #262626; margin: 16px")
+        line.setFixedHeight(1)
+        layout.addWidget(line)
+
         layout.addSpacing(20)
+
 
         # Add files button
         self.btn_add_files = QPushButton("+  Add audio files")
