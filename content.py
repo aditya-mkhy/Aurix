@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
     QListWidget, QListView, QAbstractItemView, QMenu
 )
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QPainter
 
 
 class ScrollArea(QScrollArea):
@@ -75,6 +75,41 @@ class ScrollArea(QScrollArea):
             }
         """)
 
+def applyRoundedImage(label, path, radius=16):
+    pm = QPixmap(path)
+
+    if pm.isNull():
+        return
+    
+    img_w = pm.width() 
+    img_h = pm.height()
+    print("Image Size:", img_w, "x", img_h)
+
+    pm = QPixmap(path).scaled(
+        label.width(),
+        label.height(),
+        Qt.KeepAspectRatioByExpanding,   # <-- fills full area (cover mode)
+        Qt.SmoothTransformation
+    )
+
+    rounded = QPixmap(label.size())
+    rounded.fill(Qt.transparent)
+
+    from PyQt5.QtGui import QPainter, QBrush, QPainterPath
+
+    painter = QPainter(rounded)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    path = QPainterPath()
+    path.addRoundedRect(0, 0, label.width(), label.height(), radius, radius)
+
+    painter.setClipPath(path)
+    painter.drawPixmap(0, 0, pm)
+    painter.end()
+
+    label.setPixmap(rounded)
+
+
 
 class PlaylistCard(QWidget):
 
@@ -84,7 +119,7 @@ class PlaylistCard(QWidget):
         self.title_text = title
         self._active = False
 
-        self.width = 220
+        self.width = 272
         self.height = 260
 
         self.setAttribute(Qt.WA_StyledBackground, True)
@@ -97,7 +132,7 @@ class PlaylistCard(QWidget):
 
 
         self.thumb_width = self.width
-        self.thumb_height = 180#self.height - 40
+        self.thumb_height = 152#self.height - 40
 
 
         self.thumb_container = QFrame()
@@ -125,18 +160,19 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
+        applyRoundedImage(self.thumb_label, "img/2.png")
 
-        if thumbnail_path:
-            pm = QPixmap(thumbnail_path)
-            if not pm.isNull():
-                pm = pm.scaled(self.thumb_width, self.thumb_height,
-                               Qt.KeepAspectRatioByExpanding,
-                               Qt.SmoothTransformation)
-                self.thumb_label.setPixmap(pm)
+        self.thumb_label.setStyleSheet(f"""
+            QLabel {{
+                border: none;
+                padding: 0;
+                border-radius: 20px;
+            }}
+        """)
 
-        # thumb_layout.addWidget(self.thumb_label)
 
-        self.thumb_label.setStyleSheet("background-color: pink;")
+        thumb_layout.addWidget(self.thumb_label)
+
 
         # Overlay
         self.overlay = QWidget(self.thumb_container)
