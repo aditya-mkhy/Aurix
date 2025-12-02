@@ -39,9 +39,11 @@ class MusicMainWindow(QMainWindow):
 
         # MIDDLE (sidebar + main content)
         middle_frame = QWidget()
+
         middle_layout = QHBoxLayout(middle_frame)
         middle_layout.setContentsMargins(0, 0, 0, 0)
         middle_layout.setSpacing(0)
+        # middle_frame.setStyleSheet("background-color: green;")
 
         # sidebar
         self.sidebar = Sidebar(parent=self)

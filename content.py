@@ -413,23 +413,26 @@ class PlaylistSection(QWidget):
 
 
 class ContentArea(QFrame):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-    
+
+        # outer layout sits on ContentArea itself
         outer = QVBoxLayout(self)
         outer.setContentsMargins(50, 5, 2, 5)
         outer.setSpacing(0)
 
-        
-        # Scrollable cards
+        # Scroll area (only vertical)
         scroll = ScrollArea()
-        content = QWidget()
-        scroll.setWidget(content)
+        outer.addWidget(scroll, 1)          # <--- add scroll to outer layout
 
+        # inner content widget that actually holds all sections
+        content = QWidget()
         content.setAttribute(Qt.WA_StyledBackground, True)
         content.setStyleSheet("background-color: #000000;")
+        scroll.setWidget(content)
 
-        main_layout = QVBoxLayout(self)
+        # this layout belongs to *content*, NOT self
+        main_layout = QVBoxLayout(content)
         main_layout.setContentsMargins(24, 12, 24, 24)
         main_layout.setSpacing(32)
 
@@ -441,17 +444,13 @@ class ContentArea(QFrame):
         self.section_featured = PlaylistSection("Featured playlists for you")
         main_layout.addWidget(self.section_featured)
 
-        # add stretch so sections stay top if few
+        # keep sections pinned to top if there are few
         main_layout.addStretch(1)
-
-        # layout.addStretch()
-        # outer.addWidget(scroll, 1)
 
         # sample data
         self._populate_demo()
 
     def _populate_demo(self):
-        # NOTE: use your collage images instead of None
         self.section_library.add_playlist(
             "most", "Aditya Mukhiya • 13 tracks", thumb="img/1.png"
         )
@@ -468,5 +467,3 @@ class ContentArea(QFrame):
         self.section_featured.add_playlist(
             "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
         )
-
-   
