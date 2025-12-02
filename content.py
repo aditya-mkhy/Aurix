@@ -1,39 +1,10 @@
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
-    QLabel, QPushButton, QScrollArea, QSpacerItem, 
-    QLineEdit, QSizePolicy, QToolButton
+    QLabel, QPushButton, QScrollArea, QListWidgetItem, 
+    QListWidget, QListView, QAbstractItemView, QMenu
 )
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QColor, QPalette
-
-
-from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout,
-    QLabel, QPushButton
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap, QIcon
-
-from PyQt5.QtWidgets import QListWidget, QListView, QAbstractItemView
-from PyQt5.QtCore import Qt
-
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
-    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QMenu, QFrame
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap, QIcon
-import sys
-
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
-    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QMenu, QFrame, QScrollArea
-)
-from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPixmap
-import sys
 
 
 class ScrollArea(QScrollArea):
