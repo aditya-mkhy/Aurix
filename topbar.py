@@ -383,7 +383,7 @@ class Topbar(QFrame):
 
         layout.addWidget(logo_btn)
 
-        layout.addSpacing(80)
+        layout.addSpacing(90)
 
         # Center: search bar
         self.search_box = SearchBox()

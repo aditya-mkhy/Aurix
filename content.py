@@ -134,7 +134,7 @@ class ContentArea(QFrame):
         super().__init__(parent)
     
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setContentsMargins(50, 5, 2, 5)
         outer.setSpacing(0)
 
         
