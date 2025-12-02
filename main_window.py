@@ -10,6 +10,76 @@ from PyQt5.QtGui import QPixmap, QPainter, QFont, QBitmap
 from sidebar import Sidebar
 from topbar import Topbar
 
+class ScrollArea(QScrollArea):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWidgetResizable(True)
+        self.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+
+            QScrollArea > QWidget > QWidget {
+                background: transparent;
+                border: none;
+            }
+
+            QScrollBar:vertical {
+                background: #000;
+                width: 10px;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #b3b3b3;
+                border-radius: 4px;
+                border: none;
+                min-height: 30px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                background: transparent;
+                height: 10px;
+                border: none;
+            }
+
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: #171717;
+                border: none;
+                border-radius: 4px;
+                           
+            }
+
+            QScrollBar::up-arrow:vertical {
+                border-bottom: 6px solid #b3b3b3;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                background: transparent;
+            }
+
+            QScrollBar::down-arrow:vertical {
+                border-top: 6px solid #b3b3b3;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                background: transparent;
+            }
+
+            /* Removes leftover Windows theme artifact */
+            *:focus {
+                outline: none;
+            }
+        """)
+
+
+
 
 class Card(QFrame):
     def __init__(self, title, subtitle):
@@ -115,47 +185,15 @@ class MusicMainWindow(QMainWindow):
         # self.engine.stateChanged.connect(self.on_engine_state)
 
 
-
-
-   
-
-    # ========== MAIN AREA (right) ==========
-
     def build_main_area(self):
         wrapper = QFrame()
         outer = QVBoxLayout(wrapper)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # Category pills row
-        pill_row = QFrame()
-        pr = QHBoxLayout(pill_row)
-        pr.setContentsMargins(24, 8, 24, 8)
-        pr.setSpacing(10)
-        for txt in ["Podcasts", "Feel good", "Romance", "Relax", "Energize",
-                    "Party", "Workout", "Commute", "Sad", "Focus", "Sleep"]:
-            btn = QPushButton(txt)
-            btn.setCursor(Qt.PointingHandCursor)
-            btn.setStyleSheet("""
-                QPushButton {
-                    padding: 6px 18px;
-                    border-radius: 18px;
-                    background-color: #2a2a2a;
-                    color: #f1f1f1;
-                    border: none;
-                    font-size: 13px;
-                }
-                QPushButton:hover {
-                    background-color: #3a3a3a;
-                }
-            """)
-            pr.addWidget(btn)
-        pr.addStretch()
-        outer.addWidget(pill_row)
-
+        
         # Scrollable cards
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
+        scroll = ScrollArea()
         content = QWidget()
         scroll.setWidget(content)
 
@@ -306,21 +344,6 @@ class MusicMainWindow(QMainWindow):
         # self.btn_next.clicked.connect(self.on_next_clicked)
 
         return bar
-    
-    def create_circle_image(self, path, size=36):
-        """Returns a circular masked pixmap from image path"""
-        img = QPixmap(path).scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-
-        mask = QBitmap(size, size)
-        mask.fill(Qt.color0)
-
-        painter = QPainter(mask)
-        painter.setBrush(Qt.color1)
-        painter.drawEllipse(0, 0, size, size)
-        painter.end()
-
-        img.setMask(mask)
-        return img
 
     # ===== ENGINE <-> UI HANDLERS (same as before) =====
 
@@ -400,3 +423,5 @@ class MusicMainWindow(QMainWindow):
         m = seconds // 60
         s = seconds % 60
         return f"{m:02d}:{s:02d}"
+
+
