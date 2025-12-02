@@ -3,12 +3,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
     QFrame, QLabel, QPushButton, QListWidgetItem,
-    QScrollArea, QSlider, QFileDialog
+    QScrollArea, QFileDialog
 )
 
 from PyQt5.QtGui import QPixmap, QPainter, QFont, QBitmap
 from sidebar import Sidebar
 from topbar import Topbar
+from bottombar import Bottombar
 
 class ScrollArea(QScrollArea):
     def __init__(self, parent=None):
@@ -141,6 +142,7 @@ class MusicMainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Aurix - Music Player")
         self.resize(1500, 880)
+        self.setStyleSheet("background-color: #000000;")
 
         # ---- engine & playlist state ----
         # self.engine = PlayerEngine(self)
@@ -159,25 +161,26 @@ class MusicMainWindow(QMainWindow):
         self.top_bar = Topbar(parent=self)
         outer.addWidget(self.top_bar)
 
-        # -------- MIDDLE (sidebar + main content) --------
+        # MIDDLE (sidebar + main content)
         middle_frame = QWidget()
         middle_layout = QHBoxLayout(middle_frame)
         middle_layout.setContentsMargins(0, 0, 0, 0)
         middle_layout.setSpacing(0)
 
+        # sidebar
         self.sidebar = Sidebar(parent=self)
         middle_layout.addWidget(self.sidebar)
 
+        # mainarea
         main_content = self.build_main_area()
         middle_layout.addWidget(main_content, 1)
 
         outer.addWidget(middle_frame, 1)
 
-        # -------- BOTTOM (player bar, full width) --------
-        bottom_bar = self.build_bottom_bar()
-        outer.addWidget(bottom_bar)
+        # bottombar
+        self.bottom_bar = Bottombar(parent=self)
+        outer.addWidget(self.bottom_bar)
 
-        self.setStyleSheet("background-color: #000000;")
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)
@@ -225,125 +228,6 @@ class MusicMainWindow(QMainWindow):
 
         return wrapper
 
-    # ========== BOTTOM BAR (player) ==========
-
-    def build_bottom_bar(self):
-        bar = QFrame()
-        bar.setFixedHeight(96)
-        bar.setStyleSheet("background-color: #181818; border-top: 1px solid #262626;")
-        hb = QHBoxLayout(bar)
-        hb.setContentsMargins(16, 8, 16, 8)
-        hb.setSpacing(12)
-
-        # Cover + info
-        self.cover_frame = QFrame()
-        self.cover_frame.setFixedSize(60, 60)
-        self.cover_frame.setStyleSheet("background-color: #333333; border-radius: 4px;")
-        hb.addWidget(self.cover_frame)
-
-        info_layout = QVBoxLayout()
-        self.lbl_title = QLabel("No track playing")
-        self.lbl_title.setStyleSheet("color: white; font-size: 14px;")
-        self.lbl_artist = QLabel("Artist")
-        self.lbl_artist.setStyleSheet("color: #b3b3b3; font-size: 11px;")
-        info_layout.addWidget(self.lbl_title)
-        info_layout.addWidget(self.lbl_artist)
-        hb.addLayout(info_layout)
-
-        hb.addStretch()
-
-        # center: time + slider
-        center_layout = QVBoxLayout()
-        time_row = QHBoxLayout()
-        self.lbl_current_time = QLabel("00:00")
-        self.lbl_current_time.setStyleSheet("color: #b3b3b3; font-size: 11px;")
-        time_row.addWidget(self.lbl_current_time)
-        time_row.addStretch()
-        self.lbl_total_time = QLabel("00:00")
-        self.lbl_total_time.setStyleSheet("color: #b3b3b3; font-size: 11px;")
-        time_row.addWidget(self.lbl_total_time)
-        center_layout.addLayout(time_row)
-
-        self.seek_slider = QSlider(Qt.Horizontal)
-        self.seek_slider.setRange(0, 0)
-        self.seek_slider.setFixedWidth(380)
-        self.seek_slider.setStyleSheet("""
-            QSlider::groove:horizontal {
-                background: #333333;
-                height: 5px;
-                border-radius: 2px;
-            }
-            QSlider::handle:horizontal {
-                background: #1db954;
-                width: 14px;
-                margin: -4px 0;
-                border-radius: 7px;
-            }
-            QSlider::sub-page:horizontal {
-                background: #1db954;
-                border-radius: 2px;
-            }
-        """)
-        center_layout.addWidget(self.seek_slider)
-        hb.addLayout(center_layout)
-
-        # buttons
-        btn_layout = QHBoxLayout()
-        self.btn_prev = QPushButton("⏮")
-        self.btn_play = QPushButton("▶")
-        self.btn_next = QPushButton("⏭")
-
-        for b in [self.btn_prev, self.btn_play, self.btn_next]:
-            b.setFixedSize(38, 38)
-            b.setCursor(Qt.PointingHandCursor)
-            b.setStyleSheet("""
-                QPushButton {
-                    background: transparent;
-                    color: #ffffff;
-                    border: none;
-                    font-size: 18px;
-                }
-                QPushButton:hover {
-                    color: #1db954;
-                }
-            """)
-            btn_layout.addWidget(b)
-
-        hb.addLayout(btn_layout)
-        hb.addStretch()
-
-        # volume slider
-        self.volume_slider = QSlider(Qt.Horizontal)
-        self.volume_slider.setRange(0, 100)
-        self.volume_slider.setValue(70)
-        self.volume_slider.setFixedWidth(120)
-        self.volume_slider.setStyleSheet("""
-            QSlider::groove:horizontal {
-                background: #333333;
-                height: 4px;
-                border-radius: 2px;
-            }
-            QSlider::handle:horizontal {
-                background: #ffffff;
-                width: 12px;
-                margin: -4px 0;
-                border-radius: 6px;
-            }
-            QSlider::sub-page:horizontal {
-                background: #ffffff;
-                border-radius: 2px;
-            }
-        """)
-        hb.addWidget(self.volume_slider)
-
-        # connections
-        # self.seek_slider.sliderMoved.connect(self.engine.set_position)
-        # self.volume_slider.valueChanged.connect(self.engine.set_volume)
-        # self.btn_play.clicked.connect(self.on_play_clicked)
-        # self.btn_prev.clicked.connect(self.on_prev_clicked)
-        # self.btn_next.clicked.connect(self.on_next_clicked)
-
-        return bar
 
     # ===== ENGINE <-> UI HANDLERS (same as before) =====
 
