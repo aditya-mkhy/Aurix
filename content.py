@@ -97,6 +97,18 @@ class ScrollArea(QScrollArea):
 
 
 
+
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
+    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QMenu, QFrame, QScrollArea
+)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QPixmap
+import sys
+
+
+# ---------------------- Playlist Tile ---------------------- #
 class PlaylistTile(QWidget):
     """
     YouTube Music style playlist card:
@@ -105,11 +117,7 @@ class PlaylistTile(QWidget):
       most
       Aditya Mukhiya • 13 tracks
 
-    - On hover: semi-transparent overlay on thumbnail with:
-        ▶ round play button (center)
-        ⋮ 3-dots menu (top-right)
-    - Active state: thin colored border around the whole card
-    - Card size is approx like screenshot; adjust if you want
+    Hover: overlay on thumbnail with play + 3-dots.
     """
 
     def __init__(self, title: str, subtitle: str = "",
@@ -119,14 +127,14 @@ class PlaylistTile(QWidget):
         self._active = False
 
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedSize(200, 240)   # card size (approx YouTube Music)
+        self.setFixedSize(200, 240)
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
         main.setSpacing(6)
 
-        # ---------- Thumbnail container (top) ----------
-        self.thumb_size = 180  # square
+        # ---------- Thumbnail ----------
+        self.thumb_size = 180
         thumb_container = QFrame()
         thumb_container.setFixedSize(self.thumb_size, self.thumb_size)
         thumb_container.setFrameShape(QFrame.NoFrame)
@@ -142,7 +150,6 @@ class PlaylistTile(QWidget):
         thumb_layout.setContentsMargins(0, 0, 0, 0)
         thumb_layout.setSpacing(0)
 
-        # actual image
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_size, self.thumb_size)
         self.thumb_label.setAlignment(Qt.AlignCenter)
@@ -154,9 +161,10 @@ class PlaylistTile(QWidget):
                                Qt.KeepAspectRatioByExpanding,
                                Qt.SmoothTransformation)
                 self.thumb_label.setPixmap(pm)
+
         thumb_layout.addWidget(self.thumb_label)
 
-        # --- overlay on top of thumbnail (hidden by default) ---
+        # Overlay
         self.overlay = QWidget(thumb_container)
         self.overlay.setGeometry(0, 0, self.thumb_size, self.thumb_size)
         self.overlay.setAttribute(Qt.WA_StyledBackground, True)
@@ -170,7 +178,7 @@ class PlaylistTile(QWidget):
         ov.setContentsMargins(8, 8, 8, 8)
         ov.setSpacing(0)
 
-        # top row: spacer + 3-dots
+        # top-right 3-dots
         top_row = QHBoxLayout()
         top_row.setContentsMargins(0, 0, 0, 0)
         top_row.setSpacing(0)
@@ -196,11 +204,11 @@ class PlaylistTile(QWidget):
         """)
         self.menu_btn.clicked.connect(self._on_menu_clicked)
         top_row.addWidget(self.menu_btn, 0, Qt.AlignRight)
-
         ov.addLayout(top_row)
+
         ov.addStretch(1)
 
-        # center play button
+        # center play
         self.play_btn = QPushButton("▶", self.overlay)
         self.play_btn.setCursor(Qt.PointingHandCursor)
         self.play_btn.setFixedSize(46, 46)
@@ -223,11 +231,11 @@ class PlaylistTile(QWidget):
         ov.addWidget(self.play_btn, 0, Qt.AlignHCenter)
         ov.addStretch(2)
 
-        self.overlay.hide()  # only visible on hover
+        self.overlay.hide()
 
         main.addWidget(thumb_container, 0, Qt.AlignHCenter)
 
-        # ---------- Text area (bottom) ----------
+        # ---------- Text ----------
         text_layout = QVBoxLayout()
         text_layout.setContentsMargins(4, 0, 4, 0)
         text_layout.setSpacing(2)
@@ -246,7 +254,7 @@ class PlaylistTile(QWidget):
         text_layout.addWidget(self.subtitle_lbl)
         main.addLayout(text_layout)
 
-        # ---------- styles: normal / active ----------
+        # active vs normal
         self._normal_style = """
             QWidget {
                 background-color: transparent;
@@ -257,12 +265,12 @@ class PlaylistTile(QWidget):
             QWidget {
                 background-color: transparent;
                 border-radius: 16px;
-                border: 1px solid #b36bff;   /* AURIX highlight */
+                border: 1px solid #b36bff;
             }
         """
         self._apply_style()
 
-        # menu for dots
+        # menu
         self.menu = QMenu(self)
         self.menu.addAction("Play next",
                             lambda: print(f"[MENU] Play next: {self.title_text}"))
@@ -272,19 +280,16 @@ class PlaylistTile(QWidget):
         self.menu.addAction("Remove playlist",
                             lambda: print(f"[MENU] Remove: {self.title_text}"))
 
-    # ----- public API -----
     def set_active(self, active: bool):
         self._active = active
         self._apply_style()
 
-    # ----- internal helpers -----
     def _apply_style(self):
         if self._active:
             self.setStyleSheet(self._active_style)
         else:
             self.setStyleSheet(self._normal_style)
 
-    # ----- events -----
     def enterEvent(self, event):
         self.overlay.show()
         super().enterEvent(event)
@@ -302,12 +307,14 @@ class PlaylistTile(QWidget):
         self.menu.exec_(pos)
 
 
+# ---------------------- Playlist Grid ---------------------- #
 class PlaylistGrid(QListWidget):
     """
-    Wrapping grid of PlaylistTile cards:
-    - Left-to-right, wraps to new line
-    - Drag & drop reorder
-    - Clicking item sets it active (highlight)
+    Wrapping grid of PlaylistTile cards.
+
+    IMPORTANT: scrollbars are disabled.
+    Height is auto-adjusted so the
+    *outer* page scroll area handles scrolling.
     """
 
     def __init__(self, parent=None):
@@ -324,7 +331,11 @@ class PlaylistGrid(QListWidget):
         self.setFrameShape(self.NoFrame)
         self.setStyleSheet("QListWidget { background: transparent; border: none; }")
 
-        # drag & drop reorder
+        # 🔒 disable internal scrollbars
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        # drag & drop reorder still works
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(False)
@@ -338,6 +349,25 @@ class PlaylistGrid(QListWidget):
         item.setSizeHint(tile.size())
         self.addItem(item)
         self.setItemWidget(item, tile)
+        self._update_height_for_content()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_height_for_content()
+
+    def _update_height_for_content(self):
+        """Resize the list widget vertically so all rows are visible."""
+        if self.count() == 0:
+            self.setFixedHeight(0)
+            return
+
+        # last item rect gives us bottom of content
+        last_item = self.item(self.count() - 1)
+        rect = self.visualItemRect(last_item)
+        content_bottom = rect.bottom() + self.spacing()
+
+        # some padding
+        self.setFixedHeight(content_bottom + 4)
 
     def _on_item_clicked(self, item):
         clicked_tile = self.itemWidget(item)
@@ -347,6 +377,40 @@ class PlaylistGrid(QListWidget):
             it = self.item(i)
             tile = self.itemWidget(it)
             tile.set_active(tile is clicked_tile)
+
+
+# ---------------------- Section Widget ---------------------- #
+class PlaylistSection(QWidget):
+    """
+    One section like:
+        "From your library"
+        [PlaylistGrid here]
+
+    Vertical layout: title on top, grid below.
+    No scrollbars inside; grid height grows.
+    """
+
+    def __init__(self, title: str, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WA_StyledBackground, True)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 24, 24)
+        layout.setSpacing(10)
+
+        self.title_label = QLabel(title)
+        self.title_label.setFont(QFont("Segoe UI", 20, QFont.DemiBold))
+        self.title_label.setStyleSheet("color: white;")
+
+        layout.addWidget(self.title_label)
+
+        self.grid = PlaylistGrid()
+        layout.addWidget(self.grid)
+
+    def add_playlist(self, title, subtitle="", thumb=None):
+        self.grid.add_playlist(title, subtitle, thumb)
+
+
 
 class ContentArea(QFrame):
     def __init__(self, parent = None):
@@ -362,30 +426,47 @@ class ContentArea(QFrame):
         content = QWidget()
         scroll.setWidget(content)
 
-        layout = QVBoxLayout(content)
-        layout.setContentsMargins(24, 12, 24, 24)
-        layout.setSpacing(32)
+        content.setAttribute(Qt.WA_StyledBackground, True)
+        content.setStyleSheet("background-color: #000000;")
 
-        self.grid = PlaylistGrid()
-        layout.addWidget(self.grid)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(24, 12, 24, 24)
+        main_layout.setSpacing(32)
 
-        # Add items
-        self.grid.add_playlist("most", "Aditya Mukhiya • 13 tracks", thumb="img/1.png")
-        self.grid.add_playlist("EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/2.png")
-        self.grid.add_playlist("best", "Aditya Mukhiya • 2 tracks", thumb="img/1.png")
-        self.grid.add_playlist("Fav", "Aditya Mukhiya • 97 tracks", thumb="img/2.png")
+        # Section 1
+        self.section_library = PlaylistSection("From your library")
+        main_layout.addWidget(self.section_library)
 
-        # layout.addWidget(make_section("Featured playlists for you", [
-        #     ("Bridal Entry", "Bollywood · Arijit Singh…"),
-        #     ("Ishq Sufiyana", "Arijit Singh, Pritam…"),
-        #     ("Bollywood Romance", "Romantic Essentials"),
-        # ]))
+        # Section 2
+        self.section_featured = PlaylistSection("Featured playlists for you")
+        main_layout.addWidget(self.section_featured)
 
-        # layout.addWidget(make_section("Albums for you", [
-        #     ("Rockstar", "Album · A.R. Rahman"),
-        #     ("MAIN HOON NA", "Album · Various Artists"),
-        #     ("1920", "Album · Adnan Sami"),
-        # ]))
+        # add stretch so sections stay top if few
+        main_layout.addStretch(1)
 
-        layout.addStretch()
-        outer.addWidget(scroll, 1)
+        # layout.addStretch()
+        # outer.addWidget(scroll, 1)
+
+        # sample data
+        self._populate_demo()
+
+    def _populate_demo(self):
+        # NOTE: use your collage images instead of None
+        self.section_library.add_playlist(
+            "most", "Aditya Mukhiya • 13 tracks", thumb="img/1.png"
+        )
+        self.section_library.add_playlist(
+            "threee", "Aditya Mukhiya • 4 tracks", thumb="img/2.png"
+        )
+        self.section_library.add_playlist(
+            "EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/1.png"
+        )
+
+        self.section_featured.add_playlist(
+            "Band Baaja Baraat", "Wedding • Mix", thumb="img/2.png"
+        )
+        self.section_featured.add_playlist(
+            "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
+        )
+
+   
