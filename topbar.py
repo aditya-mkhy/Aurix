@@ -1,10 +1,10 @@
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton,
-    QFrame, QScrollArea, QSizePolicy, QToolButton
+    QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
+    QLabel, QPushButton, QScrollArea, QSpacerItem, 
+    QLineEdit, QSizePolicy, QToolButton
 )
-from PyQt5.QtCore import Qt, pyqtSignal, QSize
-from PyQt5.QtGui import QPixmap, QIcon, QFont, QColor
-from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QColor, QPalette
 
 
 class SearchSuggestionItem(QWidget):
@@ -319,3 +319,97 @@ class SearchBox(QWidget):
         # For real project, load an SVG from assets
         return p
 
+
+class Topbar(QFrame):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+
+        self.setFixedHeight(90)
+        self.setStyleSheet("background-color: #000000; border-bottom: 1px solid #262626;")
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(18, 10, 18, 10)
+        layout.setSpacing(20)
+
+        layout.addSpacing(10)
+
+
+        # close sidebar button
+        sidebar_btn = QPushButton()
+        sidebar_btn.setIcon(QIcon("./res/menu.png"))
+        sidebar_btn.setIconSize(QSize(34, 34))
+        sidebar_btn.setFixedSize(56, 56)
+        sidebar_btn.setCursor(Qt.PointingHandCursor)
+
+        sidebar_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 28px;
+            }
+            QPushButton:hover {
+                background-color: #1f1f1f;
+                border-radius: 28px;
+            }
+            QPushButton:pressed {
+                background-color: #262626;
+                border-radius: 28px;
+            }
+        """)
+
+   
+        layout.addWidget(sidebar_btn)
+
+        # logo
+        logo_btn = QPushButton("AURIX")  
+        logo_btn.setFont(QFont("Segoe UI", 20, QFont.Black))
+        logo_btn.setIcon(QIcon("./res/pulse.png"))
+        logo_btn.setIconSize(QSize(52, 52))
+        logo_btn.setFixedSize(180, 56) 
+        logo_btn.setCursor(Qt.PointingHandCursor)
+
+        logo_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                color: white;
+                text-align: left;
+                color: white; 
+                letter-spacing: 2px;
+            }
+        """)
+
+        logo_btn.setLayoutDirection(Qt.RightToLeft)  # Ensures icon right, text left
+
+        layout.addWidget(logo_btn)
+
+        layout.addSpacing(80)
+
+        # Center: search bar
+        self.search_box = SearchBox()
+        layout.addWidget(self.search_box)
+
+        # Add spacer before the profile button
+        layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+
+        profile_btn = QPushButton()
+        profile_btn.setObjectName("profileButton")
+        profile_btn.setFixedSize(40, 40)
+        profile_btn.setCursor(Qt.PointingHandCursor)
+
+        profile_btn.setStyleSheet("""
+            QPushButton#profileButton {
+                border: none;
+                padding: 0;
+                border-radius: 20px;
+                background-color: transparent;
+                border-image: url("res/profile.png") 0 fill;
+            }
+        """)
+
+        layout.addWidget(profile_btn)
+
+        profile_btn.clicked.connect(lambda: print("Profile button clicked!"))
+
+        layout.addSpacing(80)
