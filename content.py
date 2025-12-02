@@ -109,26 +109,24 @@ class Section(QWidget):
     def __init__(self, name: str, parent=None):
         super().__init__(parent)
 
-        v = QVBoxLayout(self)
-        v.setSpacing(12)
-        v.setContentsMargins(0, 0, 0, 0)
+        self.vb_layout = QVBoxLayout(self)
+        self.vb_layout.setSpacing(12)
+        self.vb_layout.setContentsMargins(0, 0, 0, 0)
 
-        title_lbl = QLabel(name)
-        title_lbl.setFont(QFont("Segoe UI", 20, QFont.Black))
-        title_lbl.setStyleSheet("color: #ffffff;")
-        v.addWidget(title_lbl)
+        self.title_lbl = QLabel(name)
+        self.title_lbl.setFont(QFont("Segoe UI", 20, QFont.Black))
+        self.title_lbl.setStyleSheet("color: #ffffff;")
+        self.vb_layout.addWidget(self.title_lbl)
 
-        row = QWidget()
-        h = QHBoxLayout(row)
-        h.setSpacing(14)
-        h.setContentsMargins(0, 0, 0, 0)
+        self.row = QWidget()
+        self.hb_layout = QHBoxLayout(self.row)
+        self.hb_layout.setSpacing(14)
+        self.hb_layout.setContentsMargins(0, 0, 0, 0)
+        self.hb_layout.addWidget(self.row)
 
-        for t, s in cards_data:
-            h.addWidget(Card(t, s))
 
-        h.addStretch()
-        v.addWidget(row)
-        return widget
+    def add_item(self, name, dis):
+        self.hb_layout.addWidget(Card(name, dis))
 
 
 class ContentArea(QFrame):
@@ -149,24 +147,24 @@ class ContentArea(QFrame):
         layout.setContentsMargins(24, 12, 24, 24)
         layout.setSpacing(32)
 
-        layout.addWidget(make_section("From your library", [
-            ("most", "Local playlist · 13 tracks"),
-            ("EngFav", "Local playlist · 7 tracks"),
-            ("best", "Local playlist · 7 tracks"),
-            ("eng", "Local playlist · 12 tracks"),
-        ]))
+        from_lib_sec = Section("From your library")
 
-        layout.addWidget(make_section("Featured playlists for you", [
-            ("Bridal Entry", "Bollywood · Arijit Singh…"),
-            ("Ishq Sufiyana", "Arijit Singh, Pritam…"),
-            ("Bollywood Romance", "Romantic Essentials"),
-        ]))
+        from_lib_sec.add_item("most", "Local playlist · 13 tracks")
+        from_lib_sec.add_item("EngFav", "Local playlist · 7 tracks")
+        from_lib_sec.add_item("best", "Local playlist · 7 tracks")
+        from_lib_sec.add_item("eng", "Local playlist · 12 tracks")
 
-        layout.addWidget(make_section("Albums for you", [
-            ("Rockstar", "Album · A.R. Rahman"),
-            ("MAIN HOON NA", "Album · Various Artists"),
-            ("1920", "Album · Adnan Sami"),
-        ]))
+        # layout.addWidget(make_section("Featured playlists for you", [
+        #     ("Bridal Entry", "Bollywood · Arijit Singh…"),
+        #     ("Ishq Sufiyana", "Arijit Singh, Pritam…"),
+        #     ("Bollywood Romance", "Romantic Essentials"),
+        # ]))
+
+        # layout.addWidget(make_section("Albums for you", [
+        #     ("Rockstar", "Album · A.R. Rahman"),
+        #     ("MAIN HOON NA", "Album · Various Artists"),
+        #     ("1920", "Album · Adnan Sami"),
+        # ]))
 
         layout.addStretch()
         outer.addWidget(scroll, 1)
