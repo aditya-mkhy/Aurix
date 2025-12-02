@@ -26,6 +26,15 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPixmap, QIcon
 import sys
 
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
+    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QMenu, QFrame, QScrollArea
+)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QPixmap
+import sys
+
 
 class ScrollArea(QScrollArea):
     def __init__(self, parent=None):
@@ -96,19 +105,6 @@ class ScrollArea(QScrollArea):
         """)
 
 
-
-
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
-    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QMenu, QFrame, QScrollArea
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap
-import sys
-
-
-# ---------------------- Playlist Tile ---------------------- #
 class PlaylistTile(QWidget):
     """
     YouTube Music style playlist card:
@@ -307,7 +303,6 @@ class PlaylistTile(QWidget):
         self.menu.exec_(pos)
 
 
-# ---------------------- Playlist Grid ---------------------- #
 class PlaylistGrid(QListWidget):
     """
     Wrapping grid of PlaylistTile cards.
@@ -379,7 +374,6 @@ class PlaylistGrid(QListWidget):
             tile.set_active(tile is clicked_tile)
 
 
-# ---------------------- Section Widget ---------------------- #
 class PlaylistSection(QWidget):
     """
     One section like:
@@ -393,14 +387,15 @@ class PlaylistSection(QWidget):
     def __init__(self, title: str, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_StyledBackground, True)
+        # self.setStyleSheet("background-color: red;")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 24, 24)
+        layout.setContentsMargins(0, 0, 0, 24)
         layout.setSpacing(10)
 
         self.title_label = QLabel(title)
-        self.title_label.setFont(QFont("Segoe UI", 20, QFont.DemiBold))
-        self.title_label.setStyleSheet("color: white;")
+        self.title_label.setFont(QFont("Segoe UI", 24,  QFont.Black))
+        self.title_label.setStyleSheet("color: #ffffff;")
 
         layout.addWidget(self.title_label)
 
@@ -423,7 +418,7 @@ class ContentArea(QFrame):
 
         # Scroll area (only vertical)
         scroll = ScrollArea()
-        outer.addWidget(scroll, 1)          # <--- add scroll to outer layout
+        outer.addWidget(scroll, 1)
 
         # inner content widget that actually holds all sections
         content = QWidget()
