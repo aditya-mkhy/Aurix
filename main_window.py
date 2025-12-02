@@ -62,8 +62,8 @@ class PlaylistArea(QScrollArea):
         # IMPORTANT → align items at top
         self.layout.setAlignment(Qt.AlignTop)
 
-        self.layout.setContentsMargins(10, 10, 10, 10)
-        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(0, 0, 10, 0)
+        self.layout.setSpacing(0)
 
         self.setWidget(self.container)
 
@@ -76,12 +76,13 @@ class PlaylistItem(QWidget):
     def __init__(self, title: str, subtitle: str, parent=None):
         super().__init__(parent)
         self.title_text = title
+        self.setCursor(Qt.PointingHandCursor)
 
-        self.setFixedHeight(68)
+        self.setFixedHeight(70)
         self.setAttribute(Qt.WA_StyledBackground, True)  # so bg color works
 
         main = QHBoxLayout(self)
-        main.setContentsMargins(14, 8, 14, 8)
+        main.setContentsMargins(20, 8, 20, 8)
         main.setSpacing(10)
 
         # ---- Left side: title + subtitle ----
@@ -90,11 +91,11 @@ class PlaylistItem(QWidget):
         text_box.setContentsMargins(0, 0, 0, 0)
 
         title_lbl = QLabel(title)
-        title_lbl.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
-        title_lbl.setStyleSheet("color: #FFFFFF;")
+        title_lbl.setFont(QFont("Segoe UI", 11))
+        title_lbl.setStyleSheet("color: #FFFFFF; font-weight: 800; ")
 
         subtitle_lbl = QLabel(subtitle)
-        subtitle_lbl.setFont(QFont("Segoe UI", 10))
+        subtitle_lbl.setFont(QFont("Segoe UI", 9))
         subtitle_lbl.setStyleSheet("color: #b3b3b3;")
 
         text_box.addWidget(title_lbl)
@@ -106,8 +107,8 @@ class PlaylistItem(QWidget):
         self.play_btn = QPushButton()
         self.play_btn.setCursor(Qt.PointingHandCursor)
         self.play_btn.setFixedSize(34, 34)
-        self.play_btn.setIcon(QIcon("res/play_filled.png"))  # or use your icon
-        self.play_btn.setIconSize(QSize(18, 18))
+        self.play_btn.setIcon(QIcon("res/play.png"))  # or use your icon
+        self.play_btn.setIconSize(QSize(20, 20))
         self.play_btn.setStyleSheet("""
             QPushButton {
                 background-color: #FFFFFF;
@@ -122,6 +123,8 @@ class PlaylistItem(QWidget):
                 background-color: #d1d1d1;
             }
         """)
+        # initially hidden
+        self.play_btn.hide()
         self.play_btn.clicked.connect(self._on_play_clicked)
 
         main.addWidget(self.play_btn, 0, Qt.AlignVCenter)
@@ -129,8 +132,9 @@ class PlaylistItem(QWidget):
         # ---- Card background ----
         self.normal_style = """
             QWidget {
-                background-color: #212121;
+                background-color: transparent;
                 border-radius: 12px;
+                border-color: transparent;
             }
         """
         self.hover_style = """
@@ -155,10 +159,12 @@ class PlaylistItem(QWidget):
 
     def enterEvent(self, event):
         self.setStyleSheet(self.hover_style)
+        self.play_btn.show()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         self.setStyleSheet(self.normal_style)
+        self.play_btn.hide()
         super().leaveEvent(event)
 
 
@@ -482,15 +488,15 @@ class MusicMainWindow(QMainWindow):
         layout.addWidget(self.add_playlist)
 
 
-        layout.addSpacing(12)
+        layout.addSpacing(20)
 
         playlist_scroll = PlaylistArea()
         layout.addWidget(playlist_scroll)
 
 
         playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
         # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
         # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
 
