@@ -25,47 +25,86 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QScrollArea, QWidget, QVBoxLayout
 from PyQt5.QtCore import Qt
 
+
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setStyleSheet("""
-            QScrollArea {
-                background: transparent;
-                border: none;
-            }
-            QScrollBar:vertical {
-                background: #1d1d1d;
-                width: 8px;
-                margin: 6px 0;
-                border-radius: 4px;
-            }
-            QScrollBar::handle:vertical {
-                background: #555;
-                border-radius: 4px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #777;
-            }
-            QScrollBar::add-line,
-            QScrollBar::sub-line {
-                background: none;
-                height: 0px;
-            }
-        """)
-
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWidgetResizable(True)
 
         self.container = QWidget()
         self.layout = QVBoxLayout(self.container)
-
-        # IMPORTANT → align items at top
         self.layout.setAlignment(Qt.AlignTop)
-
-        self.layout.setContentsMargins(0, 0, 10, 0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
         self.setWidget(self.container)
+
+        self.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+
+            QScrollArea > QWidget > QWidget {
+                background: transparent;
+                border: none;
+            }
+
+            QScrollBar:vertical {
+                background: #000;
+                width: 10px;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #b3b3b3;
+                border-radius: 4px;
+                border: none;
+                min-height: 30px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                background: transparent;
+                height: 10px;
+                border: none;
+            }
+
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: #171717;
+                border: none;
+                border-radius: 4px;
+                           
+            }
+
+            QScrollBar::up-arrow:vertical {
+                border-bottom: 6px solid #b3b3b3;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                background: transparent;
+            }
+
+            QScrollBar::down-arrow:vertical {
+                border-top: 6px solid #b3b3b3;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                background: transparent;
+            }
+
+            /* Removes leftover Windows theme artifact */
+            *:focus {
+                outline: none;
+            }
+        """)
+
+
+
 
     def add_playlist(self, item_widget):
         self.layout.addWidget(item_widget)
@@ -517,11 +556,13 @@ class MusicMainWindow(QMainWindow):
         layout.addWidget(playlist_scroll)
 
 
-        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
-        # playlist_scroll.add_playlist(PlaylistItem("Eng Fav", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("Liked Music", "Auto playlist"))
+        playlist_scroll.add_playlist(PlaylistItem("EngFav", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("Mahadev songs", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("hindi songs", "Palak Thakur"))
+        playlist_scroll.add_playlist(PlaylistItem("Eng Love", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("Best songs", "Aditya Mukhiya"))
+        playlist_scroll.add_playlist(PlaylistItem("sleep", "Aditya Mukhiya"))
 
 
         return side
