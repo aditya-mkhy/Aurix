@@ -76,16 +76,7 @@ class ScrollArea(QScrollArea):
         """)
 
 
-class PlaylistTile(QWidget):
-    """
-    YouTube Music style playlist card:
-
-      [ big rounded square thumbnail ]
-      most
-      Aditya Mukhiya • 13 tracks
-
-    Hover: overlay on thumbnail with play + 3-dots.
-    """
+class PlaylistCard(QWidget):
 
     def __init__(self, title: str, subtitle: str = "",
                  thumbnail_path: str = None, parent=None):
@@ -93,54 +84,74 @@ class PlaylistTile(QWidget):
         self.title_text = title
         self._active = False
 
+        self.width = 220
+        self.height = 260
+
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedSize(200, 240)
+        self.setFixedSize(self.width, self.height)
+        self.setStyleSheet("border: none; background-color: red;")
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
         main.setSpacing(6)
 
-        # ---------- Thumbnail ----------
-        self.thumb_size = 180
-        thumb_container = QFrame()
-        thumb_container.setFixedSize(self.thumb_size, self.thumb_size)
-        thumb_container.setFrameShape(QFrame.NoFrame)
-        thumb_container.setAttribute(Qt.WA_StyledBackground, True)
-        thumb_container.setStyleSheet("""
+
+        self.thumb_width = self.width
+        self.thumb_height = 180#self.height - 40
+
+
+        self.thumb_container = QFrame()
+        self.thumb_container.setFixedSize(self.thumb_width, self.thumb_height)
+        self.thumb_container.setFrameShape(QFrame.NoFrame)
+        self.thumb_container.setAttribute(Qt.WA_StyledBackground, True) #333333
+
+        self.thumb_container.setStyleSheet("""
             QFrame {
-                background-color: #333333;
+                border: none;
+                background-color: blue;
                 border-radius: 16px;
             }
         """)
 
-        thumb_layout = QVBoxLayout(thumb_container)
+        self.thumb_container.setStyleSheet("border: none; background: green;")
+        # self.thumb_container.enterEvent = self.on_enter
+        # self.thumb_container.leaveEvent = self.on_leave
+
+        thumb_layout = QVBoxLayout(self.thumb_container)
         thumb_layout.setContentsMargins(0, 0, 0, 0)
         thumb_layout.setSpacing(0)
 
+
         self.thumb_label = QLabel()
-        self.thumb_label.setFixedSize(self.thumb_size, self.thumb_size)
+        self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
 
         if thumbnail_path:
             pm = QPixmap(thumbnail_path)
             if not pm.isNull():
-                pm = pm.scaled(self.thumb_size, self.thumb_size,
+                pm = pm.scaled(self.thumb_width, self.thumb_height,
                                Qt.KeepAspectRatioByExpanding,
                                Qt.SmoothTransformation)
                 self.thumb_label.setPixmap(pm)
 
-        thumb_layout.addWidget(self.thumb_label)
+        # thumb_layout.addWidget(self.thumb_label)
+
+        self.thumb_label.setStyleSheet("background-color: pink;")
 
         # Overlay
-        self.overlay = QWidget(thumb_container)
-        self.overlay.setGeometry(0, 0, self.thumb_size, self.thumb_size)
+        self.overlay = QWidget(self.thumb_container)
+        self.overlay.setGeometry(0, 0, self.thumb_width, self.thumb_height)
         self.overlay.setAttribute(Qt.WA_StyledBackground, True)
         self.overlay.setStyleSheet("""
             QWidget {
+                border: none;
                 background-color: rgba(0,0,0,0.45);
                 border-radius: 16px;
             }
         """)
+
+        self.overlay.setStyleSheet("background-color: yellow;")
+
         ov = QVBoxLayout(self.overlay)
         ov.setContentsMargins(8, 8, 8, 8)
         ov.setSpacing(0)
@@ -150,6 +161,7 @@ class PlaylistTile(QWidget):
         top_row.setContentsMargins(0, 0, 0, 0)
         top_row.setSpacing(0)
         top_row.addStretch(1)
+
 
         self.menu_btn = QPushButton("⋮", self.overlay)
         self.menu_btn.setCursor(Qt.PointingHandCursor)
@@ -194,13 +206,13 @@ class PlaylistTile(QWidget):
                 background-color: #dedede;
             }
         """)
-        self.play_btn.clicked.connect(self._on_play_clicked)
+        # self.play_btn.clicked.connect(self._on_play_clicked)
         ov.addWidget(self.play_btn, 0, Qt.AlignHCenter)
         ov.addStretch(2)
 
         self.overlay.hide()
 
-        main.addWidget(thumb_container, 0, Qt.AlignHCenter)
+        main.addWidget(self.thumb_container, 0, Qt.AlignTop)
 
         # ---------- Text ----------
         text_layout = QVBoxLayout()
@@ -209,28 +221,28 @@ class PlaylistTile(QWidget):
 
         self.title_lbl = QLabel(title)
         self.title_lbl.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
-        self.title_lbl.setStyleSheet("color: #ffffff;")
+        self.title_lbl.setStyleSheet("color: #ffffff; background: brown;")
         self.title_lbl.setWordWrap(False)
 
         self.subtitle_lbl = QLabel(subtitle)
         self.subtitle_lbl.setFont(QFont("Segoe UI", 9))
-        self.subtitle_lbl.setStyleSheet("color: #b3b3b3;")
+        self.subtitle_lbl.setStyleSheet("color: #b3b3b3; background: pink;")
         self.subtitle_lbl.setWordWrap(False)
 
         text_layout.addWidget(self.title_lbl)
         text_layout.addWidget(self.subtitle_lbl)
-        main.addLayout(text_layout)
+        # main.addLayout(text_layout)
 
         # active vs normal
         self._normal_style = """
             QWidget {
-                background-color: transparent;
+                background-color: #8f8f8f;
                 border-radius: 16px;
             }
         """
         self._active_style = """
             QWidget {
-                background-color: transparent;
+                background-color: #575252;
                 border-radius: 16px;
                 border: 1px solid #b36bff;
             }
@@ -257,14 +269,14 @@ class PlaylistTile(QWidget):
         else:
             self.setStyleSheet(self._normal_style)
 
-    def enterEvent(self, event):
+    def on_enter(self, event):
         self.overlay.show()
-        super().enterEvent(event)
+        # self.thumb_container.enterEvent(event)
 
-    def leaveEvent(self, event):
+    def on_leave(self, event):
         self.overlay.hide()
         self._apply_style()
-        super().leaveEvent(event)
+        # self.thumb_container.leaveEvent(event)
 
     def _on_play_clicked(self):
         print(f"[UI] play playlist: {self.title_text}")
@@ -311,7 +323,7 @@ class PlaylistGrid(QListWidget):
 
     def add_playlist(self, title, subtitle="", thumb=None):
         item = QListWidgetItem()
-        tile = PlaylistTile(title, subtitle, thumbnail_path=thumb)
+        tile = PlaylistCard(title, subtitle, thumbnail_path=thumb)
         item.setSizeHint(tile.size())
         self.addItem(item)
         self.setItemWidget(item, tile)
@@ -418,18 +430,18 @@ class ContentArea(QFrame):
 
     def _populate_demo(self):
         self.section_library.add_playlist(
-            "most", "Aditya Mukhiya • 13 tracks", thumb="img/1.png"
+            "most love song ever in the world and thatt make it special", "Aditya Mukhiya • 13 tracks", thumb="img/2.png"
         )
-        self.section_library.add_playlist(
-            "threee", "Aditya Mukhiya • 4 tracks", thumb="img/2.png"
-        )
-        self.section_library.add_playlist(
-            "EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/1.png"
-        )
+        # self.section_library.add_playlist(
+        #     "threee", "Aditya Mukhiya • 4 tracks", thumb="img/2.png"
+        # )
+        # self.section_library.add_playlist(
+        #     "EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/1.png"
+        # )
 
-        self.section_featured.add_playlist(
-            "Band Baaja Baraat", "Wedding • Mix", thumb="img/2.png"
-        )
-        self.section_featured.add_playlist(
-            "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
-        )
+        # self.section_featured.add_playlist(
+        #     "Band Baaja Baraat", "Wedding • Mix", thumb="img/2.png"
+        # )
+        # self.section_featured.add_playlist(
+        #     "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
+        # )
