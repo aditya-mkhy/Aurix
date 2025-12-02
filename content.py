@@ -95,17 +95,8 @@ class ScrollArea(QScrollArea):
             }
         """)
 
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QListWidget, QListWidgetItem, QListView,
-    QAbstractItemView, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QMenu, QFrame
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap, QIcon
-import sys
 
 
-# ---------------------- Playlist Tile ---------------------- #
 class PlaylistTile(QWidget):
     """
     YouTube Music style playlist card:
@@ -311,7 +302,6 @@ class PlaylistTile(QWidget):
         self.menu.exec_(pos)
 
 
-# ---------------------- Playlist Grid ---------------------- #
 class PlaylistGrid(QListWidget):
     """
     Wrapping grid of PlaylistTile cards:
@@ -376,18 +366,14 @@ class ContentArea(QFrame):
         layout.setContentsMargins(24, 12, 24, 24)
         layout.setSpacing(32)
 
-        self.playlist_grid = PlaylistGrid()
-        some_layout.addWidget(self.playlist_grid)
+        self.grid = PlaylistGrid()
+        layout.addWidget(self.grid)
 
-        add_playlist_tile(self.playlist_grid,
-                        "Om Namah Shivaye: Hindi",
-                        "Playlist • YouTube Music",
-                        thumb="res/thumb1.jpg")
-
-        add_playlist_tile(self.playlist_grid,
-                        "Mahakaal",
-                        "Song • B Praak • 112M plays",
-                        thumb="res/thumb2.jpg")
+        # Add items
+        self.grid.add_playlist("most", "Aditya Mukhiya • 13 tracks", thumb="img/1.png")
+        self.grid.add_playlist("EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/2.png")
+        self.grid.add_playlist("best", "Aditya Mukhiya • 2 tracks", thumb="img/1.png")
+        self.grid.add_playlist("Fav", "Aditya Mukhiya • 97 tracks", thumb="img/2.png")
 
         # layout.addWidget(make_section("Featured playlists for you", [
         #     ("Bridal Entry", "Bollywood · Arijit Singh…"),
