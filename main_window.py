@@ -173,11 +173,21 @@ class NavButton(QPushButton):
         super().__init__(f"   {text}")
         self.icon_path = icon
         self.setFixedHeight(66)
-
-
         self.setFont(QFont("Segoe UI", 13, QFont.Black))
         self.setCursor(Qt.PointingHandCursor)
-        self.setIcon(QIcon(self.icon_path))
+
+        # icons
+        self.normal_icon = QIcon(self.icon_path)
+        self.setIcon(self.normal_icon)
+
+        # active icon
+        active_icon_path = f"{os.path.dirname(self.icon_path)}/active-{os.path.basename(self.icon_path)}"
+        if os.path.exists(active_icon_path):
+            self.active_icon = QIcon(active_icon_path)
+
+        else:
+            self.active_icon = self.normal_icon
+
         self.setIconSize(QSize(30, 30))
 
 
@@ -212,9 +222,22 @@ class NavButton(QPushButton):
             }
         """)
 
-        active_icon_path = f"{os.path.dirname(self.icon_path)}/active-{os.path.basename(self.icon_path)}"
-        if os.path.exists(active_icon_path):
-            self.setIcon(QIcon(active_icon_path))
+        self.setIcon(self.active_icon)
+
+    def de_activate(self):
+        self.setStyleSheet("""
+            QPushButton {
+                text-align: left;
+                color: #ffffff;
+                background-color: transparent;
+                font-weight: 500;
+                border: none;
+                border-radius: 12px;
+                padding-left: 28px;
+            }
+        """)
+        self.setIcon(self.normal_icon)
+
 
 
 
