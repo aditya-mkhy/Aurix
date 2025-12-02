@@ -105,28 +105,30 @@ class Card(QFrame):
         layout.addWidget(lbl_sub)
 
 
-def make_section(section_name, cards_data):
-    widget = QWidget()
-    v = QVBoxLayout(widget)
-    v.setSpacing(12)
-    v.setContentsMargins(0, 0, 0, 0)
+class Section(QWidget):
+    def __init__(self, name: str, parent=None):
+        super().__init__(parent)
 
-    title_lbl = QLabel(section_name)
-    title_lbl.setFont(QFont("Segoe UI", 20, QFont.Black))
-    title_lbl.setStyleSheet("color: #ffffff;")
-    v.addWidget(title_lbl)
+        v = QVBoxLayout(self)
+        v.setSpacing(12)
+        v.setContentsMargins(0, 0, 0, 0)
 
-    row = QWidget()
-    h = QHBoxLayout(row)
-    h.setSpacing(14)
-    h.setContentsMargins(0, 0, 0, 0)
+        title_lbl = QLabel(name)
+        title_lbl.setFont(QFont("Segoe UI", 20, QFont.Black))
+        title_lbl.setStyleSheet("color: #ffffff;")
+        v.addWidget(title_lbl)
 
-    for t, s in cards_data:
-        h.addWidget(Card(t, s))
+        row = QWidget()
+        h = QHBoxLayout(row)
+        h.setSpacing(14)
+        h.setContentsMargins(0, 0, 0, 0)
 
-    h.addStretch()
-    v.addWidget(row)
-    return widget
+        for t, s in cards_data:
+            h.addWidget(Card(t, s))
+
+        h.addStretch()
+        v.addWidget(row)
+        return widget
 
 
 class ContentArea(QFrame):
