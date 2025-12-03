@@ -148,8 +148,10 @@ class MusicMainWindow(QMainWindow):
         return f"{m:02d}:{s:02d}"
 
 
+# back to PyQt5 
 
 if __name__ == "__main__":
+
     app = QApplication(sys.argv)
     win = MusicMainWindow()
     win.show()
