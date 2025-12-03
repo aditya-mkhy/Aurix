@@ -1,7 +1,10 @@
 import os
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
-from PyQt5.QtGui import QIcon, QFont
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import (
+    QWidget, QHBoxLayout, QVBoxLayout, QFrame,
+    QLabel, QPushButton, QScrollArea
+)
+from PySide6.QtGui import QIcon, QFont
 
 
 class PlaylistArea(QScrollArea):
@@ -58,7 +61,6 @@ class PlaylistArea(QScrollArea):
                 background: #171717;
                 border: none;
                 border-radius: 4px;
-                           
             }
 
             QScrollBar::up-arrow:vertical {
@@ -75,18 +77,13 @@ class PlaylistArea(QScrollArea):
                 background: transparent;
             }
 
-            /* Removes leftover Windows theme artifact */
             *:focus {
                 outline: none;
             }
         """)
 
-
-
-
     def add_playlist(self, item_widget):
         self.layout.addWidget(item_widget)
-
 
 
 class PlaylistItem(QWidget):
@@ -96,7 +93,7 @@ class PlaylistItem(QWidget):
         self.setCursor(Qt.PointingHandCursor)
 
         self.setFixedHeight(70)
-        self.setAttribute(Qt.WA_StyledBackground, True)  # so bg color works
+        self.setAttribute(Qt.WA_StyledBackground, True)
 
         main = QHBoxLayout(self)
         main.setContentsMargins(20, 8, 20, 8)
@@ -109,7 +106,7 @@ class PlaylistItem(QWidget):
 
         title_lbl = QLabel(title)
         title_lbl.setFont(QFont("Segoe UI", 11))
-        title_lbl.setStyleSheet("color: #FFFFFF; font-weight: 800; ")
+        title_lbl.setStyleSheet("color: #FFFFFF; font-weight: 800;")
 
         subtitle_lbl = QLabel(subtitle)
         subtitle_lbl.setFont(QFont("Segoe UI", 9))
@@ -124,7 +121,7 @@ class PlaylistItem(QWidget):
         self.play_btn = QPushButton()
         self.play_btn.setCursor(Qt.PointingHandCursor)
         self.play_btn.setFixedSize(34, 34)
-        self.play_btn.setIcon(QIcon("res/play.png"))  # or use your icon
+        self.play_btn.setIcon(QIcon("res/play.png"))
         self.play_btn.setIconSize(QSize(20, 20))
         self.play_btn.setStyleSheet("""
             QPushButton {
@@ -140,7 +137,6 @@ class PlaylistItem(QWidget):
                 background-color: #d1d1d1;
             }
         """)
-        # initially hidden
         self.play_btn.hide()
         self.play_btn.clicked.connect(self._on_play_clicked)
 
@@ -164,9 +160,7 @@ class PlaylistItem(QWidget):
 
     # ---------- interactions ----------
     def mousePressEvent(self, event):
-        # click on card area (excluding play button) = open playlist
         if event.button() == Qt.LeftButton:
-            # if click NOT inside play button
             if not self.play_btn.geometry().contains(event.pos()):
                 print(f"[UI] open playlist: {self.title_text}")
         super().mousePressEvent(event)
@@ -194,7 +188,7 @@ class NavButton(QPushButton):
         self.setFont(QFont("Segoe UI", 13, QFont.Black))
         self.setCursor(Qt.PointingHandCursor)
 
-        # icons
+        # normal icon
         self.normal_icon = QIcon(self.icon_path)
         self.setIcon(self.normal_icon)
 
@@ -202,12 +196,10 @@ class NavButton(QPushButton):
         active_icon_path = f"{os.path.dirname(self.icon_path)}/active-{os.path.basename(self.icon_path)}"
         if os.path.exists(active_icon_path):
             self.active_icon = QIcon(active_icon_path)
-
         else:
             self.active_icon = self.normal_icon
 
         self.setIconSize(QSize(30, 30))
-
 
         self.setStyleSheet("""
             QPushButton {
@@ -228,7 +220,6 @@ class NavButton(QPushButton):
             }
         """)
 
-
     def activate(self):
         self.setStyleSheet("""
             QPushButton {
@@ -241,7 +232,6 @@ class NavButton(QPushButton):
                 margin-right: 4px;
             }
         """)
-
         self.setIcon(self.active_icon)
 
     def de_activate(self):
@@ -261,7 +251,7 @@ class NavButton(QPushButton):
 
 
 class Sidebar(QFrame):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setFixedWidth(320)
@@ -271,9 +261,7 @@ class Sidebar(QFrame):
         layout.setContentsMargins(12, 8, 8, 8)
         layout.setSpacing(1)
 
-        # ("Explore", False), ("Library", False), ("Upgrade", False)
-
-    
+        # Nav buttons
         home_nav_btn = NavButton(text="Home", icon="./res/home.png")
         layout.addWidget(home_nav_btn)
         home_nav_btn.activate()
@@ -293,17 +281,13 @@ class Sidebar(QFrame):
 
         layout.addSpacing(20)
 
-
         # New Playlist button
-        add_playlist = QPushButton(" New Playlist")       
+        add_playlist = QPushButton(" New Playlist")
         add_playlist.setFixedHeight(55)
-
         add_playlist.setFont(QFont("Segoe UI", 12, QFont.Black))
         add_playlist.setCursor(Qt.PointingHandCursor)
         add_playlist.setIcon(QIcon("./res/plus.png"))
         add_playlist.setIconSize(QSize(22, 22))
-
-
         add_playlist.setStyleSheet("""
             QPushButton {
                 text-align: left;
@@ -326,13 +310,12 @@ class Sidebar(QFrame):
 
         layout.addWidget(add_playlist)
 
-
         layout.addSpacing(20)
 
         playlist_scroll = PlaylistArea()
         layout.addWidget(playlist_scroll)
 
-
+        # demo items
         playlist_scroll.add_playlist(PlaylistItem("Liked Music", "Auto playlist"))
         playlist_scroll.add_playlist(PlaylistItem("EngFav", "Aditya Mukhiya"))
         playlist_scroll.add_playlist(PlaylistItem("Mahadev songs", "Aditya Mukhiya"))
