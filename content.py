@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
     QListWidget, QListView, QAbstractItemView, QMenu
 )
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath
+from PyQt5.QtGui import QFont, QPixmap, QPainter
 
 
 class ScrollArea(QScrollArea):
@@ -76,16 +76,26 @@ class ScrollArea(QScrollArea):
         """)
 
 def applyRoundedImage(label, path, radius=16):
+    pm = QPixmap(path)
+
+    if pm.isNull():
+        return
+    
+    img_w = pm.width() 
+    img_h = pm.height()
+    print("Image Size:", img_w, "x", img_h)
 
     pm = QPixmap(path).scaled(
         label.width(),
         label.height(),
-        Qt.KeepAspectRatioByExpanding,
+        Qt.KeepAspectRatioByExpanding,   # <-- fills full area (cover mode)
         Qt.SmoothTransformation
     )
 
     rounded = QPixmap(label.size())
     rounded.fill(Qt.transparent)
+
+    from PyQt5.QtGui import QPainter, QBrush, QPainterPath
 
     painter = QPainter(rounded)
     painter.setRenderHint(QPainter.Antialiasing)
@@ -109,8 +119,8 @@ class PlaylistCard(QWidget):
         self.title_text = title
         self._active = False
 
-        self.width = 282
-        self.height = 290#220
+        self.width = 272
+        self.height = 260
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self.width, self.height)
@@ -122,7 +132,7 @@ class PlaylistCard(QWidget):
 
 
         self.thumb_width = self.width
-        self.thumb_height = 158#self.height - 40
+        self.thumb_height = 152#self.height - 40
 
 
         self.thumb_container = QFrame()
@@ -134,7 +144,7 @@ class PlaylistCard(QWidget):
             QFrame {
                 border: none;
                 background-color: blue;
-                border-radius: 14px;
+                border-radius: 16px;
             }
         """)
 
@@ -150,13 +160,13 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.thumb_label, "img/2.png", radius=14)
+        applyRoundedImage(self.thumb_label, "img/2.png")
 
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
                 border: none;
                 padding: 0;
-                border-radius: 14px;
+                border-radius: 20px;
             }}
         """)
 
@@ -172,7 +182,7 @@ class PlaylistCard(QWidget):
             QWidget {
                 border: none;
                 background-color: rgba(0,0,0,0.45);
-                border-radius: 14px;
+                border-radius: 16px;
             }
         """)
 
@@ -197,7 +207,7 @@ class PlaylistCard(QWidget):
                 background: transparent;
                 border: none;
                 color: #f5f5f5;
-                font-size: 14px;
+                font-size: 16px;
             }
             QPushButton:hover {
                 background-color: rgba(255,255,255,0.16);
@@ -242,70 +252,35 @@ class PlaylistCard(QWidget):
 
         # ---------- Text ----------
         text_layout = QVBoxLayout()
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(1)
+        text_layout.setContentsMargins(4, 0, 4, 0)
+        text_layout.setSpacing(2)
 
-            
         self.title_lbl = QLabel(title)
-        self.title_lbl.setFont(QFont("Segoe UI", 13))
-        self.title_lbl.setStyleSheet("""
-            QLabel {
-                color: white;
-                background: transparent;
-                padding: 0;
-                font-weight: 600;
-            }
-        """)
-
-        self.title_lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self.title_lbl.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        self.title_lbl.setStyleSheet("color: #ffffff; background: brown;")
         self.title_lbl.setWordWrap(False)
 
-        # # Limit to 2 lines:
-        # metrics = QFontMetrics(self.title_lbl.font())
-        # line_height = metrics.lineSpacing()
-        # max_height = line_height * 2   # for 2 lines
-        # self.title_lbl.setFixedHeight(max_height)
-        # self.title_lbl.setSizePolicy(self.title_lbl.sizePolicy().horizontalPolicy(), 0)
-
-
-        # ----- Subtitle -----
         self.subtitle_lbl = QLabel(subtitle)
-        self.subtitle_lbl.setFont(QFont("Segoe UI", 11))
-        self.subtitle_lbl.setStyleSheet("""
-            QLabel {
-                color: #bebfbd;
-                background: transparent;
-                padding: 0;
-                font-weight: 600;
-            }
-        """)
-        self.subtitle_lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        self.subtitle_lbl.setWordWrap(True)
+        self.subtitle_lbl.setFont(QFont("Segoe UI", 9))
+        self.subtitle_lbl.setStyleSheet("color: #b3b3b3; background: pink;")
+        self.subtitle_lbl.setWordWrap(False)
 
-        metrics = QFontMetrics(self.subtitle_lbl.font())
-        line_height = metrics.lineSpacing()
-        max_height = line_height * 2   # for 2 lines
-        self.subtitle_lbl.setFixedHeight(max_height)
-        self.subtitle_lbl.setSizePolicy(self.subtitle_lbl.sizePolicy().horizontalPolicy(), 0)
-
-        # Add to layout
         text_layout.addWidget(self.title_lbl)
         text_layout.addWidget(self.subtitle_lbl)
-        text_layout.addStretch(1)  # keeps everything pinned to top 
-        main.addLayout(text_layout)
+        # main.addLayout(text_layout)
 
         # active vs normal
         self._normal_style = """
             QWidget {
-                background-color: transparent;
+                background-color: #8f8f8f;
                 border-radius: 16px;
             }
         """
         self._active_style = """
             QWidget {
-                background-color: transparent;
+                background-color: #575252;
                 border-radius: 16px;
-                border: none;
+                border: 1px solid #b36bff;
             }
         """
         self._apply_style()
@@ -486,12 +461,12 @@ class ContentArea(QFrame):
         # keep sections pinned to top if there are few
         main_layout.addStretch(1)
 
-        # sample data  #Dhun (Movie: Saiyaara)
+        # sample data
         self._populate_demo()
 
     def _populate_demo(self):
         self.section_library.add_playlist(
-            "Dhun (Movie: Saiyaara)", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+            "most love song ever in the world and thatt make it special", "Aditya Mukhiya • 13 tracks", thumb="img/2.png"
         )
         # self.section_library.add_playlist(
         #     "threee", "Aditya Mukhiya • 4 tracks", thumb="img/2.png"

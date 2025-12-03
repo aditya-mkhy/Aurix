@@ -10,8 +10,8 @@ from PySide6.QtMultimedia import QMediaPlayer  # for on_engine_state
 # project import
 from sidebar import Sidebar
 from topbar import Topbar
-from bottombar import Bottombar
-from content import ContentArea
+# from bottombar import Bottombar
+# from content import ContentArea
 from util import dark_title_bar
 
 
@@ -50,15 +50,15 @@ class MusicMainWindow(QMainWindow):
         self.sidebar = Sidebar(parent=self)
         middle_layout.addWidget(self.sidebar)
 
-        # mainarea
-        self.content_area = ContentArea()
-        middle_layout.addWidget(self.content_area, 1)
+        # # mainarea
+        # self.content_area = ContentArea()
+        # middle_layout.addWidget(self.content_area, 1)
 
-        outer.addWidget(middle_frame, 1)
+        # outer.addWidget(middle_frame, 1)
 
-        # bottombar
-        self.bottom_bar = Bottombar(parent=self)
-        outer.addWidget(self.bottom_bar)
+        # # bottombar
+        # self.bottom_bar = Bottombar(parent=self)
+        # outer.addWidget(self.bottom_bar)
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)
