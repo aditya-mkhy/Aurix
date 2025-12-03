@@ -1,17 +1,15 @@
 import os
 import sys
-
-from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
+from PyQt5.QtWidgets import (
+    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
     QListWidgetItem, QFileDialog, QApplication
 )
-from PySide6.QtMultimedia import QMediaPlayer  # for on_engine_state
 
 # project import
 from sidebar import Sidebar
 from topbar import Topbar
-# from bottombar import Bottombar
-# from content import ContentArea
+from bottombar import Bottombar
+from content import ContentArea
 from util import dark_title_bar
 
 
@@ -41,6 +39,7 @@ class MusicMainWindow(QMainWindow):
 
         # MIDDLE (sidebar + main content)
         middle_frame = QWidget()
+
         middle_layout = QHBoxLayout(middle_frame)
         middle_layout.setContentsMargins(0, 0, 0, 0)
         middle_layout.setSpacing(0)
@@ -50,20 +49,24 @@ class MusicMainWindow(QMainWindow):
         self.sidebar = Sidebar(parent=self)
         middle_layout.addWidget(self.sidebar)
 
-        # # mainarea
-        # self.content_area = ContentArea()
-        # middle_layout.addWidget(self.content_area, 1)
+        # mainarea
+        self.content_area = ContentArea()
+        middle_layout.addWidget(self.content_area, 1)
 
-        # outer.addWidget(middle_frame, 1)
+        outer.addWidget(middle_frame, 1)
 
-        # # bottombar
-        # self.bottom_bar = Bottombar(parent=self)
-        # outer.addWidget(self.bottom_bar)
+        # bottombar
+        self.bottom_bar = Bottombar(parent=self)
+        outer.addWidget(self.bottom_bar)
+
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)
         # self.engine.durationChanged.connect(self.on_engine_duration)
         # self.engine.stateChanged.connect(self.on_engine_state)
+
+
+
 
     # ===== ENGINE <-> UI HANDLERS (same as before) =====
 
@@ -80,6 +83,7 @@ class MusicMainWindow(QMainWindow):
         self.lbl_total_time.setText(self.format_time(dur_ms))
 
     def on_engine_state(self, state: int):
+        from PyQt5.QtMultimedia import QMediaPlayer
         if state == QMediaPlayer.PlayingState:
             self.btn_play.setText("⏸")
         else:
@@ -98,9 +102,7 @@ class MusicMainWindow(QMainWindow):
             return
         for path in files:
             self.playlist_paths.append(path)
-            self.playlist_widget.addItem(
-                QListWidgetItem(os.path.basename(path))
-            )
+            self.playlist_widget.addItem(QListWidgetItem(os.path.basename(path)))
         if self.current_index == -1 and self.playlist_paths:
             self.play_track_at(0)
 
@@ -146,9 +148,10 @@ class MusicMainWindow(QMainWindow):
         return f"{m:02d}:{s:02d}"
 
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = MusicMainWindow()
     win.show()
     dark_title_bar(win)   # make Windows title bar dark
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
