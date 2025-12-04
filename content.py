@@ -188,8 +188,8 @@ class PlaylistCard(QWidget):
         """)
 
         self.thumb_container.setStyleSheet("border: none; background: green;")
-        # self.thumb_container.enterEvent = self.on_enter
-        # self.thumb_container.leaveEvent = self.on_leave
+        self.thumb_container.enterEvent = self.on_enter
+        self.thumb_container.leaveEvent = self.on_leave
 
         thumb_layout = QVBoxLayout(self.thumb_container)
         thumb_layout.setContentsMargins(0, 0, 0, 0)
@@ -273,7 +273,7 @@ class PlaylistCard(QWidget):
         ov.addWidget(self.play_btn, 0, Qt.AlignHCenter)
         ov.addStretch(2)
 
-        # self.overlay.hide()
+        self.overlay.hide()
 
         main.addWidget(self.thumb_container, 0, Qt.AlignTop)
 
@@ -336,8 +336,9 @@ class PlaylistCard(QWidget):
         # active vs normal
         self._normal_style = """
             QWidget {
-                background-color: red;
+                background-color: transparent;
                 border-radius: 16px;
+                border: none;
             }
         """
         self._active_style = """
@@ -347,7 +348,6 @@ class PlaylistCard(QWidget):
                 border: none;
             }
         """
-        self.set_active(True)
         self._apply_style()
         
 
@@ -360,6 +360,7 @@ class PlaylistCard(QWidget):
         self.menu.addSeparator()
         self.menu.addAction("Remove playlist",
                             lambda: print(f"[MENU] Remove: {self.title_text}"))
+        
 
     def set_active(self, active: bool):
         self._active = active
