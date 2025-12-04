@@ -3,18 +3,18 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
 
 class PlayerEngine(QObject):
-    positionChanged = pyqtSignal(int)
-    durationChanged = pyqtSignal(int)
-    stateChanged = pyqtSignal(int)
+    # positionChanged = pyqtSignal(int)
+    # durationChanged = pyqtSignal(int)
+    # stateChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.player = QMediaPlayer()
         self.current_path = None
 
-        self.player.positionChanged.connect(self.positionChanged)
-        self.player.durationChanged.connect(self.durationChanged)
-        self.player.stateChanged.connect(self.stateChanged)
+        # self.player.positionChanged.connect(self.positionChanged)
+        # self.player.durationChanged.connect(self.durationChanged)
+        # self.player.stateChanged.connect(self.stateChanged)
 
     def load(self, path: str):
         """Load a file and be ready to play."""
@@ -51,3 +51,12 @@ class PlayerEngine(QObject):
 
     def position(self):
         return self.player.position()
+
+
+if __name__ == "__main__":
+    eng = PlayerEngine()
+    path = "C:\\Users\\freya\\Music\\Barbaad Song Saiyaara Ahaan Panday, Aneet Padda The Rish Jubin Nautiyal.mp3"
+    eng.load(path)
+    eng.play()
+    import time
+    time.sleep(20)

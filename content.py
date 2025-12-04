@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
 from info import get_info
+import webbrowser
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -177,10 +178,11 @@ class ClickableOverlay(QWidget):
 class PlaylistCard(QWidget):
 
     def __init__(self, title: str, subtitle: str = "",
-                 thumbnail_path: str = None, parent=None):
+                 thumbnail_path: str = None, mp3_path=None, parent=None):
         super().__init__(parent)
         self.title_text = title
         self._active = False
+        self.mp3_path = mp3_path
 
         self.width = 282
         self.height = 292#220
@@ -439,7 +441,12 @@ class PlaylistCard(QWidget):
         self._apply_style()
 
     def _on_play_clicked(self):
-        print(f"[UI] play playlist: {self.title_text}")
+        if not self.mp3_path:
+            print(f"[UI] play playlist: {self.title_text}")
+            return
+        
+        print(f"Playing Song : {self.mp3_path}")
+        webbrowser.open(self.mp3_path)
 
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
@@ -486,9 +493,9 @@ class PlaylistGrid(QListWidget):
 
         # self.itemClicked.connect(self._on_item_clicked)
 
-    def add_playlist(self, title, subtitle="", thumb=None):
+    def add_playlist(self, title, subtitle="", thumb=None, mp3_path = None):
         item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle, thumbnail_path=thumb)
+        tile = PlaylistCard(title, subtitle, thumbnail_path=thumb, mp3_path = mp3_path)
         item.setSizeHint(tile.size() + QSize(30, 30))
         self.addItem(item)
         self.setItemWidget(item, tile)
@@ -552,8 +559,8 @@ class PlaylistSection(QWidget):
         self.grid = PlaylistGrid()
         layout.addWidget(self.grid)
 
-    def add_playlist(self, title, subtitle="", thumb=None):
-        self.grid.add_playlist(title, subtitle, thumb)
+    def add_playlist(self, title, subtitle, thumb, mp3_path):
+        self.grid.add_playlist(title, subtitle, thumb, mp3_path)
 
 
 
@@ -599,7 +606,7 @@ class ContentArea(QFrame):
         info = get_info()
 
         for song in info:
-            self.section_library.add_playlist(song[0], song[1], song[2])
+            self.section_library.add_playlist(song[0], song[1], song[2], song[3])
 
 
     def _populate_demo(self):

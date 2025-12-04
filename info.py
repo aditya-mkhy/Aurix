@@ -88,7 +88,7 @@ def get_info() -> list:
         full_path = os.path.join(path, file)
 
         info, img_path = extract_tags_and_cover(full_path, save_dir)
-        info_list.append([info['title'], info['publisher'], img_path])
+        info_list.append([info['title'], info['publisher'], img_path, full_path])
 
     return info_list
 
