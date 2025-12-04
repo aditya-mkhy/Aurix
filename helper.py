@@ -21,9 +21,11 @@ class LocalFilesLoader(QThread):
     config_one = pyqtSignal(str, str, str, QPixmap)
     finished = pyqtSignal(bool)
 
-    def __init__(self, music_dirs: list = [],parent = None):
+    def __init__(self, music_dirs: list = None, parent = None):
         super().__init__(parent)
         self.music_dirs = self._ensure_list(music_dirs)
+        self.sleep_on_count = 10
+        self.count = 0
 
     def _ensure_list(self, x):
         if x is None:
@@ -49,7 +51,7 @@ class LocalFilesLoader(QThread):
         self.finished.emit(True)
 
     def _is_mp3(self, path: str):
-        return os.path.splitext(path)[1] == ".mp3"
+        return os.path.splitext(path)[1].lower() == ".mp3"
         
 
     def _list_music(self, directory: str):
@@ -63,6 +65,14 @@ class LocalFilesLoader(QThread):
     def _add_song(self, path: str):
         if not self._is_mp3(path):
             return
+        
+        # giving time to lead the window fully then add files...
+        if self.count != -1:
+            self.count += 1
+            print(self.count)
+            if self.count > 6:
+                QThread.sleep(2)
+                self.count = -1
                 
         tags = ID3(path)
 
@@ -92,4 +102,5 @@ class LocalFilesLoader(QThread):
                 pix = QPixmap()
                 pix.loadFromData(frame.data)
                 self.config_one.emit(title, publisher, path, pix)
+                # song with cover is uselesss... 
                 break
