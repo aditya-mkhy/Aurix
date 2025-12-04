@@ -2,7 +2,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QAbstractItemView, QMenu
+    QListWidget, QListView, QAbstractItemView, QMenu, 
+    QSizePolicy, 
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath
 
@@ -110,11 +111,11 @@ class PlaylistCard(QWidget):
         self._active = False
 
         self.width = 282
-        self.height = 290#220
+        self.height = 292#220
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self.width, self.height)
-        self.setStyleSheet("border: none; background-color: red;")
+        self.setStyleSheet("border: none;")
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
@@ -247,30 +248,30 @@ class PlaylistCard(QWidget):
 
             
         self.title_lbl = QLabel(title)
-        self.title_lbl.setFont(QFont("Segoe UI", 14))
+        self.title_lbl.setFont(QFont("Segoe UI", 15))
         self.title_lbl.setStyleSheet("""
             QLabel {
                 color: white;
                 background: transparent;
                 padding: 0;
-                font-weight: 600;
+                font-weight: 550;
             }
         """)
-
         self.title_lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        self.title_lbl.setWordWrap(False)
+        self.title_lbl.setWordWrap(True)
 
-        # # Limit to 2 lines:
-        # metrics = QFontMetrics(self.title_lbl.font())
-        # line_height = metrics.lineSpacing()
-        # max_height = line_height * 2   # for 2 lines
-        # self.title_lbl.setFixedHeight(max_height)
-        # self.title_lbl.setSizePolicy(self.title_lbl.sizePolicy().horizontalPolicy(), 0)
+        # limit to 2 lines
+        fm = QFontMetrics(self.title_lbl.font())
+        line_height = fm.lineSpacing()
+        max_height = line_height * 2
+
+        self.title_lbl.setMaximumHeight(max_height)
+        self.title_lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
 
         # ----- Subtitle -----
         self.subtitle_lbl = QLabel(subtitle)
-        self.subtitle_lbl.setFont(QFont("Segoe UI", 11))
+        self.subtitle_lbl.setFont(QFont("Segoe UI", 10))
         self.subtitle_lbl.setStyleSheet("""
             QLabel {
                 color: #bebfbd;
@@ -282,11 +283,13 @@ class PlaylistCard(QWidget):
         self.subtitle_lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.subtitle_lbl.setWordWrap(True)
 
-        metrics = QFontMetrics(self.subtitle_lbl.font())
-        line_height = metrics.lineSpacing()
-        max_height = line_height * 2   # for 2 lines
-        self.subtitle_lbl.setFixedHeight(max_height)
-        self.subtitle_lbl.setSizePolicy(self.subtitle_lbl.sizePolicy().horizontalPolicy(), 0)
+        # limit to 2 lines
+        fm = QFontMetrics(self.subtitle_lbl.font())
+        line_height = fm.lineSpacing()
+        max_height = line_height * 2
+
+        self.subtitle_lbl.setMaximumHeight(max_height)
+        self.subtitle_lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # Add to layout
         text_layout.addWidget(self.title_lbl)
@@ -297,7 +300,7 @@ class PlaylistCard(QWidget):
         # active vs normal
         self._normal_style = """
             QWidget {
-                background-color: transparent;
+                background-color: red;
                 border-radius: 16px;
             }
         """
@@ -491,11 +494,11 @@ class ContentArea(QFrame):
 
     def _populate_demo(self):
         self.section_library.add_playlist(
-            "Dhun (Movie: Saiyaara)", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
         )
 
         self.section_library.add_playlist(
-            "Main Rahoon Ya Na Rahoon", "Song • Ghulshan Kumar", thumb="img/1.png"
+            "Main Rahoon Ya Na Rahoon", "Song • Ghulshan Kumar with palak muchaal and loving the palak thakur an she is the girl", thumb="img/1.png"
         )
 
         # self.section_library.add_playlist(
