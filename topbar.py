@@ -321,9 +321,10 @@ class SearchBox(QWidget):
 
 
 class Topbar(QFrame):
-    def __init__(self, parent = None):
+    def __init__(self, parent = None, search_callback = None):
         super().__init__(parent)
 
+        self.search_callback = search_callback
         self.setFixedHeight(90)
         self.setStyleSheet("background-color: #000000; border-bottom: 1px solid #262626;")
 
@@ -388,6 +389,9 @@ class Topbar(QFrame):
         # Center: search bar
         self.search_box = SearchBox()
         layout.addWidget(self.search_box)
+
+        if self.search_callback != None:
+            self.search_box.searchTriggered.connect(self.search_callback)
 
         # Add spacer before the profile button
         layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum))

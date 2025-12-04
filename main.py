@@ -34,7 +34,7 @@ class MusicMainWindow(QMainWindow):
         outer.setSpacing(0)
 
         # Topbar - logo and searchbox
-        self.top_bar = Topbar(parent=self)
+        self.top_bar = Topbar(parent=self, search_callback=self.search_call)
         outer.addWidget(self.top_bar)
 
         # MIDDLE (sidebar + main content)
@@ -70,10 +70,16 @@ class MusicMainWindow(QMainWindow):
         outer.addWidget(self.bottom_bar)
 
 
+
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)
         # self.engine.durationChanged.connect(self.on_engine_duration)
         # self.engine.stateChanged.connect(self.on_engine_state)
+
+    def search_call(self, query: str):
+        print(f"Search Query : {query}")
+        self.yt_screen.search_call(query)
+
 
     # call this fun when nav button clicked...
     def _nav_call(self, name: str):

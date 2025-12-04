@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
@@ -12,6 +12,32 @@ import webbrowser
 from player import MusicPlayer
 
 from ytmusicapi import YTMusic
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QByteArray
+import requests
+
+
+class FetchImage(QThread):
+    finished = pyqtSignal(QPixmap, object)
+
+    def __init__(self, url: str, radius: int, parent=None):
+        super().__init__(parent)
+        self.url = url
+        self.radius = radius
+
+    def run(self):
+        try:
+            resp = requests.get(self.url, timeout=10)
+            resp.raise_for_status()
+            pix = QPixmap()
+            ok = pix.loadFromData(resp.content)
+            print("Loaded?", ok, "from", self.url)
+
+            self.finished.emit(pix, self.radius)
+
+        except Exception as e:
+            self.finished.emit(QPixmap(), self.radius)
+
 
 
 class HoverButton(QPushButton):
@@ -130,29 +156,6 @@ class ScrollArea(QScrollArea):
             }
         """)
 
-def applyRoundedImage(label, path, radius=16):
-
-    pm = QPixmap(path).scaled(
-        label.width(),
-        label.height(),
-        Qt.KeepAspectRatioByExpanding,
-        Qt.SmoothTransformation
-    )
-
-    rounded = QPixmap(label.size())
-    rounded.fill(Qt.transparent)
-
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, label.width(), label.height(), radius, radius)
-
-    painter.setClipPath(path)
-    painter.drawPixmap(0, 0, pm)
-    painter.end()
-
-    label.setPixmap(rounded)
 
 
 class HoverFrame(QFrame):
@@ -182,15 +185,15 @@ class ClickableOverlay(QWidget):
 class PlaylistCard(QWidget):
 
     def __init__(self, title: str, subtitle: str = "",
-                 thumbnail_path: str = None, mp3_path=None, play_callback = None, parent=None):
+                 thumbnail_url: str = None, url=None, play_callback = None, parent=None):
         super().__init__(parent)
         self.title_text = title
         self._active = False
-        self.mp3_path = mp3_path
+        self.url = url
         self.play_callback = play_callback
 
         self.width = 282
-        self.height = 292#220
+        self.height = 500#220
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self.width, self.height)
@@ -203,7 +206,7 @@ class PlaylistCard(QWidget):
 
 
         self.thumb_width = self.width
-        self.thumb_height = 158#self.height - 40
+        self.thumb_height = self.height - 134
 
 
         self.thumb_container = HoverFrame(enter_event=self.on_enter, leave_event=self.on_leave)
@@ -229,8 +232,11 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.thumb_label, thumbnail_path, radius=14)
 
+        self.img_thread = FetchImage(thumbnail_url, radius=14, parent=self)
+        self.img_thread.finished.connect(self.apply_image)
+        self.img_thread.start()
+    
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
                 border: none;
@@ -426,7 +432,38 @@ class PlaylistCard(QWidget):
         """)
 
 
-                
+    def apply_image(self, pixmap: QPixmap, radius: int = 14):
+        print(f"applyinh image to label : {self.title_lbl} and pixmap => {pixmap}")
+        if pixmap.isNull():
+            print(f"I am nulll ")
+            return
+        
+        pm = pixmap.scaled(
+            self.thumb_label.width(),
+            self.thumb_label.height(),
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation
+        )
+
+        rounded = QPixmap(self.thumb_label.size())
+        rounded.fill(Qt.transparent)
+
+        painter = QPainter(rounded)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        path = QPainterPath()
+        path.addRoundedRect(0, 0, self.thumb_label.width(), self.thumb_label.height(), radius, radius)
+
+        painter.setClipPath(path)
+        painter.drawPixmap(0, 0, pm)
+        painter.end()
+
+        self.thumb_label.setPixmap(rounded)
+
+        self.img_thread.deleteLater()
+
+        print(f"Image applid for title : {self.title_lbl}")
+
 
     def set_active(self, active: bool):
         self._active = active
@@ -451,7 +488,7 @@ class PlaylistCard(QWidget):
             return
         
         if self.play_callback:
-            self.play_callback(self.mp3_path)
+            self.play_callback(self.url)
 
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
@@ -498,9 +535,9 @@ class PlaylistGrid(QListWidget):
 
         # self.itemClicked.connect(self._on_item_clicked)
 
-    def add_playlist(self, title, subtitle="", thumb=None, mp3_path = None, play_callback = None):
+    def add_playlist(self, title, subtitle="", thumbnail_url=None, url = None, play_callback = None):
         item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle, thumbnail_path=thumb, mp3_path = mp3_path, play_callback = play_callback)
+        tile = PlaylistCard(title, subtitle, thumbnail_url=thumbnail_url, url = url, play_callback = play_callback)
         item.setSizeHint(tile.size() + QSize(30, 30))
         self.addItem(item)
         self.setItemWidget(item, tile)
@@ -564,17 +601,16 @@ class PlaylistSection(QWidget):
         self.grid = PlaylistGrid()
         layout.addWidget(self.grid)
 
-    def add_playlist(self, title, subtitle, thumb, mp3_path, play_callback = None):
-        self.grid.add_playlist(title, subtitle, thumb, mp3_path, play_callback = play_callback)
+    def add_playlist(self, title, subtitle, thumbnail_url, url, play_callback = None):
+        self.grid.add_playlist(title, subtitle, thumbnail_url, url, play_callback = play_callback)
 
 
 
 class YtScreen(QFrame):
-    def __init__(self, parent=None, search_call: str = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.yt_search = YTSearch()
-        self.search_call = search_call
+        self.yt_music = YTMusic()
 
         # outer layout sits on ContentArea itself
         outer = QVBoxLayout(self)
@@ -597,48 +633,91 @@ class YtScreen(QFrame):
         main_layout.setSpacing(32)
 
         # Section 1
-        self.section_library = PlaylistSection("YT Music")
-        main_layout.addWidget(self.section_library)
+        self.yt_section = PlaylistSection("YT Music")
+        main_layout.addWidget(self.yt_section)
 
 
         main_layout.addStretch(1)
 
-        self.player = MusicPlayer()
-        self.player.set_volume(0.6)
 
-    def search(self):
-        pass
+    def config_search(self, result: list):
+        print(f"Search Done : TotalResutl => {len(result)}")
+
+        for item in result:
+            title = item["title"]
+            subtitle = item["subtitle"]
+            url = f"https://music.youtube.com/watch?v={item['videoId']}"
+            thumbnail_url = item["thumbnail_url"]
+
+            self.yt_section.add_playlist(title, subtitle, thumbnail_url, url, self.play_song)
+
+        thread = self.sender()
+        print(f"done thread_id ==> {thread}")
+
+        if hasattr(self, "_search_threads") and thread in self._search_threads:
+            self._search_threads.remove(thread)
+
+        thread.deleteLater()
 
 
-    def play_song(self, path: str = None):
-        if not path:
+    def search_call(self, query: str):
+        print(f"YTSearch Query : {query}")
+
+        thread = YTSearchThread(yt_music=self.yt_music, query=query, parent=self)
+        thread.finished.connect(self.config_search)
+        thread.start()
+        print(f"start thread_id ==> {thread}")
+
+        if not hasattr(self, "_search_threads"):
+            self._search_threads = []
+        self._search_threads.append(thread)
+
+
+
+    def play_song(self, url: str = None):
+        if not url:
             print(f"Path is empty")
             return
         
-        print(f"Playing : {path}")
-        # webbrowser.open(path)
-        self.player.play(path)
+        print(f" Playing URL : {url}")
+        webbrowser.open(url)
 
 
   
-class YTSearch():
-    def __init__(self):
+class YTSearchThread(QThread):
+    finished = pyqtSignal(list)
+
+    def __init__(self, yt_music: YTMusic, query: str, parent = None):
+        super().__init__(parent)
+
         self.filter = "songs"
-        self.limit = 30
+        self.limit = 1
         self.thumbnail_size = 120
-        self.yt = YTMusic()
+        self.yt_music = yt_music
+        self.query = query
+
+    def run(self):
+        try:
+            results = self.search()
+            self.finished.emit(results)
+        except:
+            self.finished.emit([])
 
 
-    def search(self, query: str) -> list:
-        results = self.yt.search(
-            query, 
+    def search(self) -> list:
+        results = self.yt_music.search(
+            self.query, 
             filter=self.filter, 
             limit=self.limit,
         )
 
         custom_result = []
+        count = 0
 
         for item in results:
+            if count >= self.limit:
+                break
+
             thumbnail_url = ""
 
             for thumbnail in item["thumbnails"]:
@@ -659,5 +738,6 @@ class YTSearch():
                 "videoId" : item["videoId"]
             })
 
+            count += 1
 
         return custom_result
