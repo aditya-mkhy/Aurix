@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
@@ -149,6 +149,29 @@ def applyRoundedImage(label, path, radius=16):
     label.setPixmap(rounded)
 
 
+class HoverFrame(QFrame):
+    def __init__(self, enter_event, leave_event, parent=None):
+        super().__init__(parent)
+        self.enter_event_call = enter_event
+        self.leave_event_call = leave_event
+
+    def enterEvent(self, event):
+        self.enter_event_call()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.leave_event_call()
+        super().leaveEvent(event)
+
+
+
+class ClickableOverlay(QWidget):
+    clicked = pyqtSignal()
+
+    def mouseReleaseEvent(self, event):
+        self.clicked.emit()
+        super().mouseReleaseEvent(event)
+
 
 class PlaylistCard(QWidget):
 
@@ -174,7 +197,7 @@ class PlaylistCard(QWidget):
         self.thumb_height = 158#self.height - 40
 
 
-        self.thumb_container = QFrame()
+        self.thumb_container = HoverFrame(enter_event=self.on_enter, leave_event=self.on_leave)
         self.thumb_container.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_container.setFrameShape(QFrame.NoFrame)
         self.thumb_container.setAttribute(Qt.WA_StyledBackground, True) #333333
@@ -188,8 +211,6 @@ class PlaylistCard(QWidget):
         """)
 
         self.thumb_container.setStyleSheet("border: none; background: green;")
-        self.thumb_container.enterEvent = self.on_enter
-        self.thumb_container.leaveEvent = self.on_leave
 
         thumb_layout = QVBoxLayout(self.thumb_container)
         thumb_layout.setContentsMargins(0, 0, 0, 0)
@@ -214,9 +235,11 @@ class PlaylistCard(QWidget):
 
 
         # Overlay
-        self.overlay = QWidget(self.thumb_container)
+        self.overlay = ClickableOverlay(self.thumb_container)
         self.overlay.setGeometry(0, 0, self.thumb_width, self.thumb_height)
         self.overlay.setAttribute(Qt.WA_StyledBackground, True)
+        self.overlay.setCursor(Qt.PointingHandCursor)
+        self.overlay.clicked.connect(self._on_clicked)
         self.overlay.setStyleSheet("""
             QWidget {
                 border: none;
@@ -372,17 +395,18 @@ class PlaylistCard(QWidget):
         else:
             self.setStyleSheet(self._normal_style)
 
-    def on_enter(self, event):
+    def on_enter(self):
         self.overlay.show()
-        # self.thumb_container.enterEvent(event)
 
-    def on_leave(self, event):
+    def on_leave(self):
         self.overlay.hide()
         self._apply_style()
-        # self.thumb_container.leaveEvent(event)
 
     def _on_play_clicked(self):
         print(f"[UI] play playlist: {self.title_text}")
+
+    def _on_clicked(self):
+        print(f"[UI] open playlist: {self.title_text}")
 
     def _on_menu_clicked(self):
         pos = self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight())
@@ -422,7 +446,7 @@ class PlaylistGrid(QListWidget):
         self.setDropIndicatorShown(False)
         self.setDragDropMode(QAbstractItemView.InternalMove)
 
-        self.itemClicked.connect(self._on_item_clicked)
+        # self.itemClicked.connect(self._on_item_clicked)
 
     def add_playlist(self, title, subtitle="", thumb=None):
         item = QListWidgetItem()
