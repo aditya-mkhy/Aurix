@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
+from info import get_info
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -592,7 +593,14 @@ class ContentArea(QFrame):
         main_layout.addStretch(1)
 
         # sample data  #Dhun (Movie: Saiyaara)
-        self._populate_demo()
+        self.add_real()
+
+    def add_real(self):
+        info = get_info()
+
+        for song in info:
+            self.section_library.add_playlist(song[0], song[1], song[2])
+
 
     def _populate_demo(self):
         self.section_library.add_playlist(
