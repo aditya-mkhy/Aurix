@@ -3,6 +3,20 @@ import os
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap
 
+def get_pixmap(path: str):
+    if not os.path.isfile:
+        return QPixmap()
+    
+    tags = ID3(path)
+    for frame in tags.values():
+        if isinstance(frame, APIC):
+            pix = QPixmap()
+            pix.loadFromData(frame.data)
+            return pix
+        
+    return QPixmap()
+
+
 class LocalFilesLoader(QThread):
     config_one = pyqtSignal()
     finished = pyqtSignal(bool)

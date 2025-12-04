@@ -127,9 +127,9 @@ class ScrollArea(QScrollArea):
             }
         """)
 
-def applyRoundedImage(label, path, radius=16):
+def applyRoundedImage(label, pix: QPixmap, radius=16):
 
-    pm = QPixmap(path).scaled(
+    pm = pix.scaled(
         label.width(),
         label.height(),
         Qt.KeepAspectRatioByExpanding,
@@ -178,12 +178,12 @@ class ClickableOverlay(QWidget):
 
 class PlaylistCard(QWidget):
 
-    def __init__(self, title: str, subtitle: str = "",
-                 thumbnail_path: str = None, mp3_path=None, play_callback = None, parent=None):
+    def __init__(self, title: str, subtitle_text: str, path: str, pix: QPixmap, play_callback=None, parent=None):
         super().__init__(parent)
         self.title_text = title
+        self.subtitle_text = subtitle_text
         self._active = False
-        self.mp3_path = mp3_path
+        self.mp3_path = path
         self.play_callback = play_callback
 
         self.width = 282
@@ -226,7 +226,7 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.thumb_label, thumbnail_path, radius=14)
+        applyRoundedImage(self.thumb_label, pix, radius=14)
 
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
@@ -495,9 +495,9 @@ class PlaylistGrid(QListWidget):
 
         # self.itemClicked.connect(self._on_item_clicked)
 
-    def add_playlist(self, title, subtitle="", thumb=None, mp3_path = None, play_callback = None):
+    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None):
         item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle, thumbnail_path=thumb, mp3_path = mp3_path, play_callback = play_callback)
+        tile = PlaylistCard(title, subtitle_text, path, pix, play_callback=play_callback, parent=self)
         item.setSizeHint(tile.size() + QSize(30, 30))
         self.addItem(item)
         self.setItemWidget(item, tile)
@@ -561,13 +561,13 @@ class PlaylistSection(QWidget):
         self.grid = PlaylistGrid()
         layout.addWidget(self.grid)
 
-    def add_playlist(self, title, subtitle, thumb, mp3_path, play_callback = None):
-        self.grid.add_playlist(title, subtitle, thumb, mp3_path, play_callback = play_callback)
+    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None):
+        self.grid.add_playlist(title, subtitle_text, path, pix, play_callback = play_callback)
 
 
 
 class ContentArea(QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, parent = None, music_dirs: list = None):
         super().__init__(parent)
 
         # outer layout sits on ContentArea itself
@@ -604,7 +604,11 @@ class ContentArea(QFrame):
         self.player = MusicPlayer()
         self.player.set_volume(0.6)
 
-        self
+        # load local mp3 files....
+        self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
+        self.local_file_loader.config_one.connect(self.add_item)
+        self.local_file_loader.finished.connect(self._finish_adding_loc_files)
+        self.local_file_loader.start()
 
     def play_song(self, path: str = None):
         if not path:
@@ -612,67 +616,21 @@ class ContentArea(QFrame):
             return
         
         print(f"Playing : {path}")
-        # webbrowser.open(path)
         self.player.play(path)
 
-    def add_item(self, path, thumbnail_path, title, subtitle_text, play = False):
+    def _finish_adding_loc_files(self, status):
+        if status:
+            print(f"All Local Files added sucessfully")
+        else:
+            print("Maybe some Error in loading local files..")
 
-        self.section_library.add_playlist(title, subtitle_text, thumbnail_path, path, play_callback=self.play_song)
-        print("path---> ", path)
-        
+        self.local_file_loader.deleteLater()
+
+
+    def add_item(self, title, subtitle_text, path, pix, play = False):
+        self.section_library.add_playlist(title, subtitle_text, path, pix, play_callback=self.play_song)
+
         if play:
             self.play_song(path)
-        
 
-
-    def add_real(self):
-        info = get_info()
-
-        for song in info:
-            self.section_library.add_playlist(song[0], song[1], song[2], song[3], play_callback=self.play_song)
-
-
-    def _populate_demo(self):
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-
-        self.section_library.add_playlist(
-            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
-        )
-
-        self.section_library.add_playlist(
-            "Main Rahoon Ya Na Rahoon", "Song • Ghulshan Kumar with palak muchaal and loving the palak thakur an she is the girl", thumb="img/1.png"
-        )
-
-        # self.section_library.add_playlist(
-        #     "EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/1.png"
-        # )
-
-        # self.section_featured.add_playlist(
-        #     "Band Baaja Baraat", "Wedding • Mix", thumb="img/2.png"
-        # )
-        # self.section_featured.add_playlist(
-        #     "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
-        # )
 
