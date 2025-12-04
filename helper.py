@@ -18,7 +18,7 @@ def get_pixmap(path: str):
 
 
 class LocalFilesLoader(QThread):
-    config_one = pyqtSignal()
+    config_one = pyqtSignal(str, str, str, QPixmap)
     finished = pyqtSignal(bool)
 
     def __init__(self, music_dirs: list = [],parent = None):
@@ -64,6 +64,8 @@ class LocalFilesLoader(QThread):
         if not self._is_mp3(path):
             return
         
+        print(f"Path===: --> {path}")
+        
         tags = ID3(path)
 
         def _get_text(tag_id):
@@ -73,7 +75,7 @@ class LocalFilesLoader(QThread):
             return None
         
         title = _get_text("TIT2")
-        publisher = _get_text("TPUB"),
+        publisher = _get_text("TPUB")
 
         # info = {
         #     "title":   _get_text("TIT2"),
@@ -91,5 +93,6 @@ class LocalFilesLoader(QThread):
             if isinstance(frame, APIC):
                 pix = QPixmap()
                 pix.loadFromData(frame.data)
+                print(f"Args===> {title, publisher, path, pix}")
                 self.config_one.emit(title, publisher, path, pix)
                 break

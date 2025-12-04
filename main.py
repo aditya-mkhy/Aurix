@@ -17,6 +17,7 @@ from yt import YtScreen
 def get_music_path(paths: list = []):
     default_music_path = os.path.join(Path.home(), "Music")
     paths.append(default_music_path)
+    return paths
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
@@ -26,6 +27,8 @@ class MusicMainWindow(QMainWindow):
         self.setStyleSheet("background-color: #000000;")
 
         music_dirs = get_music_path()
+
+        print(music_dirs)
 
         # ---- engine & playlist state ----
         # self.engine = PlayerEngine(self)
