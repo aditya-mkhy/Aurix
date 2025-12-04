@@ -15,7 +15,7 @@ from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QByteArray
 import requests
-
+from tube import Dtube
 
 class FetchImage(QThread):
     finished = pyqtSignal(QPixmap, object)
@@ -31,7 +31,6 @@ class FetchImage(QThread):
             resp.raise_for_status()
             pix = QPixmap()
             ok = pix.loadFromData(resp.content)
-            print("Loaded?", ok, "from", self.url)
 
             self.finished.emit(pix, self.radius)
 
@@ -188,6 +187,7 @@ class PlaylistCard(QWidget):
                  thumbnail_url: str = None, url=None, play_callback = None, parent=None):
         super().__init__(parent)
         self.title_text = title
+        self.subtitle_text = subtitle
         self._active = False
         self.url = url
         self.play_callback = play_callback
@@ -345,7 +345,7 @@ class PlaylistCard(QWidget):
 
 
         # ----- Subtitle -----
-        self.subtitle_lbl = QLabel(subtitle)
+        self.subtitle_lbl = QLabel(self.subtitle_text)
         self.subtitle_lbl.setFont(QFont("Segoe UI", 10))
         self.subtitle_lbl.setStyleSheet("""
             QLabel {
@@ -434,7 +434,6 @@ class PlaylistCard(QWidget):
 
 
     def apply_image(self, pixmap: QPixmap, radius: int = 14):
-        print(f"applyinh image to label : {self.title_lbl} and pixmap => {pixmap}")
         if pixmap.isNull():
             print(f"I am nulll ")
             return
@@ -463,7 +462,6 @@ class PlaylistCard(QWidget):
 
         self.img_thread.deleteLater()
 
-        print(f"Image applid for title : {self.title_lbl}")
 
 
     def set_active(self, active: bool):
@@ -489,7 +487,7 @@ class PlaylistCard(QWidget):
             return
         
         if self.play_callback:
-            self.play_callback(self.url)
+            self.play_callback(self.url, self.title_text, self.subtitle_text)
 
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
@@ -608,10 +606,11 @@ class PlaylistSection(QWidget):
 
 
 class YtScreen(QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, _add_home_callback = None):
         super().__init__(parent)
 
         self.yt_music = YTMusic()
+        self._add_home_callback = _add_home_callback
 
         # outer layout sits on ContentArea itself
         outer = QVBoxLayout(self)
@@ -650,7 +649,7 @@ class YtScreen(QFrame):
             url = f"https://music.youtube.com/watch?v={item['videoId']}"
             thumbnail_url = item["thumbnail_url"]
 
-            self.yt_section.add_playlist(title, subtitle, thumbnail_url, url, self.play_song)
+            self.yt_section.add_playlist(title, subtitle, thumbnail_url, url, self.download_song)
 
         thread = self.sender()
         print(f"done thread_id ==> {thread}")
@@ -673,16 +672,33 @@ class YtScreen(QFrame):
             self._search_threads = []
         self._search_threads.append(thread)
 
+    def download_finished(self, path:str, thumbnail_path: str, title: str = None, subtitle_text: str = None):
+        print(f"FileDownloaded : {path}")
+        self._add_home_callback(path, thumbnail_path, title, subtitle_text, play = True)
+
+        thread = self.sender()
+
+        if hasattr(self, "_down_threads") and thread in self._down_threads:
+            self._down_threads.remove(thread)
+
+        thread.deleteLater()
 
 
-    def play_song(self, url: str = None):
+    def download_song(self, url: str = None, title: str = None, subtitle_text: str = None):
+
         if not url:
             print(f"Path is empty")
             return
         
-        print(f" Playing URL : {url}")
-        webbrowser.open(url)
+        print(f" Downloading Song : {title}  =>  {url}")
+        thread = Dtube(title=title, url=url, subtitle_text=subtitle_text, parent=self)
+        thread.finished.connect(self.config_search)
+        thread.start()
+        print(f"start thread_id ==> {thread}")
 
+        if not hasattr(self, "_down_threads"):
+            self._down_threads = []
+        self._down_threads.append(thread)
 
   
 class YTSearchThread(QThread):

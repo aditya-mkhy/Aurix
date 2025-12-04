@@ -69,7 +69,9 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar = Bottombar(parent=self)
         outer.addWidget(self.bottom_bar)
 
-
+    def _add_home_callback(self, path, thumbnail_path, title, subtitle_text, play = False):
+        self.home_screen.add_item(title, subtitle_text, thumbnail_path, path, play=play)
+        
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)

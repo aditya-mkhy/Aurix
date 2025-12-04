@@ -616,6 +616,13 @@ class ContentArea(QFrame):
         # webbrowser.open(path)
         self.player.play(path)
 
+    def add_item(self, title, subtitle, thumbnail_path: str, path: str, play = False):
+        self.section_library.add_playlist(title, subtitle, thumbnail_path, path, play_callback=self.play_song)
+        
+        if play:
+            self.play_song(path)
+        
+
 
     def add_real(self):
         info = get_info()
