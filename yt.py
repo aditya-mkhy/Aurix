@@ -487,7 +487,7 @@ class PlaylistCard(QWidget):
             return
         
         if self.play_callback:
-            self.play_callback(self.url, self.title_text, self.subtitle_text)
+            self.play_callback(title = self.title_text, subtitle_text = self.subtitle_text, url = self.url)
 
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
@@ -571,6 +571,17 @@ class PlaylistGrid(QListWidget):
             tile = self.itemWidget(it)
             tile.set_active(tile is clicked_tile)
 
+    def clear_grid(self):
+        # remove widgets first to avoid memory leaks
+        for i in range(self.count()):
+            item = self.item(i)
+            widget = self.itemWidget(item)
+            if widget:
+                widget.deleteLater()
+
+        self.clear()
+        self._update_height_for_content()
+
 
 class PlaylistSection(QWidget):
     """
@@ -606,11 +617,11 @@ class PlaylistSection(QWidget):
 
 
 class YtScreen(QFrame):
-    def __init__(self, parent=None, _add_home_callback = None):
+    def __init__(self, parent=None, add_home_callback = None):
         super().__init__(parent)
 
         self.yt_music = YTMusic()
-        self._add_home_callback = _add_home_callback
+        self._add_home_callback = add_home_callback
 
         # outer layout sits on ContentArea itself
         outer = QVBoxLayout(self)
@@ -642,6 +653,9 @@ class YtScreen(QFrame):
 
     def config_search(self, result: list):
         print(f"Search Done : TotalResutl => {len(result)}")
+        print(f"Clearing prevois data...")
+        self.yt_section.grid.clear_grid()
+        print("cleared...")
 
         for item in result:
             title = item["title"]
@@ -672,7 +686,8 @@ class YtScreen(QFrame):
             self._search_threads = []
         self._search_threads.append(thread)
 
-    def download_finished(self, path:str, thumbnail_path: str, title: str = None, subtitle_text: str = None):
+    def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None, thumbnail_path: str = None):
+    
         print(f"FileDownloaded : {path}")
         self._add_home_callback(path, thumbnail_path, title, subtitle_text, play = True)
 
@@ -684,15 +699,15 @@ class YtScreen(QFrame):
         thread.deleteLater()
 
 
-    def download_song(self, url: str = None, title: str = None, subtitle_text: str = None):
+    def download_song(self, title: str = None, subtitle_text: str = None, url: str = None):
 
         if not url:
             print(f"Path is empty")
             return
         
         print(f" Downloading Song : {title}  =>  {url}")
-        thread = Dtube(title=title, url=url, subtitle_text=subtitle_text, parent=self)
-        thread.finished.connect(self.config_search)
+        thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, parent=self)
+        thread.finished.connect(self.download_finished)
         thread.start()
         print(f"start thread_id ==> {thread}")
 
@@ -708,7 +723,7 @@ class YTSearchThread(QThread):
         super().__init__(parent)
 
         self.filter = "songs"
-        self.limit = 30
+        self.limit = 3
         self.thumbnail_size = 120
         self.yt_music = yt_music
         self.query = query

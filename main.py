@@ -52,7 +52,7 @@ class MusicMainWindow(QMainWindow):
         # mainarea
         self.home_screen = ContentArea()
         self.library_screen = ContentArea()
-        self.yt_screen = YtScreen()
+        self.yt_screen = YtScreen(parent=self, add_home_callback=self._add_home_callback)
 
 
         outer.addWidget(middle_frame, 1)
@@ -70,8 +70,8 @@ class MusicMainWindow(QMainWindow):
         outer.addWidget(self.bottom_bar)
 
     def _add_home_callback(self, path, thumbnail_path, title, subtitle_text, play = False):
-        self.home_screen.add_item(title, subtitle_text, thumbnail_path, path, play=play)
-        
+        self.home_screen.add_item(path, thumbnail_path, title, subtitle_text, play = play)
+
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)

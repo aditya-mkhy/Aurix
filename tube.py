@@ -97,15 +97,16 @@ def get_video_info(url : str = None) -> dict:
 
 
 class Dtube(QThread): # download tube
-    finished = pyqtSignal(object, object, object, object)
+    finished = pyqtSignal(str, str, str, str)
 
-    def __init__(self, title: str, url: str, subtitle_text:str = None, parent = None, folder: str = None):
+    def __init__(self, title: str = None, subtitle_text: str = None, url: str = None, parent = None, folder: str = None):
         super().__init__(parent)
 
         self.url = url
 
         # save folder... default music
         self.down_path = str(Path.home())+f'\\Music'
+
         if folder:
             if os.path.exists(folder):
                 self.down_path = folder
@@ -125,17 +126,19 @@ class Dtube(QThread): # download tube
         self.is_video_dowloaded = False
         self.video_size = 0
         self.file_path = self._file_path()
-        self.thumbnail_path = f"C:\\Users\\freya\\Downloads\\m\\{os.path.splitext()[0]}.jpg"
+        print(f"file_path => {self.file_path}")
+        self.thumbnail_path = f"C:\\Users\\freya\\Downloads\\m\\{os.path.splitext(os.path.basename(self.file_path))[0]}.jpg"
+        print(f"thumbnail_path => {self.thumbnail_path}")
 
 
     def run(self):
-        try:
-            info = self._download()
-            self._add_tags(info)
-            self.finished.emit(self.file_path, self.thumbnail_path, self.title, self.subtitle_text)
-        except Exception as e:
-            print(f"Error In Downloading : {e}")
-            self.finished.emit(None, None, None, None)
+        # try:
+        info = self._download()
+        self._add_tags(info) #
+        self.finished.emit(self.title, self.subtitle_text, self.file_path, self.thumbnail_path)
+        # except Exception as e:
+        #     print(f"Error In Downloading : {e}")
+        #     self.finished.emit(None, None, None, None)
 
 
     def _file_path(self):
@@ -145,6 +148,9 @@ class Dtube(QThread): # download tube
     def filename(self):
         title_path = self.make_title_path()
         return f"{title_path}.mp3"
+    
+    def remove_ext_file_path(self):
+        return os.path.splitext(self.file_path)[0]
     
 
     def make_title_path(self, title = None):
@@ -214,7 +220,7 @@ class Dtube(QThread): # download tube
 
             'quiet': True,
             'no_warnings': True,
-            'outtmpl': f'{self.file_path}.%(ext)s',
+            'outtmpl': self.remove_ext_file_path(),
 
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -226,7 +232,7 @@ class Dtube(QThread): # download tube
       
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info_dict = ydl.extract_info(url, download=True)  # Downloads the video
+                info_dict = ydl.extract_info(self.url, download=True)  # Downloads the video
                 return info_dict
 
         except Exception as e:
