@@ -1,11 +1,80 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
     QListWidget, QListView, QAbstractItemView, QMenu, 
     QSizePolicy, 
 )
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath
+from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
+
+
+class HoverButton(QPushButton):
+    def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.transform_scale = transform_scale
+
+        # store sizes
+        self.normal_size = QSize(size, size)
+        self.hover_size = QSize(size + self.transform_scale, size + self.transform_scale)   # a bit bigger
+        self.normal_icon_size = QSize(icon_size, icon_size)
+        self.hover_icon_size = QSize(icon_size + (self.transform_scale - 2), icon_size + (self.transform_scale -2))
+
+        self.setFixedSize(self.normal_size)
+        self.setIconSize(self.normal_icon_size)
+
+        # animation for iconSize
+        self.icon_anim = QPropertyAnimation(self, b"iconSize")
+        self.icon_anim.setDuration(140)  # ms
+        self.icon_anim.setEasingCurve(QEasingCurve.OutQuad)
+
+
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background-color: rgba(0, 0, 0, 0.55);
+                border-radius: 999px; 
+                border: none;
+                color: #000000;
+                padding-left: 12px;        
+            }}
+            QPushButton:hover {{
+                background-color:  rgba(0, 0, 0, 0.85);
+            }}
+            QPushButton:pressed {{
+                background-color: rgba(0, 0, 0, 1);
+            }}
+        """)
+
+
+    def enterEvent(self, event):
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.iconSize())
+        self.icon_anim.setEndValue(self.hover_icon_size)
+        self.icon_anim.start()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.iconSize())
+        self.icon_anim.setEndValue(self.normal_icon_size)
+        self.icon_anim.start()
+        super().leaveEvent(event)
+
+
+    # def enterEvent(self, event):
+    #     # grow on hover
+    #     self.icon_anim.stop()
+
+    #     self.setFixedSize(self.hover_size)
+    #     self.setIconSize(self.hover_icon_size)
+    #     super().enterEvent(event)
+
+    # def leaveEvent(self, event):
+    #     # go back to normal
+    #     self.setFixedSize(self.normal_size)
+    #     self.setIconSize(self.normal_icon_size)
+    #     super().leaveEvent(event)
+
 
 
 class ScrollArea(QScrollArea):
@@ -172,12 +241,12 @@ class PlaylistCard(QWidget):
         self.overlay.setStyleSheet("""
             QWidget {
                 border: none;
-                background-color: rgba(0,0,0,0.45);
+                background-color: rgba(0, 0, 0, 0.30);
                 border-radius: 14px;
             }
         """)
 
-        self.overlay.setStyleSheet("background-color: yellow;")
+        # self.overlay.setStyleSheet("background-color: yellow;")
 
         ov = QVBoxLayout(self.overlay)
         ov.setContentsMargins(8, 8, 8, 8)
@@ -215,29 +284,15 @@ class PlaylistCard(QWidget):
         ov.addStretch(1)
 
         # center play
-        self.play_btn = QPushButton("▶", self.overlay)
+        self.play_btn = HoverButton(parent=self.overlay, size=76, icon_size=38, transform_scale=6)
         self.play_btn.setCursor(Qt.PointingHandCursor)
-        self.play_btn.setFixedSize(46, 46)
-        self.play_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #ffffff;
-                border-radius: 23px;
-                border: none;
-                color: #000000;
-                font-size: 20px;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-            QPushButton:pressed {
-                background-color: #dedede;
-            }
-        """)
-        # self.play_btn.clicked.connect(self._on_play_clicked)
+        self.play_btn.setIcon(QIcon("res/play-card.png"))  # or use your icon
+
+        self.play_btn.clicked.connect(self._on_play_clicked)
         ov.addWidget(self.play_btn, 0, Qt.AlignHCenter)
         ov.addStretch(2)
 
-        self.overlay.hide()
+        # self.overlay.hide()
 
         main.addWidget(self.thumb_container, 0, Qt.AlignTop)
 
@@ -311,7 +366,9 @@ class PlaylistCard(QWidget):
                 border: none;
             }
         """
+        self.set_active(True)
         self._apply_style()
+        
 
         # menu
         self.menu = QMenu(self)
