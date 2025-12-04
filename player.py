@@ -1,62 +1,58 @@
-from PyQt5.QtCore import QObject, pyqtSignal, QUrl
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+import os
+import pygame
 
 
-class PlayerEngine(QObject):
-    # positionChanged = pyqtSignal(int)
-    # durationChanged = pyqtSignal(int)
-    # stateChanged = pyqtSignal(int)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.player = QMediaPlayer()
-        self.current_path = None
-
-        # self.player.positionChanged.connect(self.positionChanged)
-        # self.player.durationChanged.connect(self.durationChanged)
-        # self.player.stateChanged.connect(self.stateChanged)
+class MusicPlayer:
+    def __init__(self):
+        # init pygame mixer only (no window)
+        pygame.mixer.init()
+        self._current_path = None
+        self._is_paused = False
 
     def load(self, path: str):
-        """Load a file and be ready to play."""
-        self.current_path = path
-        url = QUrl.fromLocalFile(path)
-        self.player.setMedia(QMediaContent(url))
+        """Load an audio file, ready to play."""
+        if not os.path.isfile(path):
+            print("File not found:", path)
+            return
 
-    def play(self):
-        self.player.play()
+        self._current_path = path
+        pygame.mixer.music.load(path)
+        self._is_paused = False
+
+    def play(self, path: str = None, loop: bool = False):
+        """
+        Play current file.
+        If `path` is given, load it first then play.
+        """
+        if path is not None:
+            self.load(path)
+
+        if self._current_path is None:
+            print("No file loaded")
+            return
+
+        loops = -1 if loop else 0
+        pygame.mixer.music.play(loops=loops)
+        self._is_paused = False
 
     def pause(self):
-        self.player.pause()
-
-    def play_pause(self):
-        if self.player.state() == QMediaPlayer.PlayingState:
-            self.pause()
+        if not self._is_paused:
+            pygame.mixer.music.pause()
+            self._is_paused = True
         else:
-            self.play()
+            pygame.mixer.music.unpause()
+            self._is_paused = False
 
     def stop(self):
-        self.player.stop()
+        pygame.mixer.music.stop()
+        self._is_paused = False
 
-    def set_position(self, pos: int):
-        self.player.setPosition(int(pos))
+    def set_volume(self, vol: float):
+        """
+        vol: 0.0 to 1.0
+        """
+        vol = max(0.0, min(1.0, float(vol)))
+        pygame.mixer.music.set_volume(vol)
 
-    def set_volume(self, vol: int):
-        self.player.setVolume(int(vol))
-
-    def state(self):
-        return self.player.state()
-
-    def duration(self):
-        return self.player.duration()
-
-    def position(self):
-        return self.player.position()
-
-
-if __name__ == "__main__":
-    eng = PlayerEngine()
-    path = "C:\\Users\\freya\\Music\\Barbaad Song Saiyaara Ahaan Panday, Aneet Padda The Rish Jubin Nautiyal.mp3"
-    eng.load(path)
-    eng.play()
-    import time
-    time.sleep(20)
+    def is_playing(self) -> bool:
+        return pygame.mixer.music.get_busy() and not self._is_paused
