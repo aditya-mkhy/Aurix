@@ -19,7 +19,7 @@ class MusicPlayer:
         pygame.mixer.music.load(path)
         self._is_paused = False
 
-    def play(self, path: str = None, loop: bool = False):
+    def play(self, path: str = None):
         """
         Play current file.
         If `path` is given, load it first then play.
@@ -31,8 +31,7 @@ class MusicPlayer:
             print("No file loaded")
             return
 
-        loops = -1 if loop else 0
-        pygame.mixer.music.play(loops=loops)
+        pygame.mixer.music.play(loops=-1)
         self._is_paused = False
 
     def pause(self):

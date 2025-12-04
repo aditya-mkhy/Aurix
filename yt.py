@@ -17,26 +17,6 @@ from PyQt5.QtCore import QByteArray
 import requests
 from tube import Dtube
 
-class FetchImage(QThread):
-    finished = pyqtSignal(QPixmap, object)
-
-    def __init__(self, url: str, radius: int, parent=None):
-        super().__init__(parent)
-        self.url = url
-        self.radius = radius
-
-    def run(self):
-        try:
-            resp = requests.get(self.url, timeout=10)
-            resp.raise_for_status()
-            pix = QPixmap()
-            ok = pix.loadFromData(resp.content)
-
-            self.finished.emit(pix, self.radius)
-
-        except Exception as e:
-            self.finished.emit(QPixmap(), self.radius)
-
 
 
 class HoverButton(QPushButton):
@@ -183,8 +163,7 @@ class ClickableOverlay(QWidget):
 
 class PlaylistCard(QWidget):
 
-    def __init__(self, title: str, subtitle: str = "",
-                 thumbnail_url: str = None, url=None, play_callback = None, parent=None):
+    def __init__(self, title, subtitle, url, pix, play_callback = None, parent=None):
         super().__init__(parent)
         self.title_text = title
         self.subtitle_text = subtitle
@@ -233,10 +212,7 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-
-        self.img_thread = FetchImage(thumbnail_url, radius=14, parent=self)
-        self.img_thread.finished.connect(self.apply_image)
-        self.img_thread.start()
+        self.apply_image(pixmap=pix, radius=14)
     
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
@@ -460,8 +436,6 @@ class PlaylistCard(QWidget):
 
         self.thumb_label.setPixmap(rounded)
 
-        self.img_thread.deleteLater()
-
 
 
     def set_active(self, active: bool):
@@ -534,9 +508,9 @@ class PlaylistGrid(QListWidget):
 
         # self.itemClicked.connect(self._on_item_clicked)
 
-    def add_playlist(self, title, subtitle="", thumbnail_url=None, url = None, play_callback = None):
+    def add_playlist(self, title, subtitle, url, pix, play_callback = None):
         item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle, thumbnail_url=thumbnail_url, url = url, play_callback = play_callback)
+        tile = PlaylistCard(title, subtitle, url, pix, play_callback = play_callback)
         item.setSizeHint(tile.size() + QSize(30, 30))
         self.addItem(item)
         self.setItemWidget(item, tile)
@@ -611,8 +585,8 @@ class PlaylistSection(QWidget):
         self.grid = PlaylistGrid()
         layout.addWidget(self.grid)
 
-    def add_playlist(self, title, subtitle, thumbnail_url, url, play_callback = None):
-        self.grid.add_playlist(title, subtitle, thumbnail_url, url, play_callback = play_callback)
+    def add_playlist(self, title, subtitle, url, pix, play_callback = None):
+        self.grid.add_playlist(title, subtitle, url, pix, play_callback = play_callback)
 
 
 
@@ -650,28 +624,51 @@ class YtScreen(QFrame):
 
         main_layout.addStretch(1)
 
+    def config_one(self, title: str, subtitle: str, url: str, pix: QPixmap):
+        self.yt_section.add_playlist(title, subtitle, url, pix, self.download_song)
 
-    def config_search(self, result: list):
-        print(f"Search Done : TotalResutl => {len(result)}")
+    def config_finished(self, status):
+        if status:
+            print("Config finished...")
+        else:
+            print("Error in Config..")
+
+        # thread = self.sender()
+        # print(f"done _config_threads ==> {thread}")
+
+        # if hasattr(self, "_config_threads") and thread in self._search_threads:
+        #     self._config_threads.remove(thread)
+
+        # thread.deleteLater()
+        
+
+    def config_search(self, result1: list, result2: list):
+        print(f"Search Done : TotalResutl => {len(result1) + len(result2)}")
         print(f"Clearing prevois data...")
         self.yt_section.grid.clear_grid()
         print("cleared...")
 
-        for item in result:
-            title = item["title"]
-            subtitle = item["subtitle"]
-            url = f"https://music.youtube.com/watch?v={item['videoId']}"
-            thumbnail_url = item["thumbnail_url"]
+        config_result = ConfigResult(result=result1, parent=self)
+        config_result.add_one.connect(self.config_one)
+        config_result.finished.connect(self.config_finished)
 
-            self.yt_section.add_playlist(title, subtitle, thumbnail_url, url, self.download_song)
 
-        thread = self.sender()
-        print(f"done thread_id ==> {thread}")
+        config_result2 = ConfigResult(result=result2, parent=self)
+        config_result2.add_one.connect(self.config_one)
+        config_result2.finished.connect(self.config_finished)
 
-        if hasattr(self, "_search_threads") and thread in self._search_threads:
-            self._search_threads.remove(thread)
+        # start both
+        config_result.start()
+        config_result2.start()
 
-        thread.deleteLater()
+
+        if not hasattr(self, "_config_threads"):
+            self._config_threads = []
+        self._config_threads.append(config_result)
+        self._config_threads.append(config_result2)
+
+        print(f"currentThread -> {self._config_threads}")
+    
 
 
     def search_call(self, query: str):
@@ -685,6 +682,7 @@ class YtScreen(QFrame):
         if not hasattr(self, "_search_threads"):
             self._search_threads = []
         self._search_threads.append(thread)
+
 
     def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None, thumbnail_path: str = None):
     
@@ -715,25 +713,57 @@ class YtScreen(QFrame):
             self._down_threads = []
         self._down_threads.append(thread)
 
+
+
+class ConfigResult(QThread):
+    add_one = pyqtSignal(str, str, str, QPixmap)
+    finished = pyqtSignal(bool)
+
+    def __init__(self, result: dict, parent=None):
+        super().__init__(parent)
+        self.result = result
+
+    def run(self):
+
+        for item in self.result:
+            title = item["title"]
+            subtitle = item["subtitle"]
+            url = f"https://music.youtube.com/watch?v={item['videoId']}"
+            thumbnail_url = item["thumbnail_url"]
+
+            try:
+                resp = requests.get(thumbnail_url, timeout=15)
+                resp.raise_for_status()
+                pix = QPixmap()
+                pix.loadFromData(resp.content)
+
+                self.add_one.emit(title, subtitle, url, pix)
+
+            except Exception as e:
+                self.add_one.emit(title, subtitle, url, pix, QPixmap())
+
+        self.finished.emit(True)
+
+
   
 class YTSearchThread(QThread):
-    finished = pyqtSignal(list)
+    finished = pyqtSignal(list, list)
 
     def __init__(self, yt_music: YTMusic, query: str, parent = None):
         super().__init__(parent)
 
         self.filter = "songs"
-        self.limit = 3
+        self.limit = 25
         self.thumbnail_size = 120
         self.yt_music = yt_music
         self.query = query
 
     def run(self):
         try:
-            results = self.search()
-            self.finished.emit(results)
+            result1, result2 = self.search()
+            self.finished.emit(result1, result2)
         except:
-            self.finished.emit([])
+            self.finished.emit([], [])
 
 
     def search(self) -> list:
@@ -744,6 +774,8 @@ class YTSearchThread(QThread):
         )
 
         custom_result = []
+        custom_result2 =[]
+
         count = 0
 
         for item in results:
@@ -763,13 +795,23 @@ class YTSearchThread(QThread):
 
             subtitle = f"{item["views"]} plays • " + ", ".join(artists)
 
-            custom_result.append({
-                "title" : item["title"],
-                "subtitle" : subtitle,
-                "thumbnail_url" : thumbnail_url,
-                "videoId" : item["videoId"]
-            })
+            if count % 2 == 0:
+                custom_result.append({
+                    "title" : item["title"],
+                    "subtitle" : subtitle,
+                    "thumbnail_url" : thumbnail_url,
+                    "videoId" : item["videoId"]
+                })
+
+            else:
+                
+                custom_result2.append({
+                    "title" : item["title"],
+                    "subtitle" : subtitle,
+                    "thumbnail_url" : thumbnail_url,
+                    "videoId" : item["videoId"]
+                })
 
             count += 1
 
-        return custom_result
+        return custom_result, custom_result2

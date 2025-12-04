@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
 from info import get_info
-import webbrowser
 from player import MusicPlayer
+import os
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -676,3 +676,4 @@ class ContentArea(QFrame):
         # self.section_featured.add_playlist(
         #     "Night Chill", "AURIX • 30 tracks", thumb="img/1.png"
         # )
+

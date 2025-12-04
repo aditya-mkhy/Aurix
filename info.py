@@ -1,5 +1,4 @@
-from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL
-import os
+
 
 def make_title_path(title):
     not_include = ' <>:"/\\|?*'+"'"

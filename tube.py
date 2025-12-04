@@ -189,6 +189,7 @@ class Dtube(QThread): # download tube
 
         try:
             url_thmb = get_thumbnail(down_info)
+            print(url_thmb)
             response = get_request(url_thmb)
             data = response.content
             with open(self.thumbnail_path, "wb") as tf:
@@ -233,6 +234,8 @@ class Dtube(QThread): # download tube
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(self.url, download=True)  # Downloads the video
+                # with open("t.json", "w") as tf:
+                #     tf.write(json.dumps(info_dict))
                 return info_dict
 
         except Exception as e:
