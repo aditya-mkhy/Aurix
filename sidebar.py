@@ -261,8 +261,11 @@ class NavButton(QPushButton):
 
 
 class Sidebar(QFrame):
-    def __init__(self, parent = None):
+    def __init__(self, parent = None, nav_call = None):
         super().__init__(parent)
+
+        # fucntions call
+        self.nav_call = nav_call
 
         self.setFixedWidth(320)
         self.setStyleSheet("background-color: #000000; border-right: 1px solid #262626;")
@@ -274,15 +277,18 @@ class Sidebar(QFrame):
         # ("Explore", False), ("Library", False), ("Upgrade", False)
 
     
-        home_nav_btn = NavButton(text="Home", icon="./res/home.png")
-        layout.addWidget(home_nav_btn)
-        home_nav_btn.activate()
+        self.home_nav_btn = NavButton(text="Home", icon="./res/home.png")
+        layout.addWidget(self.home_nav_btn)
+        self.home_nav_btn.activate()
+        self.home_nav_btn.clicked.connect(self.show_home)
 
-        explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
-        layout.addWidget(explore_nav_btn)
+        self.explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
+        layout.addWidget(self.explore_nav_btn)
+        self.explore_nav_btn.clicked.connect(self.show_explore)
 
-        library_nav_btn = NavButton(text="Library", icon="./res/library.png")
-        layout.addWidget(library_nav_btn)
+        self.library_nav_btn = NavButton(text="Library", icon="./res/library.png")
+        layout.addWidget(self.library_nav_btn)
+        self.library_nav_btn.clicked.connect(self.show_library)
 
         layout.addSpacing(30)
 
@@ -340,3 +346,25 @@ class Sidebar(QFrame):
         playlist_scroll.add_playlist(PlaylistItem("Eng Love", "Aditya Mukhiya"))
         playlist_scroll.add_playlist(PlaylistItem("Best songs", "Aditya Mukhiya"))
         playlist_scroll.add_playlist(PlaylistItem("sleep", "Aditya Mukhiya"))
+
+    def show_home(self):
+        self.explore_nav_btn.de_activate()
+        self.library_nav_btn.de_activate()
+        self.home_nav_btn.activate()
+        self.nav_call("home")
+        
+
+    def show_library(self):
+        self.explore_nav_btn.de_activate()
+        self.home_nav_btn.de_activate()
+        self.library_nav_btn.activate()
+        self.nav_call("library")
+
+    def show_explore(self):
+        self.home_nav_btn.de_activate()
+        self.library_nav_btn.de_activate()
+        self.explore_nav_btn.activate()
+        self.nav_call("yt")
+
+    
+        

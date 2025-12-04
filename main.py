@@ -2,7 +2,7 @@ import os
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
-    QListWidgetItem, QFileDialog, QApplication
+    QListWidgetItem, QFileDialog, QApplication, QStackedWidget
 )
 
 # project import
@@ -11,7 +11,7 @@ from topbar import Topbar
 from bottombar import Bottombar
 from content import ContentArea
 from util import dark_title_bar
-
+from yt import YtScreen
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
@@ -46,14 +46,24 @@ class MusicMainWindow(QMainWindow):
         # middle_frame.setStyleSheet("background-color: green;")
 
         # sidebar
-        self.sidebar = Sidebar(parent=self)
+        self.sidebar = Sidebar(parent=self, nav_call=self._nav_call)
         middle_layout.addWidget(self.sidebar)
 
         # mainarea
-        self.content_area = ContentArea()
-        middle_layout.addWidget(self.content_area, 1)
+        self.home_screen = ContentArea()
+        self.library_screen = ContentArea()
+        self.yt_screen = YtScreen()
+
 
         outer.addWidget(middle_frame, 1)
+
+        self.content_area = QStackedWidget()
+        self.content_area.addWidget(self.home_screen)      # index 0
+        self.content_area.addWidget(self.library_screen)   # index 1
+        self.content_area.addWidget(self.yt_screen)   # index 2
+
+        middle_layout.addWidget(self.content_area, 1)
+        self.content_area.setCurrentIndex(0)
 
         # bottombar
         self.bottom_bar = Bottombar(parent=self)
@@ -64,6 +74,19 @@ class MusicMainWindow(QMainWindow):
         # self.engine.positionChanged.connect(self.on_engine_position)
         # self.engine.durationChanged.connect(self.on_engine_duration)
         # self.engine.stateChanged.connect(self.on_engine_state)
+
+    # call this fun when nav button clicked...
+    def _nav_call(self, name: str):
+        print(f"Navigation clicked : {name}")
+
+        if name == "home":
+            self.content_area.setCurrentIndex(0)
+
+        elif name == "library":
+            self.content_area.setCurrentIndex(1)
+
+        elif name == "yt":
+            self.content_area.setCurrentIndex(2)
 
 
 
