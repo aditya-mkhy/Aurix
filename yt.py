@@ -682,7 +682,7 @@ class YtScreen(QFrame):
 
     def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None):
         print(f"FileDownloaded : {path}")
-        self._add_home_callback(self, title, subtitle_text, path, get_pixmap(path), play = False)
+        self._add_home_callback(self, title, subtitle_text, path, get_pixmap(path), play = True)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:

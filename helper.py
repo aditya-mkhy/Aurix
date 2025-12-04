@@ -25,7 +25,7 @@ class LocalFilesLoader(QThread):
         super().__init__(parent)
         self.music_dirs = self._ensure_list(music_dirs)
 
-    def _ensure_list(x):
+    def _ensure_list(self, x):
         if x is None:
             return []
 

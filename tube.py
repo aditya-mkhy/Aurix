@@ -135,7 +135,7 @@ class Dtube(QThread): # download tube
         # try:
         info = self._download()
         self._add_tags(info) #
-        self.finished.emit(self.title, self.subtitle_text, self.file_path, self.thumbnail_path)
+        self.finished.emit(self.title, self.subtitle_text, self.file_path)
         # except Exception as e:
         #     print(f"Error In Downloading : {e}")
         #     self.finished.emit(None, None, None, None)

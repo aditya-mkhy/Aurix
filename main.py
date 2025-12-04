@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
@@ -13,12 +14,18 @@ from content import ContentArea
 from util import dark_title_bar
 from yt import YtScreen
 
+def get_music_path(paths: list = []):
+    default_music_path = os.path.join(Path.home(), "Music")
+    paths.append(default_music_path)
+
 class MusicMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Aurix - Music Player")
         self.resize(1500, 880)
         self.setStyleSheet("background-color: #000000;")
+
+        music_dirs = get_music_path()
 
         # ---- engine & playlist state ----
         # self.engine = PlayerEngine(self)
@@ -50,7 +57,7 @@ class MusicMainWindow(QMainWindow):
         middle_layout.addWidget(self.sidebar)
 
         # mainarea
-        self.home_screen = ContentArea()
+        self.home_screen = ContentArea(music_dirs=music_dirs)
         self.library_screen = ContentArea()
         self.yt_screen = YtScreen(parent=self, add_home_callback=self._add_home_callback)
 
