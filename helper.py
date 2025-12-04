@@ -63,9 +63,7 @@ class LocalFilesLoader(QThread):
     def _add_song(self, path: str):
         if not self._is_mp3(path):
             return
-        
-        print(f"Path===: --> {path}")
-        
+                
         tags = ID3(path)
 
         def _get_text(tag_id):
@@ -93,6 +91,5 @@ class LocalFilesLoader(QThread):
             if isinstance(frame, APIC):
                 pix = QPixmap()
                 pix.loadFromData(frame.data)
-                print(f"Args===> {title, publisher, path, pix}")
                 self.config_one.emit(title, publisher, path, pix)
                 break

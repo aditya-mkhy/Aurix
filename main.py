@@ -28,8 +28,6 @@ class MusicMainWindow(QMainWindow):
 
         music_dirs = get_music_path()
 
-        print(music_dirs)
-
         # ---- engine & playlist state ----
         # self.engine = PlayerEngine(self)
         self.playlist_paths = []

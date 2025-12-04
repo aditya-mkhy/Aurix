@@ -97,7 +97,7 @@ def get_video_info(url : str = None) -> dict:
 
 
 class Dtube(QThread): # download tube
-    finished = pyqtSignal(str, str, str, str)
+    finished = pyqtSignal(str, str, str)
 
     def __init__(self, title: str = None, subtitle_text: str = None, url: str = None, parent = None, folder: str = None):
         super().__init__(parent)
