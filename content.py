@@ -150,7 +150,7 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.thumb_label, "img/2.png", radius=14)
+        applyRoundedImage(self.thumb_label, thumbnail_path, radius=14)
 
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
@@ -247,7 +247,7 @@ class PlaylistCard(QWidget):
 
             
         self.title_lbl = QLabel(title)
-        self.title_lbl.setFont(QFont("Segoe UI", 13))
+        self.title_lbl.setFont(QFont("Segoe UI", 14))
         self.title_lbl.setStyleSheet("""
             QLabel {
                 color: white;
@@ -276,7 +276,7 @@ class PlaylistCard(QWidget):
                 color: #bebfbd;
                 background: transparent;
                 padding: 0;
-                font-weight: 600;
+                font-weight: 550;
             }
         """)
         self.subtitle_lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -493,9 +493,11 @@ class ContentArea(QFrame):
         self.section_library.add_playlist(
             "Dhun (Movie: Saiyaara)", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
         )
-        # self.section_library.add_playlist(
-        #     "threee", "Aditya Mukhiya • 4 tracks", thumb="img/2.png"
-        # )
+
+        self.section_library.add_playlist(
+            "Main Rahoon Ya Na Rahoon", "Song • Ghulshan Kumar", thumb="img/1.png"
+        )
+
         # self.section_library.add_playlist(
         #     "EngFav", "Aditya Mukhiya • 7 tracks", thumb="img/1.png"
         # )
