@@ -9,7 +9,7 @@ from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QI
 
 from info import get_info
 from player import MusicPlayer
-import os
+from helper import LocalFilesLoader
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -604,8 +604,7 @@ class ContentArea(QFrame):
         self.player = MusicPlayer()
         self.player.set_volume(0.6)
 
-        # sample data  #Dhun (Movie: Saiyaara)
-        self.add_real()
+        self
 
     def play_song(self, path: str = None):
         if not path:

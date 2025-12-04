@@ -1,18 +1,4 @@
 
-
-def make_title_path(title):
-    not_include = ' <>:"/\\|?*'+"'"
-    title_path = ""
-
-    for w in title:
-        if w in not_include:
-            if title_path[-1:] != " ":
-                title_path += " "
-        else:
-            title_path += w
-
-    return title_path
-
 def extract_tags_and_cover(path: str, cover_save_path: str = None):
     """
     Extract text tags + embedded cover image from an MP3 file.
@@ -90,4 +76,3 @@ def get_info() -> list:
         info_list.append([info['title'], info['publisher'], img_path, full_path])
 
     return info_list
-

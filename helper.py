@@ -1,6 +1,7 @@
 from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL
 import os
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
+from PyQt5.QtGui import QPixmap
 
 class LocalFilesLoader(QThread):
     config_one = pyqtSignal()
@@ -8,7 +9,15 @@ class LocalFilesLoader(QThread):
 
     def __init__(self, music_dirs: list = [],parent = None):
         super().__init__(parent)
-        self.music_dirs = music_dirs
+        self.music_dirs = self._ensure_list(music_dirs)
+
+    def _ensure_list(x):
+        if x is None:
+            return []
+
+        if isinstance(x, (list, tuple)):
+            return list(x)
+        return [x]
 
     
     def run(self):
@@ -23,6 +32,8 @@ class LocalFilesLoader(QThread):
 
             print(f"Error => This is not a file nor a dirctory.")
 
+        self.finished.emit(True)
+
     def _is_mp3(self, path: str):
         return os.path.splitext(path)[1] == ".mp3"
         
@@ -33,58 +44,38 @@ class LocalFilesLoader(QThread):
 
             if os.path.isfile(absolute_path):
                 self._add_song(absolute_path)
-            
             # not handling the recursive directory..
             
     def _add_song(self, path: str):
         if not self._is_mp3(path):
             return
         
-        
-
         tags = ID3(path)
-        path = None
 
         def _get_text(tag_id):
             frame = tags.get(tag_id)
             if frame and hasattr(frame, "text") and frame.text:
                 return str(frame.text[0])
             return None
+        
+        title = _get_text("TIT2")
+        publisher = _get_text("TPUB"),
 
-        info = {
-            "title":   _get_text("TIT2"),
-            "length":  _get_text("TLEN"),   # usually in ms (string)
-            "genre":   _get_text("TCON"),
-            "artist":  _get_text("TPE1"),
-            "album":   _get_text("TALB"),
-            "desc":    _get_text("TDES"),
-            "publisher": _get_text("TPUB"),
-            "publisher_url": _get_text("WPUB"),
-            "release_date": _get_text("TDRL"),
-        }
+        # info = {
+        #     "title":   _get_text("TIT2"),
+        #     "publisher": _get_text("TPUB"),
+        #     # "length":  _get_text("TLEN"),
+        #     # "genre":   _get_text("TCON"),
+        #     # "artist":  _get_text("TPE1"),
+        #     # "album":   _get_text("TALB"),
+        #     # "desc":    _get_text("TDES"),
+        #     # "publisher_url": _get_text("WPUB"),
+        #     # "release_date": _get_text("TDRL"),
+        # }
 
-        # ---- Extract cover (APIC frame) ----
-        cover_data = None
-        cover_mime = None
-
-        # APIC frames can have descriptors like 'APIC:', 'APIC:Cover', etc.
-        apic_frame = None
         for frame in tags.values():
             if isinstance(frame, APIC):
-                apic_frame = frame
+                pix = QPixmap()
+                pix.loadFromData(frame.data)
+                self.config_one.emit(title, publisher, path, pix)
                 break
-
-        if apic_frame is not None:
-            cover_data = apic_frame.data
-            cover_mime = apic_frame.mime
-
-            if cover_save_path:
-                filename = f"{make_title_path(info['title'])}.jpg"
-                path = os.path.join(cover_save_path, filename)
-                with open(path, "wb") as tf:
-                    tf.write(cover_data)
-
-
-
-        return info, path
-            
