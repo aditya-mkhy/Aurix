@@ -7,13 +7,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
-from info import get_info
-import webbrowser
-from player import MusicPlayer
-
 from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QByteArray
 import requests
 from tube import Dtube
 from helper import get_pixmap
@@ -688,7 +683,7 @@ class YtScreen(QFrame):
     def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None):
         print(f"FileDownloaded : {path}")
         self._add_home_callback(self, title, subtitle_text, path, get_pixmap(path), play = False)
-        
+
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:
             self._down_threads.remove(thread)

@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
-from info import get_info
 from player import MusicPlayer
 from helper import LocalFilesLoader
 
@@ -335,7 +334,7 @@ class PlaylistCard(QWidget):
 
 
         # ----- Subtitle -----
-        self.subtitle_lbl = QLabel(subtitle)
+        self.subtitle_lbl = QLabel(self.subtitle_text)
         self.subtitle_lbl.setFont(QFont("Segoe UI", 10))
         self.subtitle_lbl.setStyleSheet("""
             QLabel {
