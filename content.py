@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
@@ -23,57 +23,36 @@ class HoverButton(QPushButton):
         self.setFixedSize(self.normal_size)
         self.setIconSize(self.normal_icon_size)
 
-        # animation for iconSize
-        self.icon_anim = QPropertyAnimation(self, b"iconSize")
-        self.icon_anim.setDuration(140)  # ms
-        self.icon_anim.setEasingCurve(QEasingCurve.OutQuad)
-
-
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: rgba(0, 0, 0, 0.55);
-                border-radius: 999px; 
+                border-radius: { size//2 }px;
                 border: none;
                 color: #000000;
                 padding-left: 12px;        
             }}
             QPushButton:hover {{
                 background-color:  rgba(0, 0, 0, 0.85);
+                border-radius: { (size + self.transform_scale) //2 }px;
             }}
             QPushButton:pressed {{
                 background-color: rgba(0, 0, 0, 1);
+                border-radius: { (size + self.transform_scale) //2 }px;
+
             }}
         """)
 
 
+        
     def enterEvent(self, event):
-        self.icon_anim.stop()
-        self.icon_anim.setStartValue(self.iconSize())
-        self.icon_anim.setEndValue(self.hover_icon_size)
-        self.icon_anim.start()
+        self.setFixedSize(self.hover_size)
+        self.setIconSize(self.hover_icon_size)
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.icon_anim.stop()
-        self.icon_anim.setStartValue(self.iconSize())
-        self.icon_anim.setEndValue(self.normal_icon_size)
-        self.icon_anim.start()
+        self.setFixedSize(self.normal_size)
+        self.setIconSize(self.normal_icon_size)
         super().leaveEvent(event)
-
-
-    # def enterEvent(self, event):
-    #     # grow on hover
-    #     self.icon_anim.stop()
-
-    #     self.setFixedSize(self.hover_size)
-    #     self.setIconSize(self.hover_icon_size)
-    #     super().enterEvent(event)
-
-    # def leaveEvent(self, event):
-    #     # go back to normal
-    #     self.setFixedSize(self.normal_size)
-    #     self.setIconSize(self.normal_icon_size)
-    #     super().leaveEvent(event)
 
 
 
@@ -259,22 +238,24 @@ class PlaylistCard(QWidget):
         top_row.addStretch(1)
 
 
-        self.menu_btn = QPushButton("⋮", self.overlay)
+        self.menu_btn = QPushButton(self.overlay)
         self.menu_btn.setCursor(Qt.PointingHandCursor)
-        self.menu_btn.setFixedSize(26, 26)
+        self.menu_btn.setIcon(QIcon("res/three-dot-menu.png"))  
+        self.menu_btn.setFixedSize(46, 46)
+        self.menu_btn.setIconSize(QSize(26, 26))
+
         self.menu_btn.setStyleSheet("""
             QPushButton {
                 background: transparent;
                 border: none;
-                color: #f5f5f5;
-                font-size: 14px;
+                border-radius: 23px;
             }
+                                    
             QPushButton:hover {
-                background-color: rgba(255,255,255,0.16);
-                border-radius: 13px;
+                background-color: rgba(255, 255, 255, 0.40);
             }
             QPushButton:pressed {
-                background-color: rgba(255,255,255,0.26);
+                background-color: rgba(255, 255, 255, 0.50);
             }
         """)
         self.menu_btn.clicked.connect(self._on_menu_clicked)
