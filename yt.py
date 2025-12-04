@@ -192,8 +192,8 @@ class PlaylistCard(QWidget):
         self.url = url
         self.play_callback = play_callback
 
-        self.width = 282
-        self.height = 500#220
+        self.width = 240
+        self.height = 374#220
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self.width, self.height)
@@ -201,6 +201,7 @@ class PlaylistCard(QWidget):
 
 
         main = QVBoxLayout(self)
+
         main.setContentsMargins(0, 0, 0, 0)
         main.setSpacing(6)
 
@@ -691,7 +692,7 @@ class YTSearchThread(QThread):
         super().__init__(parent)
 
         self.filter = "songs"
-        self.limit = 1
+        self.limit = 30
         self.thumbnail_size = 120
         self.yt_music = yt_music
         self.query = query
