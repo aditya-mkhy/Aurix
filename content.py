@@ -186,7 +186,8 @@ class PlaylistCard(QWidget):
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self.width, self.height)
-        self.setStyleSheet("border: none;")
+        self.setStyleSheet("border: none;  background: green; margin: 20px;")
+
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
@@ -464,7 +465,9 @@ class PlaylistGrid(QListWidget):
         self.setWrapping(True)
         self.setResizeMode(QListView.Adjust)
 
-        self.setSpacing(18)
+        # self.setSpacing(30)
+        # self.setContentsMargins(0, 0, 0, 0)
+        # self.setViewportMargins(0, 0, 30, 40)
         self.setMovement(QListView.Snap)
 
         self.setFrameShape(self.NoFrame)
@@ -485,10 +488,12 @@ class PlaylistGrid(QListWidget):
     def add_playlist(self, title, subtitle="", thumb=None):
         item = QListWidgetItem()
         tile = PlaylistCard(title, subtitle, thumbnail_path=thumb)
-        item.setSizeHint(tile.size())
+        item.setSizeHint(tile.size() + QSize(30, 30))
         self.addItem(item)
         self.setItemWidget(item, tile)
         self._update_height_for_content()
+
+        item = QListWidgetItem()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -534,8 +539,8 @@ class PlaylistSection(QWidget):
         # self.setStyleSheet("background-color: red;")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 24)
-        layout.setSpacing(10)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
         self.title_label = QLabel(title)
         self.title_label.setFont(QFont("Segoe UI", 24,  QFont.Black))
@@ -590,6 +595,30 @@ class ContentArea(QFrame):
         self._populate_demo()
 
     def _populate_demo(self):
+        self.section_library.add_playlist(
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+        )
+
+        self.section_library.add_playlist(
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+        )
+
+
+        self.section_library.add_playlist(
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+        )
+
+
+        self.section_library.add_playlist(
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+        )
+
+
+        self.section_library.add_playlist(
+            "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
+        )
+
+
         self.section_library.add_playlist(
             "Dhun Song", "Song • Arijit Singh & Mithoon 251M plays", thumb="img/2.png"
         )
