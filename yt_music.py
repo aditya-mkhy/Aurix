@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 )
 
 
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread, QTimer
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
@@ -16,8 +16,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
+from PyQt5.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGraphicsOpacityEffect
+)
 from player import MusicPlayer
-from helper import LocalFilesLoader
+from helper import LocalFilesLoader, CircularProgress, LoadingSpinner
 
 from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
@@ -26,19 +29,9 @@ from tube import Dtube
 from helper import get_pixmap
 from common import ScrollArea
 from helper import YTSearchThread, ConfigResult
-# ---------- Small helpers ----------
-
-def make_placeholder_cover(size=64, color=QColor("#444")):
-    """Create a simple square pixmap placeholder for album art."""
-    pm = QPixmap(size, size)
-    pm.fill(color)
-    painter = QPainter(pm)
-    painter.setRenderHint(QPainter.Antialiasing)
-    painter.setPen(Qt.NoPen)
-    painter.setBrush(QColor("#666"))
-    painter.drawRect(0, 0, size, size)
-    painter.end()
-    return pm
+from PyQt5.QtCore import (
+    Qt, QTimer, QPropertyAnimation, QEasingCurve, QSize, pyqtSignal
+)
 
 
 def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
@@ -65,7 +58,7 @@ def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
     label.setPixmap(rounded)
 
 
-class HoverThumb(QWidget):
+class HoverThumb2(QWidget):
     downloadRequested = pyqtSignal(str)
 
     def __init__(self, pix: QPixmap, parent=None):
@@ -117,6 +110,7 @@ class HoverThumb(QWidget):
         self.play_icon.setCursor(Qt.PointingHandCursor)
         self.play_icon.clicked.connect(self._download_requested)
 
+
         self.play_icon.setStyleSheet("color: white;")
         ov_layout.addWidget(self.play_icon)
 
@@ -136,6 +130,196 @@ class HoverThumb(QWidget):
 
     def leaveEvent(self, event):
         self.overlay.hide()
+        super().leaveEvent(event)
+
+
+class HoverThumb(QWidget):
+    downloadRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(str)
+
+    def __init__(self, pix: QPixmap, parent=None):
+        super().__init__(parent)
+
+        size = 86
+        self.setFixedSize(size, size)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignCenter)
+        applyRoundedImage(self.image_label, pix, size=size, radius=8)
+        self.image_label.setStyleSheet(f"""
+            QLabel {{
+                border: none;
+                padding: 0;
+                border-radius: 14px;
+            }}
+        """)
+
+        main_layout.addWidget(self.image_label)
+
+        # ----- Overlay -----
+        self.overlay = QWidget(self)
+        self.overlay.setAttribute(Qt.WA_StyledBackground, True)
+        self.overlay.setStyleSheet("""
+            QWidget {
+                background: rgba(0, 0, 0, 110);
+                border-radius: 4px;
+            }
+        """)
+        self.overlay.setGeometry(self.rect())
+        self.overlay.hide()
+
+        ov_layout = QHBoxLayout(self.overlay)
+        ov_layout.setContentsMargins(0, 0, 0, 0)
+        ov_layout.setAlignment(Qt.AlignCenter)
+
+        # spinner (loading metadata)
+        self.spinner = LoadingSpinner(size-22, self.overlay)
+        self.spinner.hide()
+
+        # download progress
+        self.progress = CircularProgress(size-22, self.overlay)
+        self.progress.hide()
+
+        # play button---
+        self.play_icon = QIcon("res/play-card.png")
+
+
+        # download button
+        self.play_icon = QPushButton(self.overlay)
+        self.play_icon.setFixedSize(size, size)
+        self.play_icon.setIcon(QIcon("res/downloads.png"))  # or use your icon
+        self.play_icon.setIconSize(QSize(30, 30))
+        self.play_icon.setCursor(Qt.PointingHandCursor)
+        self.play_icon.clicked.connect(self._download_requested)
+        self.play_icon.setStyleSheet("color: white;")
+        ov_layout.addWidget(self.play_icon)
+
+
+        # done checkmark
+        self.done_label = QLabel("✓", self.overlay)
+        self.done_label.setAlignment(Qt.AlignCenter)
+        self.done_label.setFont(QFont("Segoe UI", 26, QFont.Bold))
+        self.done_label.setStyleSheet("""
+            QLabel {
+                color: #00E676;
+                background: transparent;
+            }
+        """)
+        self.done_label.hide()
+
+        ov_layout.addWidget(self.spinner)
+        ov_layout.addWidget(self.progress)
+        ov_layout.addWidget(self.done_label)
+
+        # opacity effect for *finish* animation
+        self.overlay_effect = QGraphicsOpacityEffect(self.overlay)
+        self.overlay.setGraphicsEffect(self.overlay_effect)
+        self.overlay_effect.setOpacity(1.0)
+
+        self.fade_anim = QPropertyAnimation(self.overlay_effect, b"opacity", self)
+        self.fade_anim.setDuration(400)
+        self.fade_anim.setEasingCurve(QEasingCurve.OutQuad)
+        self.fade_anim.finished.connect(self._on_fade_finished)
+
+        # internal mode
+        self.mode = "idle"
+
+
+    def _download_requested(self):
+        print("...PlaySignalOriginated... Down")
+        self.downloadRequested.emit("down")
+
+    def _play_requested(self):
+        print("...PlaySignalOriginated... Play")
+        self.playRequested.emit("play")
+
+    def startLoading(self):
+        """Call when you start fetching video info."""
+        self._set_mode("loading")
+
+    def startDownloading(self):
+        """Call when download actually starts."""
+        self._set_mode("downloading")
+
+    def setAvailableForPlay(self):
+        self._set_mode("play")
+
+    def setProgress(self, value: int):
+        """Call from your yt-dlp progress hook."""
+        self.progress.setValue(value)
+        if value >= 100:
+            self._set_mode("done")
+
+    # -------- Internal state logic -------- #
+
+    def _set_mode(self, mode: str):
+        self.mode = mode
+
+        # reset visibility
+        self.overlay.show()
+        self.spinner.hide()
+        self.progress.hide()
+        self.play_icon.hide()
+        self.done_label.hide()
+        self.fade_anim.stop()
+        self.overlay_effect.setOpacity(1.0)
+
+        if mode == "idle":
+            self.overlay.hide()
+            self.play_icon.show() # download btn
+
+        elif mode == "loading":
+            self.spinner.start()
+
+        elif mode == "downloading":
+            self.spinner.stop()
+            self.progress.show()
+
+        elif mode == "done":
+            self.spinner.stop()
+            self.progress.hide()
+            self.done_label.show()
+            # start fade out after a short delay
+            QTimer.singleShot(400, self._start_fade_out)
+
+        elif mode == "play":
+            self.play_icon.setIcon(self.play_icon)  # or use your icon
+            self.play_icon.clicked.connect(self._play_requested)
+            self.overlay.hide()
+
+
+
+    def _start_fade_out(self):
+        self.fade_anim.setStartValue(1.0)
+        self.fade_anim.setEndValue(0.0)
+        self.fade_anim.start()
+
+    def _on_fade_finished(self):
+        if self.mode == "done":
+            self.overlay.hide()
+            # optional: go back to idle
+            self.mode = "idle"
+            self.overlay_effect.setOpacity(1.0)
+
+    # keep overlay resized
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.overlay.setGeometry(self.rect())
+
+    # show overlay only on hover if in loading/downloading/done modes
+    def enterEvent(self, event):
+        if self.mode in ("idle", "play"):
+            self.overlay.show()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        # if still loading/downloading, we can leave overlay visible
+        # or hide it – your choice.
+        if self.mode in ("idle", "play"):
+            self.overlay.hide()
         super().leaveEvent(event)
 
 
@@ -297,10 +481,12 @@ class TrackRow(QWidget):
         """
         self.setStyleSheet(self._base_style)
 
+
+
+
     def _download_requested(self, txt):
         print(f"Recieved [TrackRow] : {txt}")
         self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url)
-
 
 
     def show_menu(self):
