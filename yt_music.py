@@ -339,7 +339,7 @@ class YtScreen(QFrame):
         font = header.font()
         font.setUnderline(True)
         header.setFont(font)
-        header.setFixedHeight(30)
+        header.setFixedHeight(32)
 
         outer.addWidget(header)
 
