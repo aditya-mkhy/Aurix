@@ -12,7 +12,8 @@ from topbar import Topbar
 from bottombar import Bottombar
 from content import ContentArea
 from util import dark_title_bar
-from yt import YtScreen
+# from yt import YtScreen
+from yt_music import YtScreen
 
 def get_music_path(paths: list = []):
     default_music_path = os.path.join(Path.home(), "Music")
@@ -60,7 +61,7 @@ class MusicMainWindow(QMainWindow):
         # mainarea
         self.home_screen = ContentArea(music_dirs=music_dirs)
         self.library_screen = ContentArea()
-        self.yt_screen = YtScreen(parent=self, add_home_callback=self._add_home_callback)
+        self.yt_screen = YtScreen(parent=self)
 
 
         outer.addWidget(middle_frame, 1)

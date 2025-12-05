@@ -19,6 +19,13 @@ from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QI
 from player import MusicPlayer
 from helper import LocalFilesLoader
 
+from ytmusicapi import YTMusic
+from PyQt5.QtGui import QPixmap
+import requests
+from tube import Dtube
+from helper import get_pixmap
+from common import ScrollArea
+
 # ---------- Small helpers ----------
 
 def make_placeholder_cover(size=64, color=QColor("#444")):
@@ -146,7 +153,7 @@ class TrackRow(QWidget):
         # self.setCursor(Qt.PointingHandCursor)
 
         main = QHBoxLayout()
-        main.setContentsMargins(24, 8, 24, 8)  # left/right padding
+        main.setContentsMargins(0, 8, 24, 8)  # left/right padding
         main.setSpacing(16)
 
         # cover
@@ -307,39 +314,42 @@ class TrackRow(QWidget):
         super().leaveEvent(event)
 
 
-class SearchResultPage(QWidget):
-    """
-    Page that mimics the YT Music album + track list layout.
-    """
+class YtScreen(QFrame):
     playRequest = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("background-color: #000000;")
+            
+        self.yt_music = YTMusic()
+
 
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(24, 24, 24, 24)
-        outer.setSpacing(12)
+        outer.setContentsMargins(80, 10, 2, 5)
+        outer.setSpacing(0)
+
+        outer.addSpacing(20)
 
         # Album header
-        album_title = QLabel("Tubelight (Original Motion Picture Soundtrack)")
-        album_title.setStyleSheet("color: white;")
-        album_title.setFont(QFont("Segoe UI", 16, QFont.DemiBold))
+        header = QLabel("YT MUSIC")
+        header.setStyleSheet("color: white; font-weight: 600; margin-left: 10px;")
+        header.setFont(QFont("Segoe UI", 15))
 
-        album_meta = QLabel("Album • Pritam • 2017")
-        album_meta.setStyleSheet("color: #b3b3b3;")
-        album_meta.setFont(QFont("Segoe UI", 11))
+        font = header.font()
+        font.setUnderline(True)
+        header.setFont(font)
+        header.setFixedHeight(30)
 
-        outer.addWidget(album_title)
-        outer.addWidget(album_meta)
+        outer.addWidget(header)
 
-        # Scrollable track list
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QScrollArea.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        line = QFrame()
+        line.setStyleSheet("background-color: #262626; margin-right: 35px; margin-top: -10px;")
+        line.setFixedHeight(1)
+        outer.addWidget(line)
+
+        # Scroll area (only vertical)
+        scroll = ScrollArea()
         outer.addWidget(scroll, 1)
 
         content = QWidget()
@@ -347,9 +357,14 @@ class SearchResultPage(QWidget):
         content.setStyleSheet("background-color: #000000;")
         scroll.setWidget(content)
 
-        vbox = QVBoxLayout(content)
-        vbox.setContentsMargins(0, 16, 0, 16)
-        vbox.setSpacing(0)
+        # vbox = QVBoxLayout(content)
+        # vbox.setContentsMargins(0, 16, 0, 16)
+        # vbox.setSpacing(0)
+
+        # this layout belongs
+        main_layout = QVBoxLayout(content)
+        main_layout.setContentsMargins(24, 16, 24, 24)
+        main_layout.setSpacing(0)
 
         # demo data – you will fill this with real search results
         demo_tracks = [
@@ -363,36 +378,27 @@ class SearchResultPage(QWidget):
              "Song • Pritam & Rahat Fateh Ali Khan • 25M plays"),
             ("Kuch Nahi (From \"Tubelight\")",
              "Song • Pritam • 5M plays"),
+            ("Kuch Nahi (From \"Tubelight\")",
+             "Song • Pritam • 5M plays"),
+            ("Kuch Nahi (From \"Tubelight\")",
+             "Song • Pritam • 5M plays"),
+            ("Kuch Nahi (From \"Tubelight\")",
+             "Song • Pritam • 5M plays"),
+            ("Kuch Nahi (From \"Tubelight\")",
+             "Song • Pritam • 5M plays"),
+            ("Kuch Nahi (From \"Tubelight\")",
+             "Song • Pritam • 5M plays"),
         ]
 
         # add rows
         for title, subtitle in demo_tracks:
             row = TrackRow(title, subtitle)
             row.playRequest.connect(self._play_requested)
-            vbox.addWidget(row)
+            main_layout.addWidget(row)
 
-        vbox.addStretch(1)
+        main_layout.addStretch(1)
+
 
     def _play_requested(self, txt):
         print(f"Recieved [SearchResultPage] : {txt}")
         self.playRequest.emit(txt)
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("YT Music Style List Demo")
-        self.resize(900, 600)
-        page = SearchResultPage(self)
-        page.playRequest.connect(self._play_requested)
-        self.setCentralWidget(page)
-
-    def _play_requested(self, txt):
-        print(f"Recieved [MainWindow] : {txt}")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    w = MainWindow()
-    w.show()
-    sys.exit(app.exec_())
