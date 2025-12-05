@@ -317,6 +317,7 @@ class TrackRow(QWidget):
 
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
+    addItemHomeRequested = pyqtSignal(str, str, str, QPixmap, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -443,7 +444,8 @@ class YtScreen(QFrame):
 
     def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None):
         print(f"FileDownloaded : {path}")
-        self._add_home_callback(title, subtitle_text, path, get_pixmap(path), play = True)
+        play = True
+        self.addItemHomeRequested.emit(title, subtitle_text, path,  get_pixmap(path), play)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:

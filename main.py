@@ -62,6 +62,8 @@ class MusicMainWindow(QMainWindow):
         self.home_screen = ContentArea(music_dirs=music_dirs)
         self.library_screen = ContentArea()
         self.yt_screen = YtScreen(parent=self)
+        # call when yt want to all item to home screen and play
+        self.yt_screen.addItemHomeRequested.connect(self.add_item_home_requested)
 
 
         outer.addWidget(middle_frame, 1)
@@ -78,7 +80,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar = Bottombar(parent=self)
         outer.addWidget(self.bottom_bar)
 
-    def _add_home_callback(self, title, subtitle_text, path, pix, play = False):
+    def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
         self.home_screen.add_item(title, subtitle_text, path, pix, play = play)
 
 
