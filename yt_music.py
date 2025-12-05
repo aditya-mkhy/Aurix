@@ -357,11 +357,6 @@ class YtScreen(QFrame):
         content.setStyleSheet("background-color: #000000;")
         scroll.setWidget(content)
 
-        # vbox = QVBoxLayout(content)
-        # vbox.setContentsMargins(0, 16, 0, 16)
-        # vbox.setSpacing(0)
-
-        # this layout belongs
         main_layout = QVBoxLayout(content)
         main_layout.setContentsMargins(24, 16, 24, 24)
         main_layout.setSpacing(0)
