@@ -485,14 +485,12 @@ class YtScreen(QFrame):
 
         self.track_list: List[TrackRow] = [] # store all the TrackRow
 
-        icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
-        pix  = QPixmap(icon_path)
-        tite = "Naach Meri Jaan (From \"Tubelight\")"
-        sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays"
-        url = ""
-
-
-        self.config_one(tite, sub, url, pix)
+        # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
+        # pix  = QPixmap(icon_path)
+        # tite = "Naach Meri Jaan (From \"Tubelight\")"
+        # sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays"
+        # url = ""
+        # self.config_one(tite, sub, url, pix)
 
 
 
@@ -583,9 +581,9 @@ class YtScreen(QFrame):
 
         thread.deleteLater()
 
-    def tick(self, item_id):
+    def tick(self, track_id):
         self.count += 2
-        req_item_obj = self.track_list[item_id]
+        req_item_obj = self.track_list[track_id]
 
         if req_item_obj.get_mode() == "loading":
             if self.count < 50:
@@ -607,16 +605,27 @@ class YtScreen(QFrame):
             self.timer.stop()
             req_item_obj.set_mode("done")
 
+    def download_progress(self, track_id, mode, value):
+        if mode == "error":
+            print(f"Error occured during downloading..")
+            return
+        
+        if mode != "percentage":
+            print(f"From track_id[{track_id}]  -> {mode}")
 
-    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, item_id: int = None):
-        print(f"Item_id => {item_id}")
-        req_item_obj = self.track_list[item_id]
+        print(f"From track_id[{track_id}]  -> {mode} = {value}")
+        
+
+
+    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, track_id: int = None):
+        print(f"track_id => {track_id}")
+        req_item_obj = self.track_list[track_id]
         req_item_obj.set_mode("loading")
     
 
         self.count = 0
         self.timer = QTimer()
-        self.timer.timeout.connect(lambda: self.tick(item_id))
+        self.timer.timeout.connect(lambda: self.tick(track_id))
         self.timer.start(200)
 
 
@@ -625,7 +634,7 @@ class YtScreen(QFrame):
             return
         
         print(f" Downloading Song : {title}  =>  {url}")
-        thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, parent=self)
+        thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, track_id=track_id, parent=self)
         thread.finished.connect(self.download_finished)
         thread.start()
         print(f"start thread_id ==> {thread}")

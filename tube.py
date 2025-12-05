@@ -98,11 +98,25 @@ def get_video_info(url : str = None) -> dict:
 
 class Dtube(QThread): # download tube
     finished = pyqtSignal(str, str, str)
+    progress = pyqtSignal(int, str, int)
 
-    def __init__(self, title: str = None, subtitle_text: str = None, url: str = None, parent = None, folder: str = None):
+    def __init__(
+            self, title: str = None, 
+            subtitle_text: str = None, 
+            url: str = None, 
+            track_id: int = None, 
+            parent = None, 
+            folder: str = None
+    ):
+        
         super().__init__(parent)
 
         self.url = url
+        self.track_id = track_id
+        # to send dowloading mode only once
+        self.is_downloading_emitted = False 
+        self.is_converting_emitted = False 
+
 
         # save folder... default music
         self.down_path = str(Path.home())+f'\\Music'
@@ -135,6 +149,8 @@ class Dtube(QThread): # download tube
         # try:
         info = self._download()
         self._add_tags(info) #
+
+        self._emit_progress_hook("done")
         self.finished.emit(self.title, self.subtitle_text, self.file_path)
         # except Exception as e:
         #     print(f"Error In Downloading : {e}")
@@ -218,11 +234,10 @@ class Dtube(QThread): # download tube
         ydl_opts =ydl_opts = {
             # get best audio format from YT / YT Music
             'format': 'bestaudio[acodec=opus]/bestaudio[acodec^=mp4a]/bestaudio/best',
-
             'quiet': True,
             'no_warnings': True,
             'outtmpl': self.remove_ext_file_path(),
-
+            "progress_hooks": [self._progress_hook], 
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',   # output codec
@@ -241,75 +256,64 @@ class Dtube(QThread): # download tube
         except Exception as e:
             print(f"An error occurred: {e}")
             return {}
-
-
-    def progress_hook(self, d):
-        """
-        Hook function to display progress during the download.
-        """
-    
-        try:
-            if d['status'] == 'downloading':
-
-                downloaded = d.get('downloaded_bytes', 0)
-                total = d.get('total_bytes', d.get('total_bytes_estimate', 0))
-                speed = d.get('speed', 0)
-                eta = d.get('eta', 0)
-                filename = d.get('filename', '')
-                tmpfilename = d.get('tmpfilename', '')
-
-                if not self.is_video_dowloaded:
-                    self.video_size = total
-
-                else:
-                    #update the musicccc...
-                    downloaded += self.video_size
-                    total += self.video_size
-
-
-                time_left = f"{timeCal(eta)} left"
-                speed = format_size(speed)
-                prog_info = "(%s of  %s ,  %s/s)" %(format_size(downloaded) , format_size(total), speed)
-
-
-                status = {
-                    "status" : "downloading",
-                    "filename" : filename,
-                    "downloaded" : downloaded,
-                    "eta" : time_left,
-                    "progress" : prog_info,
-                }
-
-                self.progress(status)
-
-
-            elif d['status'] == 'finished':
-                filename = d.get('filename', '')
-
-                status = {
-                    "status" : "finished",
-                    "filename" : filename
-                }
-
-                if not self.is_video_dowloaded:
-                    self.is_video_dowloaded = True
-                
-                self.progress(status)
-
-
-            elif d['status'] == 'error':
-                status = {
-                    "status" : "error",
-                }
-    
-                self.progress(status)
-
-        except:
-            pass
-
-    
-   
         
+
+    def _emit_progress_hook(self, type: str, value: int = 0):
+        self.progress.emit(self.track_id, type, value)
+
+
+    def _progress_hook(self, d):
+        # Extracting metadata
+        if d['status'] in ("extracting", "downloading playlist", "pre_process"):
+            self._emit_progress_hook("loading")
+            return
+
+        # Active download
+        if d['status'] == 'downloading':
+            # percent formatting from yt-dlp
+            percent_str = d.get("_percent_str", "").strip().replace("%", "")
+            try:
+                percent = int(percent_str)
+            except:
+                percent = 0
+
+            if not self.is_downloading_emitted:
+                self.is_downloading_emitted = True
+                self._emit_progress_hook("downloading")
+
+            self._emit_progress_hook("percentage", percent)
+            return
+
+        # Download finished but not processed (FFmpeg next)
+        if d['status'] == 'finished':
+            if not self.is_converting_emitted:
+                self.is_converting_emitted = True
+                self._emit_progress_hook("converting")
+            return
+
+        # Post-processing (FFmpeg convertion)
+        if d['status'] == 'postprocess':
+            # if not emmitted...
+            if not self.is_converting_emitted:
+                self.is_converting_emitted = True
+                self._emit_progress_hook("converting")
+
+            # You can check keys to know post type:
+            pp_state = d.get("postprocessor", "").lower()
+        
+            if "ffmpeg" in pp_state:
+                print("ffmpeg is working...")
+            return
+
+        # Fully done
+        if d['status'] == 'postprocess_done':
+            # done will be emmited only when everything is finished... like adding tags
+            return
+
+        if d['status'] == 'error':
+            print("Error Occured...")
+            self._emit_progress_hook("error")
+
 
 if __name__ == "__main__":
     url = "https://music.youtube.com/watch?v=Het4pXDENBI"
