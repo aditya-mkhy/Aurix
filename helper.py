@@ -264,8 +264,7 @@ class CircularProgress(QWidget):
         # text
         painter.setPen(Qt.white)
         painter.setFont(QFont("Segoe UI", 11, QFont.Bold))
-        text = f"{self._value}%"
-        painter.drawText(self.rect(), Qt.AlignCenter, text)
+        painter.drawText(self.rect().adjusted(4, 0, 4, 0), Qt.AlignCenter, f"{self._value}%")
 
 class LoadingSpinner(QWidget):
     def __init__(self, size=40, parent=None):
@@ -293,11 +292,18 @@ class LoadingSpinner(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
 
         rect = self.rect().adjusted(6, 6, -6, -6)
+
+        # background circle
+        bg_pen = QPen(QColor(120, 120, 120, 100), 6)
+        painter.setPen(bg_pen)
+        painter.drawEllipse(rect)
+
         pen = QPen(QColor("#FFFFFF"), 4)
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
         # draw an arc (chunk) that rotates
         painter.drawArc(rect, self.angle * 16, 120 * 16)
+
 
 
 if __name__ == "__main__":

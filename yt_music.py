@@ -33,7 +33,7 @@ from PyQt5.QtCore import (
     Qt, QTimer, QPropertyAnimation, QEasingCurve, QSize, pyqtSignal
 )
 
-
+from typing import List
 def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
 
     pm = pix.scaled(
@@ -57,80 +57,6 @@ def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
     painter.end()
     label.setPixmap(rounded)
 
-
-class HoverThumb2(QWidget):
-    downloadRequested = pyqtSignal(str)
-
-    def __init__(self, pix: QPixmap, parent=None):
-        super().__init__(parent)
-
-        size = 86
-        self.setFixedSize(size, size)
-        self.setStyleSheet("background-color: blue;")
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        self.image_label = QLabel(self)
-        self.image_label.setFixedSize(size, size)
-        self.image_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.image_label, pix, size=size, radius=8)
-        # self.image_label.setScaledContents(True)
-
-        self.image_label.setStyleSheet(f"""
-            QLabel {{
-                border: none;
-                padding: 0;
-                border-radius: 14px;
-            }}
-        """)
-
-
-        # overlay play icon
-        self.overlay = QWidget(self)
-        self.overlay.setAttribute(Qt.WA_StyledBackground, True)#rgba(0, 0, 0, 110)
-        # self.overlay.setCursor(Qt.PointingHandCursor)
-        self.overlay.setStyleSheet("""
-            QWidget {
-                background: rgba(0, 0, 0, 110);
-                border-radius: 4px;
-            }
-        """)
-        self.overlay.setGeometry(self.rect())
-        self.overlay.hide()
-
-        ov_layout = QHBoxLayout(self.overlay)
-        ov_layout.setContentsMargins(0, 0, 0, 0)
-        ov_layout.setAlignment(Qt.AlignCenter)
-
-        self.play_icon = QPushButton(self.overlay)
-        self.play_icon.setFixedSize(size, size)
-        self.play_icon.setIcon(QIcon("res/downloads.png"))  # or use your icon
-        self.play_icon.setIconSize(QSize(30, 30))
-        self.play_icon.setCursor(Qt.PointingHandCursor)
-        self.play_icon.clicked.connect(self._download_requested)
-
-
-        self.play_icon.setStyleSheet("color: white;")
-        ov_layout.addWidget(self.play_icon)
-
-        layout.addWidget(self.image_label)
-
-    def _download_requested(self):
-        print("...PlaySignalOriginated...")
-        self.downloadRequested.emit("down")
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.overlay.setGeometry(self.rect())
-
-    def enterEvent(self, event):
-        self.overlay.show()
-        super().enterEvent(event)
-
-    def leaveEvent(self, event):
-        self.overlay.hide()
-        super().leaveEvent(event)
 
 
 class HoverThumb(QWidget):
@@ -175,12 +101,12 @@ class HoverThumb(QWidget):
         ov_layout.setContentsMargins(0, 0, 0, 0)
         ov_layout.setAlignment(Qt.AlignCenter)
 
-        # spinner (loading metadata)
-        self.spinner = LoadingSpinner(size-22, self.overlay)
+        # spinner 
+        self.spinner = LoadingSpinner(size-16, self.overlay)
         self.spinner.hide()
 
         # download progress
-        self.progress = CircularProgress(size-22, self.overlay)
+        self.progress = CircularProgress(size-16, self.overlay)
         self.progress.hide()
 
         # play button---
@@ -188,14 +114,14 @@ class HoverThumb(QWidget):
 
 
         # download button
-        self.play_icon = QPushButton(self.overlay)
-        self.play_icon.setFixedSize(size, size)
-        self.play_icon.setIcon(QIcon("res/downloads.png"))  # or use your icon
-        self.play_icon.setIconSize(QSize(30, 30))
-        self.play_icon.setCursor(Qt.PointingHandCursor)
-        self.play_icon.clicked.connect(self._download_requested)
-        self.play_icon.setStyleSheet("color: white;")
-        ov_layout.addWidget(self.play_icon)
+        self.download_btn = QPushButton(self.overlay)
+        self.download_btn.setFixedSize(size, size)
+        self.download_btn.setIcon(QIcon("res/downloads.png"))  # or use your icon
+        self.download_btn.setIconSize(QSize(30, 30))
+        self.download_btn.setCursor(Qt.PointingHandCursor)
+        self.download_btn.clicked.connect(self._download_requested)
+        self.download_btn.setStyleSheet("color: white;")
+        ov_layout.addWidget(self.download_btn)
 
 
         # done checkmark
@@ -236,16 +162,6 @@ class HoverThumb(QWidget):
         print("...PlaySignalOriginated... Play")
         self.playRequested.emit("play")
 
-    def startLoading(self):
-        """Call when you start fetching video info."""
-        self._set_mode("loading")
-
-    def startDownloading(self):
-        """Call when download actually starts."""
-        self._set_mode("downloading")
-
-    def setAvailableForPlay(self):
-        self._set_mode("play")
 
     def setProgress(self, value: int):
         """Call from your yt-dlp progress hook."""
@@ -255,6 +171,9 @@ class HoverThumb(QWidget):
 
     # -------- Internal state logic -------- #
 
+    def set_mode(self, mode: str):
+        self._set_mode(mode=mode)
+
     def _set_mode(self, mode: str):
         self.mode = mode
 
@@ -262,14 +181,14 @@ class HoverThumb(QWidget):
         self.overlay.show()
         self.spinner.hide()
         self.progress.hide()
-        self.play_icon.hide()
+        self.download_btn.hide()
         self.done_label.hide()
         self.fade_anim.stop()
         self.overlay_effect.setOpacity(1.0)
 
         if mode == "idle":
             self.overlay.hide()
-            self.play_icon.show() # download btn
+            self.download_btn.show() # download btn
 
         elif mode == "loading":
             self.spinner.start()
@@ -286,8 +205,8 @@ class HoverThumb(QWidget):
             QTimer.singleShot(400, self._start_fade_out)
 
         elif mode == "play":
-            self.play_icon.setIcon(self.play_icon)  # or use your icon
-            self.play_icon.clicked.connect(self._play_requested)
+            self.download_btn.setIcon(self.play_icon)  # or use your icon
+            self.download_btn.clicked.connect(self._play_requested)
             self.overlay.hide()
 
 
@@ -324,13 +243,14 @@ class HoverThumb(QWidget):
 
 
 class TrackRow(QWidget):
-    downloadRequested = pyqtSignal(str, str, str)
+    downloadRequested = pyqtSignal(str, str, str, int)
 
-    def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, parent=None):
+    def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, my_id: int = None, parent=None):
         super().__init__(parent)
         self.title_txt = title
         self.subtitle_txt = subtitle
         self.url = url
+        self.my_id = my_id
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(108)
@@ -481,12 +401,20 @@ class TrackRow(QWidget):
         """
         self.setStyleSheet(self._base_style)
 
+    def set_mode(self, mode: str):
+        print(f"Setting State : {mode}")
+        self.thumb.set_mode(mode)
 
+    def get_mode(self):
+        return self.thumb.mode
+
+    def setProgress(self, value: int):
+        self.thumb.setProgress(value)
 
 
     def _download_requested(self, txt):
         print(f"Recieved [TrackRow] : {txt}")
-        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url)
+        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url, self.my_id)
 
 
     def show_menu(self):
@@ -545,19 +473,23 @@ class YtScreen(QFrame):
         self.main_layout = QVBoxLayout(content)
         self.main_layout.setContentsMargins(24, 16, 24, 24)
         self.main_layout.setSpacing(0)
+        self.main_layout.setAlignment(Qt.AlignTop)
 
-    
-        # add rows
-        # for title, subtitle in demo_tracks:
-        #     row = TrackRow(title, subtitle)
-        #     row.downloadRequested.connect(self._download_requested)
-        #     self.main_layout.addWidget(row)
+        self.track_list: List[TrackRow] = [] # store all the TrackRow
 
-        # self.main_layout.addStretch(1)
+        icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
+        pix  = QPixmap(icon_path)
+        tite = "Naach Meri Jaan (From \"Tubelight\")"
+        sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays"
+        url = ""
+
+
+        self.config_one(tite, sub, url, pix)
 
 
 
     def clear_results(self):
+        self.track_list.clear()
         # remove stretch first
         item = self.main_layout.takeAt(self.main_layout.count() - 1)
         if item:
@@ -574,9 +506,13 @@ class YtScreen(QFrame):
 
 
     def config_one(self, title: str, subtitle: str, url: str, pix: QPixmap):
-        row = TrackRow(title, subtitle, url, pix)
+        _id = len(self.track_list)
+        row = TrackRow(title, subtitle, url, pix, my_id = _id)
         row.downloadRequested.connect(self._download_requested)
         self.main_layout.addWidget(row)
+
+        # add row in track_list
+        self.track_list.append(row)
 
     def config_finished(self, status):
         if status:
@@ -639,8 +575,35 @@ class YtScreen(QFrame):
 
         thread.deleteLater()
 
+    def tick(self, item_id):
+        self.count += 2
+        req_item_obj = self.track_list[item_id]
+        if req_item_obj.get_mode() == "loading":
+            if self.count < 50:
+                return
+            self.count = 0
+            req_item_obj.set_mode("downloading")
+            
 
-    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None):
+        req_item_obj.setProgress(self.count)
+
+        if self.count >= 100:
+            self.timer.stop()
+            req_item_obj.set_mode("play")
+
+
+    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, item_id: int = None):
+        print(f"Item_id => {item_id}")
+        req_item_obj = self.track_list[item_id]
+        req_item_obj.set_mode("play")
+        return
+        req_item_obj.set_mode("loading")
+
+        self.count = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda: self.tick(item_id))
+        self.timer.start(200)
+
 
         if not url:
             print(f"Path is empty")
