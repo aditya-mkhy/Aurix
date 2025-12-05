@@ -25,7 +25,7 @@ import requests
 from tube import Dtube
 from helper import get_pixmap
 from common import ScrollArea
-
+from helper import YTSearchThread, ConfigResult
 # ---------- Small helpers ----------
 
 def make_placeholder_cover(size=64, color=QColor("#444")):
@@ -68,7 +68,7 @@ def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
 class HoverThumb(QWidget):
     playRequest = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, pix: QPixmap, parent=None):
         super().__init__(parent)
 
         size = 86
@@ -78,14 +78,10 @@ class HoverThumb(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        img_path = "C:\\Users\\freya\\Downloads\\song.jpg"
-
-        px  = QPixmap(img_path)
-
         self.image_label = QLabel(self)
         self.image_label.setFixedSize(size, size)
         self.image_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.image_label, px, size=size, radius=8)
+        applyRoundedImage(self.image_label, pix, size=size, radius=8)
         # self.image_label.setScaledContents(True)
 
         self.image_label.setStyleSheet(f"""
@@ -146,8 +142,12 @@ class HoverThumb(QWidget):
 class TrackRow(QWidget):
     playRequest = pyqtSignal(str)
 
-    def __init__(self, title: str, subtitle: str, parent=None):
+    def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, parent=None):
         super().__init__(parent)
+        self.title_txt = title
+        self.subtitle_txt = subtitle
+        self.url = url
+
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(108)
         # self.setCursor(Qt.PointingHandCursor)
@@ -157,7 +157,7 @@ class TrackRow(QWidget):
         main.setSpacing(16)
 
         # cover
-        self.thumb = HoverThumb(parent=self)
+        self.thumb = HoverThumb(pix=pix, parent=self)
         self.thumb.playRequest.connect(self._play_requested)
         main.addWidget(self.thumb)
 
@@ -166,7 +166,7 @@ class TrackRow(QWidget):
         text_col.setContentsMargins(5, 6, 0, 20)
         text_col.setSpacing(1)
 
-        self.title_lbl = QLabel(title)
+        self.title_lbl = QLabel(self.title_txt)
         self.title_lbl.setFont(QFont("Segoe UI", 14))
         self.title_lbl.setStyleSheet("""
             QLabel {
@@ -182,7 +182,7 @@ class TrackRow(QWidget):
         """)
         self.title_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
-        self.subtitle_lbl = QLabel(subtitle)
+        self.subtitle_lbl = QLabel(self.subtitle_txt)
         self.subtitle_lbl.setFont(QFont("Segoe UI", 11))
         self.subtitle_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         self.subtitle_lbl.setStyleSheet("""
@@ -322,9 +322,6 @@ class YtScreen(QFrame):
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("background-color: #000000;")
             
-        self.yt_music = YTMusic()
-
-
         outer = QVBoxLayout(self)
         outer.setContentsMargins(80, 10, 2, 5)
         outer.setSpacing(0)
@@ -357,43 +354,120 @@ class YtScreen(QFrame):
         content.setStyleSheet("background-color: #000000;")
         scroll.setWidget(content)
 
-        main_layout = QVBoxLayout(content)
-        main_layout.setContentsMargins(24, 16, 24, 24)
-        main_layout.setSpacing(0)
+        self.main_layout = QVBoxLayout(content)
+        self.main_layout.setContentsMargins(24, 16, 24, 24)
+        self.main_layout.setSpacing(0)
 
-        # demo data – you will fill this with real search results
-        demo_tracks = [
-            ("Main Agar (From \"Tubelight\")",
-             "Song • Pritam & Atif Aslam • 137M plays"),
-            ("Naach Meri Jaan (From \"Tubelight\")",
-             "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays"),
-            ("Radio (From \"Tubelight\")",
-             "Song • Pritam, Kamaal Khan & Amit Mishra • 49M plays"),
-            ("Tinka Tinka Dil Mera (From \"Tubelight\")",
-             "Song • Pritam & Rahat Fateh Ali Khan • 25M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-            ("Kuch Nahi (From \"Tubelight\")",
-             "Song • Pritam • 5M plays"),
-        ]
-
+    
         # add rows
-        for title, subtitle in demo_tracks:
-            row = TrackRow(title, subtitle)
-            row.playRequest.connect(self._play_requested)
-            main_layout.addWidget(row)
+        # for title, subtitle in demo_tracks:
+        #     row = TrackRow(title, subtitle)
+        #     row.playRequest.connect(self._play_requested)
+        #     self.main_layout.addWidget(row)
 
-        main_layout.addStretch(1)
+        # self.main_layout.addStretch(1)
+
+
+
+    def clear_results(self):
+        # remove stretch first
+        item = self.main_layout.takeAt(self.main_layout.count() - 1)
+        if item:
+            del item
+
+        # remove all widget rows
+        while self.main_layout.count():
+            item = self.main_layout.takeAt(0)
+            widget = item.widget()
+
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
+
 
 
     def _play_requested(self, txt):
         print(f"Recieved [SearchResultPage] : {txt}")
         self.playRequest.emit(txt)
+
+    def config_one(self, title: str, subtitle: str, url: str, pix: QPixmap):
+        row = TrackRow(title, subtitle, url, pix)
+        row.playRequest.connect(self._play_requested)
+        self.main_layout.addWidget(row)
+
+    def config_finished(self, status):
+        if status:
+            print("Config finished...")
+        else:
+            print("Error in Config..")
+
+        self.main_layout.addStretch(1)
+
+
+    def config_search(self, result1: list, result2: list):
+        print(f"Search Done : TotalResutl => {len(result1) + len(result2)}")
+        print(f"Clearing prevois data...")
+        self.clear_results()
+        print("cleared...")
+
+        config_result = ConfigResult(result=result1, parent=self)
+        config_result.add_one.connect(self.config_one)
+        config_result.finished.connect(self.config_finished)
+
+
+        config_result2 = ConfigResult(result=result2, parent=self)
+        config_result2.add_one.connect(self.config_one)
+        config_result2.finished.connect(self.config_finished)
+
+        # start both
+        config_result.start()
+        config_result2.start()
+
+
+        if not hasattr(self, "_config_threads"):
+            self._config_threads = []
+        self._config_threads.append(config_result)
+        self._config_threads.append(config_result2)
+
+        print(f"currentThread -> {self._config_threads}")
+    
+
+    def search_call(self, query: str):
+        print(f"YTSearch Query : {query}")
+
+        thread = YTSearchThread(query=query, parent=self)
+        thread.finished.connect(self.config_search)
+        thread.start()
+        print(f"start thread_id ==> {thread}")
+
+        if not hasattr(self, "_search_threads"):
+            self._search_threads = []
+        self._search_threads.append(thread)
+
+
+    def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None):
+        print(f"FileDownloaded : {path}")
+        self._add_home_callback(title, subtitle_text, path, get_pixmap(path), play = True)
+
+        thread = self.sender()
+        if hasattr(self, "_down_threads") and thread in self._down_threads:
+            self._down_threads.remove(thread)
+
+        thread.deleteLater()
+
+
+    def download_song(self, title: str = None, subtitle_text: str = None, url: str = None):
+
+        if not url:
+            print(f"Path is empty")
+            return
+        
+        print(f" Downloading Song : {title}  =>  {url}")
+        thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, parent=self)
+        thread.finished.connect(self.download_finished)
+        thread.start()
+        print(f"start thread_id ==> {thread}")
+
+        if not hasattr(self, "_down_threads"):
+            self._down_threads = []
+        self._down_threads.append(thread)

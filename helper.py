@@ -2,6 +2,122 @@ from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPU
 import os
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap
+import requests
+from ytmusicapi import YTMusic
+
+YT_MUSIC = YTMusic()
+
+class YTSearchThread(QThread):
+    finished = pyqtSignal(list, list)
+
+    def __init__(self, query: str, parent = None):
+        super().__init__(parent)
+
+        self.filter = "songs"
+        self.limit = 20
+        self.thumbnail_size = 120
+        self.query = query
+
+    def run(self):
+        try:
+            result1, result2 = self.search()
+            self.finished.emit(result1, result2)
+        except:
+            self.finished.emit([], [])
+
+
+    def search(self) -> list:
+        results = YT_MUSIC.search(
+            self.query, 
+            filter=self.filter, 
+            limit=self.limit,
+        )
+
+        custom_result = []
+        custom_result2 =[]
+
+        count = 0
+
+        for item in results:
+
+            if count >= self.limit:
+                break
+
+            thumbnail_url = ""
+
+            for thumbnail in item["thumbnails"]:
+                thumbnail_url = thumbnail["url"]
+                if thumbnail["width"] ==  self.thumbnail_size:
+                    break
+
+            artists = []
+            for artist in item["artists"]:
+                artists.append(artist["name"])
+
+            last = None
+            if len(artists) > 1:
+                last = artists.pop()
+
+            all_artists = ", ".join(artists) + (f" & {last}" if last else "")
+
+            result_type = "Song" if item["resultType"] == "song" else "Video"
+
+            subtitle = f"{result_type} • " + all_artists + f" • {item["views"]} plays"
+
+            #Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi 123M plays
+
+            if count % 2 == 0:
+                custom_result.append({
+                    "title" : item["title"],
+                    "subtitle" : subtitle,
+                    "thumbnail_url" : thumbnail_url,
+                    "videoId" : item["videoId"]
+                })
+
+            else:
+                
+                custom_result2.append({
+                    "title" : item["title"],
+                    "subtitle" : subtitle,
+                    "thumbnail_url" : thumbnail_url,
+                    "videoId" : item["videoId"]
+                })
+
+            count += 1
+
+        return custom_result, custom_result2
+    
+
+class ConfigResult(QThread):
+    add_one = pyqtSignal(str, str, str, QPixmap)
+    finished = pyqtSignal(bool)
+
+    def __init__(self, result: dict, parent=None):
+        super().__init__(parent)
+        self.result = result
+
+    def run(self):
+
+        for item in self.result:
+            title = item["title"]
+            subtitle = item["subtitle"]
+            url = f"https://music.youtube.com/watch?v={item['videoId']}"
+            thumbnail_url = item["thumbnail_url"]
+
+            try:
+                resp = requests.get(thumbnail_url, timeout=15)
+                resp.raise_for_status()
+                pix = QPixmap()
+                pix.loadFromData(resp.content)
+
+                self.add_one.emit(title, subtitle, url, pix)
+
+            except Exception as e:
+                self.add_one.emit(title, subtitle, url, pix, QPixmap())
+
+        self.finished.emit(True)
+
+
 
 def get_pixmap(path: str):
     if not os.path.isfile:
@@ -104,3 +220,8 @@ class LocalFilesLoader(QThread):
                 self.config_one.emit(title, publisher, path, pix)
                 # song with cover is uselesss... 
                 break
+
+
+if __name__ == "__main__":
+    yts = YTSearchThread("Naach Meri Jaan")
+    # yts.run()
