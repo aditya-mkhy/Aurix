@@ -28,7 +28,7 @@ import requests
 from tube import Dtube
 from helper import get_pixmap
 from common import ScrollArea
-from helper import YTSearchThread, ConfigResult
+from helper import YTSearchThread, ConfigResult, ConvertingSpinner
 from PyQt5.QtCore import (
     Qt, QTimer, QPropertyAnimation, QEasingCurve, QSize, pyqtSignal
 )
@@ -109,14 +109,19 @@ class HoverThumb(QWidget):
         self.progress = CircularProgress(size-16, self.overlay)
         self.progress.hide()
 
+        # converting
+        self.convering_spinner = ConvertingSpinner(size-16, self.overlay)
+        self.convering_spinner.hide()
+
         # play button---
         self.play_icon = QIcon("res/play-card.png")
+        self.down_icon = QIcon("res/downloads.png")
 
 
         # download button
         self.download_btn = QPushButton(self.overlay)
         self.download_btn.setFixedSize(size, size)
-        self.download_btn.setIcon(QIcon("res/downloads.png"))  # or use your icon
+        self.download_btn.setIcon(self.down_icon)  # or use your icon
         self.download_btn.setIconSize(QSize(30, 30))
         self.download_btn.setCursor(Qt.PointingHandCursor)
         self.download_btn.clicked.connect(self._download_requested)
@@ -137,6 +142,7 @@ class HoverThumb(QWidget):
         self.done_label.hide()
 
         ov_layout.addWidget(self.spinner)
+        ov_layout.addWidget(self.convering_spinner)
         ov_layout.addWidget(self.progress)
         ov_layout.addWidget(self.done_label)
 
@@ -166,8 +172,6 @@ class HoverThumb(QWidget):
     def setProgress(self, value: int):
         """Call from your yt-dlp progress hook."""
         self.progress.setValue(value)
-        if value >= 100:
-            self._set_mode("done")
 
     # -------- Internal state logic -------- #
 
@@ -178,36 +182,43 @@ class HoverThumb(QWidget):
         self.mode = mode
 
         # reset visibility
-        self.overlay.show()
-        self.spinner.hide()
         self.progress.hide()
         self.download_btn.hide()
         self.done_label.hide()
         self.fade_anim.stop()
+        self.spinner.stop()
+        self.convering_spinner.stop()
         self.overlay_effect.setOpacity(1.0)
 
         if mode == "idle":
             self.overlay.hide()
+            self.download_btn.setIcon(self.down_icon)
             self.download_btn.show() # download btn
+            self.download_btn.clicked.connect(self._download_requested)
+
 
         elif mode == "loading":
+            self.overlay.show()
             self.spinner.start()
 
         elif mode == "downloading":
-            self.spinner.stop()
+            self.overlay.show()
             self.progress.show()
 
+        elif mode == "converting":
+            self.overlay.show()
+            self.convering_spinner.start()
+
         elif mode == "done":
-            self.spinner.stop()
-            self.progress.hide()
+            self.overlay.show()
             self.done_label.show()
-            # start fade out after a short delay
             QTimer.singleShot(400, self._start_fade_out)
 
         elif mode == "play":
+            self.overlay.hide()
+            self.download_btn.show()
             self.download_btn.setIcon(self.play_icon)  # or use your icon
             self.download_btn.clicked.connect(self._play_requested)
-            self.overlay.hide()
 
 
 
@@ -218,10 +229,7 @@ class HoverThumb(QWidget):
 
     def _on_fade_finished(self):
         if self.mode == "done":
-            self.overlay.hide()
-            # optional: go back to idle
-            self.mode = "idle"
-            self.overlay_effect.setOpacity(1.0)
+            self._set_mode("play")
 
     # keep overlay resized
     def resizeEvent(self, event):
@@ -578,26 +586,33 @@ class YtScreen(QFrame):
     def tick(self, item_id):
         self.count += 2
         req_item_obj = self.track_list[item_id]
+
         if req_item_obj.get_mode() == "loading":
             if self.count < 50:
                 return
             self.count = 0
             req_item_obj.set_mode("downloading")
+
+
+        if req_item_obj.get_mode() == "downloading":
+            req_item_obj.setProgress(self.count)
+            if self.count < 100:
+                return
             
+            self.count = 0
+            req_item_obj.set_mode("converting")
 
-        req_item_obj.setProgress(self.count)
 
-        if self.count >= 100:
+        if self.count >= 50:
             self.timer.stop()
-            req_item_obj.set_mode("play")
+            req_item_obj.set_mode("done")
 
 
     def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, item_id: int = None):
         print(f"Item_id => {item_id}")
         req_item_obj = self.track_list[item_id]
-        req_item_obj.set_mode("play")
-        return
         req_item_obj.set_mode("loading")
+    
 
         self.count = 0
         self.timer = QTimer()

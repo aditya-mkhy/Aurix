@@ -266,6 +266,45 @@ class CircularProgress(QWidget):
         painter.setFont(QFont("Segoe UI", 11, QFont.Bold))
         painter.drawText(self.rect().adjusted(4, 0, 4, 0), Qt.AlignCenter, f"{self._value}%")
 
+class ConvertingSpinner(QWidget):
+    def __init__(self, size=40, parent=None):
+        super().__init__(parent)
+        self.angle = 0
+        self.setFixedSize(size, size)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.rotate)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def rotate(self):
+        self.angle = (self.angle - 10) % 360
+        self.update()
+
+    def start(self):
+        self.show()
+        self.timer.start(30)
+
+    def stop(self):
+        self.timer.stop()
+        self.hide()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = self.rect().adjusted(6, 6, -6, -6)
+
+        # background circle
+        bg_pen = QPen(QColor(120, 120, 120, 100), 6)
+        painter.setPen(bg_pen)
+        painter.drawEllipse(rect)
+
+        pen = QPen(QColor("#00944D"), 6)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+        # draw an arc (chunk) that rotates
+        painter.drawArc(rect, self.angle * 16, 120 * 16)
+
+
 class LoadingSpinner(QWidget):
     def __init__(self, size=40, parent=None):
         super().__init__(parent)
@@ -298,7 +337,7 @@ class LoadingSpinner(QWidget):
         painter.setPen(bg_pen)
         painter.drawEllipse(rect)
 
-        pen = QPen(QColor("#FFFFFF"), 4)
+        pen = QPen(QColor("#FFFFFF"), 6)
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
         # draw an arc (chunk) that rotates
