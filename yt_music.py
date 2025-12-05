@@ -66,7 +66,7 @@ def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
 
 
 class HoverThumb(QWidget):
-    playRequest = pyqtSignal(str)
+    downloadRequested = pyqtSignal(str)
 
     def __init__(self, pix: QPixmap, parent=None):
         super().__init__(parent)
@@ -115,16 +115,16 @@ class HoverThumb(QWidget):
         self.play_icon.setIcon(QIcon("res/downloads.png"))  # or use your icon
         self.play_icon.setIconSize(QSize(30, 30))
         self.play_icon.setCursor(Qt.PointingHandCursor)
-        self.play_icon.clicked.connect(self._play_requested)
+        self.play_icon.clicked.connect(self._download_requested)
 
         self.play_icon.setStyleSheet("color: white;")
         ov_layout.addWidget(self.play_icon)
 
         layout.addWidget(self.image_label)
 
-    def _play_requested(self):
+    def _download_requested(self):
         print("...PlaySignalOriginated...")
-        self.playRequest.emit("This is Fuck")
+        self.downloadRequested.emit("down")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -140,7 +140,7 @@ class HoverThumb(QWidget):
 
 
 class TrackRow(QWidget):
-    playRequest = pyqtSignal(str)
+    downloadRequested = pyqtSignal(str, str, str)
 
     def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, parent=None):
         super().__init__(parent)
@@ -158,7 +158,7 @@ class TrackRow(QWidget):
 
         # cover
         self.thumb = HoverThumb(pix=pix, parent=self)
-        self.thumb.playRequest.connect(self._play_requested)
+        self.thumb.downloadRequested.connect(self._download_requested)
         main.addWidget(self.thumb)
 
         # text block
@@ -297,9 +297,10 @@ class TrackRow(QWidget):
         """
         self.setStyleSheet(self._base_style)
 
-    def _play_requested(self, txt):
+    def _download_requested(self, txt):
         print(f"Recieved [TrackRow] : {txt}")
-        self.playRequest.emit(txt)
+        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url)
+
 
 
     def show_menu(self):
@@ -315,7 +316,7 @@ class TrackRow(QWidget):
 
 
 class YtScreen(QFrame):
-    playRequest = pyqtSignal(str)
+    downloadRequested = pyqtSignal(str, str, str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -362,7 +363,7 @@ class YtScreen(QFrame):
         # add rows
         # for title, subtitle in demo_tracks:
         #     row = TrackRow(title, subtitle)
-        #     row.playRequest.connect(self._play_requested)
+        #     row.downloadRequested.connect(self._download_requested)
         #     self.main_layout.addWidget(row)
 
         # self.main_layout.addStretch(1)
@@ -385,14 +386,9 @@ class YtScreen(QFrame):
                 widget.deleteLater()
 
 
-
-    def _play_requested(self, txt):
-        print(f"Recieved [SearchResultPage] : {txt}")
-        self.playRequest.emit(txt)
-
     def config_one(self, title: str, subtitle: str, url: str, pix: QPixmap):
         row = TrackRow(title, subtitle, url, pix)
-        row.playRequest.connect(self._play_requested)
+        row.downloadRequested.connect(self._download_requested)
         self.main_layout.addWidget(row)
 
     def config_finished(self, status):
@@ -456,7 +452,7 @@ class YtScreen(QFrame):
         thread.deleteLater()
 
 
-    def download_song(self, title: str = None, subtitle_text: str = None, url: str = None):
+    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None):
 
         if not url:
             print(f"Path is empty")
