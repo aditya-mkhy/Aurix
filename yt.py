@@ -747,7 +747,7 @@ class YTSearchThread(QThread):
         super().__init__(parent)
 
         self.filter = "songs"
-        self.limit = 25
+        self.limit = 40
         self.thumbnail_size = 120
         self.yt_music = yt_music
         self.query = query
