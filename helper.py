@@ -1,7 +1,13 @@
 from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread
+from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QIcon, QPen
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
+    QLabel, QPushButton, QScrollArea, QFrame, QMenu
+)
+
 import os
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
-from PyQt5.QtGui import QPixmap
+import sys
 import requests
 from ytmusicapi import YTMusic
 
@@ -220,6 +226,78 @@ class LocalFilesLoader(QThread):
                 self.config_one.emit(title, publisher, path, pix)
                 # song with cover is uselesss... 
                 break
+
+
+
+
+class CircularProgress(QWidget):
+    def __init__(self, size=60, parent=None):
+        super().__init__(parent)
+        self._value = 0   # 0–100
+        self.size = size
+        self.setFixedSize(size, size)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def setValue(self, value: int):
+        self._value = max(0, min(100, value))  # clamp
+        self.update()  # refresh UI
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = self.rect().adjusted(6, 6, -6, -6)
+        radius = min(rect.width(), rect.height()) // 2
+
+        # background circle
+        bg_pen = QPen(QColor(120, 120, 120, 120), 6)
+        painter.setPen(bg_pen)
+        painter.drawEllipse(rect)
+
+        # progress arc
+        angle = int(360 * (self._value / 100))
+        progress_pen = QPen(QColor("#00944D"), 6)  # neon green like YT Premium
+        progress_pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(progress_pen)
+        painter.drawArc(rect, -90 * 16, -angle * 16)
+
+        # text
+        painter.setPen(Qt.white)
+        painter.setFont(QFont("Segoe UI", 11, QFont.Bold))
+        text = f"{self._value}%"
+        painter.drawText(self.rect(), Qt.AlignCenter, text)
+
+class LoadingSpinner(QWidget):
+    def __init__(self, size=40, parent=None):
+        super().__init__(parent)
+        self.angle = 0
+        self.setFixedSize(size, size)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.rotate)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def rotate(self):
+        self.angle = (self.angle + 10) % 360
+        self.update()
+
+    def start(self):
+        self.show()
+        self.timer.start(30)
+
+    def stop(self):
+        self.timer.stop()
+        self.hide()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = self.rect().adjusted(6, 6, -6, -6)
+        pen = QPen(QColor("#FFFFFF"), 4)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+        # draw an arc (chunk) that rotates
+        painter.drawArc(rect, self.angle * 16, 120 * 16)
 
 
 if __name__ == "__main__":
