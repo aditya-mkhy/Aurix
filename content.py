@@ -639,4 +639,3 @@ class ContentArea(QFrame):
         if play:
             self.play_song(path)
 
-
