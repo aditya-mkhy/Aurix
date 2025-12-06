@@ -113,8 +113,9 @@ class Dtube(QThread): # download tube
 
         self.url = url
         self.track_id = track_id
-        # to send dowloading mode only once
+        self.is_processing_emitted = False 
         self.is_downloading_emitted = False 
+        # to send dowloading mode only once
         self.is_converting_emitted = False 
 
 
@@ -146,15 +147,20 @@ class Dtube(QThread): # download tube
 
 
     def run(self):
-        # try:
-        info = self._download()
-        self._add_tags(info) #
+        try:
+            if not self.is_processing_emitted:
+                self.is_processing_emitted = True
+                self._emit_progress_hook("loading")
 
-        self._emit_progress_hook("done")
-        self.finished.emit(self.title, self.subtitle_text, self.file_path)
-        # except Exception as e:
-        #     print(f"Error In Downloading : {e}")
-        #     self.finished.emit(None, None, None, None)
+            info = self._download()
+            self._add_tags(info) #
+
+            self._emit_progress_hook("done")
+            self.finished.emit(self.title, self.subtitle_text, self.file_path)
+        except Exception as e:
+            print(f"Error In Downloading : {e}")
+            self._emit_progress_hook("error")
+            self.finished.emit(None, None, None, None)
 
 
     def _file_path(self):
@@ -265,7 +271,9 @@ class Dtube(QThread): # download tube
     def _progress_hook(self, d):
         # Extracting metadata
         if d['status'] in ("extracting", "downloading playlist", "pre_process"):
-            self._emit_progress_hook("loading")
+            if not self.is_processing_emitted:
+                self.is_processing_emitted = True
+                self._emit_progress_hook("loading")
             return
 
         # Active download
