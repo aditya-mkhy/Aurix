@@ -1,23 +1,16 @@
-<div align="center">
+# AURIX – Music Player
 
-# 🎵 A U R I X  
-### **A modern, minimal & intelligent music player.**
-
-<img src="res/preview.png" width="800"/>
+Aurix is a modern desktop music player inspired by Spotify & YouTube Music,
+built using PyQt5 and pygame mixer.
 <br>
 
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-black?style=for-the-badge)
-![UI](https://img.shields.io/badge/UI-PyQt5-red?style=for-the-badge)
-![Audio](https://img.shields.io/badge/Audio-pygame-purple?style=for-the-badge)
-![Status](https://img.shields.io/badge/Build-Active-brightgreen?style=for-the-badge)
-
-</div>
+### UI Preview
+<img width="1919" height="1019" alt="Screenshot 2025-12-07 032834" src="https://github.com/user-attachments/assets/665ab749-6fc9-4165-b18a-72ef6771fac9" />
 
 <br>
 
-## ✨ Features
+## Features
 
 - 🎶 Play local music with full metadata support  
 - 🔍 Search songs directly from **YouTube Music**
@@ -30,7 +23,7 @@
 <br>
 
 
-## 📦 Technologies Used
+## Technologies Used
 
 | Feature | Technology |
 |--------|------------|
@@ -42,7 +35,7 @@
 <br>
 
 
-## ⚖️ License
+## License
 
 Aurix is an open-source project.  
 Free to use, modify, and experiment with.
@@ -50,9 +43,6 @@ Free to use, modify, and experiment with.
 <br>
 
 
-<div align="center">
-
 **Made with ❤️, Python, and late-night coding.**
 
-</div>
 
