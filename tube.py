@@ -29,70 +29,10 @@ def get_thumbnail(data: dict):
     return url_thmb
 
 
-def get_video_info(url : str = None) -> dict:
-    if not url:
-        raise ValueError(("Url can't be empty..."))
-    
-    videos_info = {}
-    
-    ydl_opts = {
-        'quiet': True,  # Suppress output
-        'no_warnings': True,
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-
-        with open("t.json", "w") as tf:
-            tf.write(json.dumps(info))
-
-        return info
-        title = info.get("title", "no_title")
-    
-        formats = info.get('formats', [])
-        best_audio_format = None
-
-
-        # audio format....file_size....
-        for f in formats:
-            if f.get('acodec') != 'none' and f.get('vcodec') == 'none':  # Audio-only formats
-                if not best_audio_format or f.get('filesize', 0) > best_audio_format.get('filesize', 0):
-                    best_audio_format = f
-
-        best_audio_size = best_audio_format.get('filesize', 0) if best_audio_format and best_audio_format.get('filesize') else 0
-        
-        videos_info["mp3"] = {
-            "size" : best_audio_size,
-            "id" : "mp3",
-            "resolution" : "none"
-        }
-
-        # Video resolutions....
-        for f in formats:
-            if f.get('vcodec') != 'none' and f.get('acodec') == 'none' and f.get("format_note") != None:
-                resolution = f.get('resolution')
-                if not resolution:
-                    continue
-
-                format_id = f.get('format_id')
-
-                # add audio size into video size 
-                # if video is premimum then size = 0
-                filesize = f.get('filesize', 0) + best_audio_size if f.get('filesize') else 0
-                format_note = f.get('format_note') # quality of the 
-                
-                if videos_info.get(format_note): #format_note exits in info
-                    # filesize is greter video quality is better
-                    if videos_info[format_note]["size"] > filesize:
-                        continue
-
-                videos_info[format_note] = {
-                    "size" : filesize,
-                    "id" : format_id,
-                    "resolution" : resolution
-                }
-
-    return videos_info, title
+class NoLogger:
+    def debug(self, msg): pass
+    def warning(self, msg): pass
+    def error(self, msg): pass
 
 
 
@@ -160,7 +100,7 @@ class Dtube(QThread): # download tube
         except Exception as e:
             print(f"Error In Downloading : {e}")
             self._emit_progress_hook("error")
-            self.finished.emit(None, None, None, None)
+            self.finished.emit(None, None, None)
 
 
     def _file_path(self):
@@ -232,6 +172,7 @@ class Dtube(QThread): # download tube
         audio.save()
 
 
+
         
     def _download(self) -> dict:
         if self.url == None:
@@ -242,8 +183,11 @@ class Dtube(QThread): # download tube
             'format': 'bestaudio[acodec=opus]/bestaudio[acodec^=mp4a]/bestaudio/best',
             'quiet': True,
             'no_warnings': True,
+            "logger": NoLogger(),
             'outtmpl': self.remove_ext_file_path(),
             "progress_hooks": [self._progress_hook], 
+            # hide ffmpeg conversion messages
+            "postprocessor_args": ['-hide_banner', '-loglevel', 'error'],
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',   # output codec
@@ -278,18 +222,28 @@ class Dtube(QThread): # download tube
 
         # Active download
         if d['status'] == 'downloading':
-            # percent formatting from yt-dlp
-            percent_str = d.get("_percent_str", "").strip().replace("%", "")
-            try:
-                percent = int(percent_str)
-            except:
-                percent = 0
+
+            _percent = d.get("_percent", None)
+            # if not found..
+            if _percent is None:
+                total_bytes = d.get("total_bytes", 0)
+                downloaded_bytes = d.get("downloaded_bytes", 0)
+
+                try:
+                    _percent = int((downloaded_bytes / total_bytes) * 100)
+                except:
+                    _percent = 0
+
+            else:
+                _percent = int(_percent)
+            
+
 
             if not self.is_downloading_emitted:
                 self.is_downloading_emitted = True
                 self._emit_progress_hook("downloading")
 
-            self._emit_progress_hook("percentage", percent)
+            self._emit_progress_hook("percentage", int(_percent))
             return
 
         # Download finished but not processed (FFmpeg next)
@@ -325,5 +279,3 @@ class Dtube(QThread): # download tube
 
 if __name__ == "__main__":
     url = "https://music.youtube.com/watch?v=Het4pXDENBI"
-    info = get_video_info(url=url)
-    # url  = "https://www.youtube.com/playlist?list=PLfqMhTWNBTe137I_EPQd34TsgV6IO55pt"#shradha
