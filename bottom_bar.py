@@ -1,9 +1,9 @@
 # bottom_bar.py
-# Aurix bottom player bar - YouTube web style
+# Aurix bottom player bar - YouTube web style with animated inline volume slider
 import os
 import sys
 from PyQt5.QtCore import (
-    Qt, QSize, QRectF, QPoint, QTimer, pyqtSignal, QEvent
+    Qt, QSize, QRectF, QPoint, QTimer, pyqtSignal, QPropertyAnimation, QEasingCurve
 )
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel,
@@ -12,6 +12,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import (
     QPainter, QColor, QPen, QPixmap, QFont, QIcon
 )
+
+from helper import get_pixmap, applyRoundedImage
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RES_DIR = os.path.join(BASE_DIR, "res")
@@ -38,7 +41,7 @@ class SeekBar(QWidget):
         self._bg_top = QColor(0, 0, 0)          # top (page) color
         self._bg_bottom = QColor(31, 31, 31)    # bottom bar color
         self._track_bg = QColor(80, 80, 80)     # grey track
-        self._track_fill = QColor(255, 0, 96)   # pink bar
+        self._track_fill = QColor(242, 0, 0)   # pink bar
         self._knob_color = QColor(255, 0, 96)
         self._knob_border = QColor(30, 30, 30)
 
@@ -67,46 +70,41 @@ class SeekBar(QWidget):
         p = QPainter(self)
         p.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
 
-        # split background in two halves (like screenshot)
         mid_y = h // 2
+
         p.fillRect(0, 0, w, mid_y, self._bg_top)
         p.fillRect(0, mid_y, w, h - mid_y, self._bg_bottom)
 
-        # track center exactly at border between top and bottom
+        # ---- No margins version ----
+        track_x = 0
+        track_w = w
         track_y = mid_y - self._bar_height // 2
-        margin = self._knob_radius + 2
-        track_x = margin
-        track_w = max(4, w - 2 * margin)
 
-        # background track
+        # Background bar
         p.setPen(Qt.NoPen)
-        bg_rect = QRectF(track_x, track_y, track_w, self._bar_height)
         p.setBrush(self._track_bg)
-        p.drawRoundedRect(bg_rect, 2, 2)
+        p.drawRoundedRect(QRectF(track_x, track_y, track_w, self._bar_height), 2, 2)
 
-        # filled part
+        # Filled position
         frac = self._position / self._duration if self._duration > 0 else 0.0
         fill_w = int(track_w * frac)
         if fill_w > 0:
-            fill_rect = QRectF(track_x, track_y, fill_w, self._bar_height)
             p.setBrush(self._track_fill)
-            p.drawRoundedRect(fill_rect, 2, 2)
+            p.drawRoundedRect(QRectF(track_x, track_y, fill_w, self._bar_height), 2, 2)
 
-        # knob on border
-        knob_x = track_x + fill_w
+        # Knob position covers edge cleanly
+        knob_x = fill_w
         knob_y = mid_y
 
-        # shadow
+        # Shadow
         p.setBrush(QColor(0, 0, 0, 110))
-        p.setPen(Qt.NoPen)
         p.drawEllipse(QPoint(int(knob_x), int(knob_y) + 1),
-                      self._knob_radius + 1, self._knob_radius + 1)
+                    self._knob_radius + 1, self._knob_radius + 1)
 
-        # knob circle
+        # Knob
         p.setBrush(self._knob_color)
         p.setPen(QPen(self._knob_border, 2))
-        p.drawEllipse(QPoint(int(knob_x), int(knob_y)),
-                      self._knob_radius, self._knob_radius)
+        p.drawEllipse(QPoint(int(knob_x), int(knob_y)), self._knob_radius, self._knob_radius)
 
         p.end()
 
@@ -160,71 +158,6 @@ class SeekBar(QWidget):
         super().leaveEvent(event)
 
 
-# ===================== VOLUME POPUP (hover) ===================== #
-class VolumePopup(QWidget):
-    volumeChanged = pyqtSignal(float)  # 0..1
-
-    def __init__(self, parent=None):
-        super().__init__(parent, Qt.Popup | Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.setFixedSize(60, 130)
-
-        self.slider = QSlider(Qt.Vertical, self)
-        self.slider.setRange(0, 100)
-        self.slider.setValue(70)
-        self.slider.setGeometry(22, 10, 16, 110)
-        self.slider.valueChanged.connect(self._on_value_changed)
-
-        self.setStyleSheet("""
-            QWidget {
-                background: rgba(30,30,30,240);
-                border-radius: 8px;
-                border: 1px solid rgba(255,255,255,8%);
-            }
-            QSlider::groove:vertical {
-                background: rgba(255,255,255,8%);
-                width: 6px;
-                margin: 4px 0;
-                border-radius: 3px;
-            }
-            QSlider::handle:vertical {
-                background: white;
-                height: 12px;
-                width: 12px;
-                margin: -6px 0;
-                border-radius: 6px;
-            }
-            QSlider::sub-page:vertical {
-                background: #ff0060;
-                border-radius: 3px;
-            }
-        """)
-
-        self._hide_timer = QTimer(self)
-        self._hide_timer.setSingleShot(True)
-        self._hide_timer.setInterval(250)
-        self._hide_timer.timeout.connect(self.hide)
-
-    def _on_value_changed(self, value: int):
-        self.volumeChanged.emit(value / 100.0)
-
-    def show_above(self, anchor: QWidget):
-        gpos = anchor.mapToGlobal(anchor.rect().topLeft())
-        x = gpos.x() + anchor.width() // 2 - self.width() // 2
-        y = gpos.y() - self.height() - 8
-        self.move(max(4, x), max(4, y))
-        self._hide_timer.stop()
-        self.show()
-
-    def enterEvent(self, event):
-        self._hide_timer.stop()
-        super().enterEvent(event)
-
-    def leaveEvent(self, event):
-        self._hide_timer.start()
-        super().leaveEvent(event)
-
-
 # ===================== MAIN BOTTOM BAR ===================== #
 class BottomBar(QWidget):
     seekRequested = pyqtSignal(int)
@@ -240,7 +173,7 @@ class BottomBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("BottomBar")
-        self.setMinimumHeight(80)
+        self.setMinimumHeight(125)
 
         # internal state
         self._duration = 0
@@ -271,7 +204,7 @@ class BottomBar(QWidget):
         left_l.setSpacing(8)
 
         self.prev_btn = self._make_btn(icon("previous.png"))
-        self.play_btn = self._make_btn(icon("next-button.png"))  # use next-button as PLAY icon
+        self.play_btn = self._make_btn(icon("play-card.png"))
         self.play_btn.setCheckable(True)
         self.next_btn = self._make_btn(icon("next.png"))
 
@@ -291,10 +224,25 @@ class BottomBar(QWidget):
         center_l.setContentsMargins(0, 0, 0, 0)
         center_l.setSpacing(10)
 
+        # cover...
+        path = "C:\\Users\\freya\\Music\\Barbaad.mp3"
+        pix  = get_pixmap(path)
+
+        size = 48
+
         self.cover = QLabel(center_w)
-        self.cover.setFixedSize(48, 48)
+        # self.image_label.setAlignment(Qt.AlignCenter)
+        self.cover.setFixedSize(size, size)
         self.cover.setScaledContents(True)
-        self.cover.setStyleSheet("border-radius:4px; background:#222;")
+        applyRoundedImage(self.cover, pix, size=size, radius=8)
+        self.cover.setStyleSheet(f"""
+            QLabel {{
+                border: none;
+                padding: 0;
+                border-radius: 8px;
+            }}
+        """)
+
 
         text_wrap = QWidget(center_w)
         text_v = QVBoxLayout(text_wrap)
@@ -313,7 +261,7 @@ class BottomBar(QWidget):
 
         self.dislike_btn = self._make_btn(icon("dislike.png"))
         self.like_btn = self._make_btn(icon("like.png"))
-        self.more_btn = self._make_btn(QIcon())  # you can replace with 3-dot icon later
+        self.more_btn = self._make_btn(QIcon())  # placeholder
         self.more_btn.setText("⋯")
 
         center_l.addWidget(self.cover)
@@ -323,19 +271,53 @@ class BottomBar(QWidget):
         center_l.addWidget(self.more_btn)
         center_l.addStretch(1)
 
-        # ----- Right (volume + shuffle + repeat) -----
+        # ----- Right (animated volume slider + shuffle + repeat) -----
         right_w = QWidget(controls)
         right_l = QHBoxLayout(right_w)
         right_l.setContentsMargins(0, 0, 0, 0)
-        right_l.setSpacing(8)
+        right_l.setSpacing(6)
 
         right_l.addStretch(1)
 
+        # volume slider (animated)
+        self.volume_slider = QSlider(Qt.Horizontal, right_w)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(int(self._volume * 100))
+        self.volume_slider.setFixedHeight(16)
+        self.volume_slider.setMinimumWidth(0)
+        self.volume_slider.setMaximumWidth(0)  # start hidden (width=0)
+        self.volume_slider.valueChanged.connect(self._on_volume_slider)
+
+        self.volume_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                background: rgba(255,255,255,8%);
+                height: 4px;
+                border-radius: 2px;
+            }
+            QSlider::handle:horizontal {
+                background: white;
+                width: 10px;
+                height: 10px;
+                margin: -4px 0;
+                border-radius: 5px;
+            }
+            QSlider::sub-page:horizontal {
+                background: #ff0060;
+                border-radius: 2px;
+            }
+        """)
+
+        # speaker button
         self.volume_btn = self._make_btn(icon("volume.png"))
+        self.volume_btn.clicked.connect(self._on_volume_btn_clicked)
+
+        # add in order: slider (left) then button
+        right_l.addWidget(self.volume_slider)
+        right_l.addWidget(self.volume_btn)
+
         self.shuffle_btn = self._make_btn(icon("shuffle-off.png"))
         self.repeat_btn = self._make_btn(icon("repeat-off.png"))
 
-        right_l.addWidget(self.volume_btn)
         right_l.addWidget(self.shuffle_btn)
         right_l.addWidget(self.repeat_btn)
 
@@ -370,12 +352,6 @@ class BottomBar(QWidget):
         }
         """)
 
-        # volume popup
-        self.volume_popup = VolumePopup(self)
-        self.volume_popup.volumeChanged.connect(self._on_volume_changed)
-        self.volume_popup.slider.setValue(int(self._volume * 100))
-        self.volume_btn.installEventFilter(self)
-
         # connections
         self.prev_btn.clicked.connect(self.previousClicked)
         self.next_btn.clicked.connect(self.nextClicked)
@@ -385,14 +361,17 @@ class BottomBar(QWidget):
         self.shuffle_btn.clicked.connect(self._on_shuffle_clicked)
         self.repeat_btn.clicked.connect(self._on_repeat_clicked)
 
-        # default cover: if you want to show something from res, set here
-        # e.g. placeholder.png
+        # volume animation
+        self._volume_anim = QPropertyAnimation(self.volume_slider, b"maximumWidth", self)
+        self._volume_anim.setDuration(160)
+        self._volume_anim.setEasingCurve(QEasingCurve.OutCubic)
+        self._volume_target_width = 120
 
     # -------------- helpers & API -------------- #
     def _make_btn(self, ic: QIcon) -> QToolButton:
         btn = QToolButton(self)
         btn.setIcon(ic)
-        btn.setIconSize(QSize(24, 24))  # icons are 64px; scaled down
+        btn.setIconSize(QSize(24, 24))  # your PNGs are 64px; scaled down
         btn.setCursor(Qt.PointingHandCursor)
         btn.setAutoRaise(True)
         return btn
@@ -423,13 +402,14 @@ class BottomBar(QWidget):
         if self._playing:
             self.play_btn.setIcon(icon("pause.png"))
         else:
-            self.play_btn.setIcon(icon("next-button.png"))
+            self.play_btn.setIcon(icon("play-card.png"))
         self.playToggled.emit(self._playing)
+
 
     def set_volume(self, volume: float):
         volume = max(0.0, min(1.0, float(volume)))
         self._volume = volume
-        self.volume_popup.slider.setValue(int(volume * 100))
+        self.volume_slider.setValue(int(volume * 100))
         self._update_volume_icon()
         self.volumeChanged.emit(volume)
 
@@ -456,10 +436,25 @@ class BottomBar(QWidget):
     def _on_play_clicked(self):
         self.set_playing(not self._playing)
 
-    def _on_volume_changed(self, v: float):
-        self._volume = v
+    # ---- volume slider + animation ---- #
+    def _on_volume_btn_clicked(self):
+        # animate show/hide by changing maximumWidth
+        self._volume_anim.stop()
+        current = self.volume_slider.maximumWidth()
+        if current == 0:
+            # open
+            self._volume_anim.setStartValue(0)
+            self._volume_anim.setEndValue(self._volume_target_width)
+        else:
+            # close
+            self._volume_anim.setStartValue(current)
+            self._volume_anim.setEndValue(0)
+        self._volume_anim.start()
+
+    def _on_volume_slider(self, value: int):
+        self._volume = value / 100.0
         self._update_volume_icon()
-        self.volumeChanged.emit(v)
+        self.volumeChanged.emit(self._volume)
 
     def _update_volume_icon(self):
         if self._volume <= 0.01:
@@ -467,11 +462,11 @@ class BottomBar(QWidget):
         else:
             self.volume_btn.setIcon(icon("volume.png"))
 
+    # ---- like / dislike / shuffle / repeat ---- #
     def _on_like_clicked(self):
         self._liked = not self._liked
         if self._liked:
             self.like_btn.setIcon(icon("like-on.png"))
-            # optional: cancel dislike if user likes
             if self._disliked:
                 self._disliked = False
                 self.dislike_btn.setIcon(icon("dislike.png"))
@@ -507,26 +502,18 @@ class BottomBar(QWidget):
         self.repeat_btn.setIcon(icon(ic))
         self.repeatModeChanged.emit(self._repeat_mode)
 
-    # -------------- volume hover handling -------------- #
-    def eventFilter(self, watched, event):
-        if watched is self.volume_btn:
-            if event.type() == QEvent.Enter:
-                self.volume_popup.show_above(self.volume_btn)
-                return True
-            elif event.type() == QEvent.Leave:
-                self.volume_popup._hide_timer.start()
-                return True
-        return super().eventFilter(watched, event)
 
-
+# ===================== DEMO (optional) ===================== #
 class DemoWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Aurix Bottom Bar Demo")
-        self.resize(1000, 180)
+        self.resize(1500, 880)
 
         central = QWidget(self)
         layout = QVBoxLayout(central)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         layout.addStretch(1)
 
         self.bottom = BottomBar(self)

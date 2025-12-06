@@ -26,7 +26,7 @@ from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
 import requests
 from tube import Dtube
-from helper import get_pixmap
+from helper import get_pixmap, applyRoundedImage
 from common import ScrollArea
 from helper import YTSearchThread, ConfigResult, ConvertingSpinner
 from PyQt5.QtCore import (
@@ -34,28 +34,7 @@ from PyQt5.QtCore import (
 )
 
 from typing import List
-def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
 
-    pm = pix.scaled(
-        size,
-        size,
-        Qt.KeepAspectRatioByExpanding,
-        Qt.SmoothTransformation
-    )
-
-    rounded = QPixmap(QSize(size, size))
-    rounded.fill(Qt.transparent)
-
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, size, size, radius, radius)
-
-    painter.setClipPath(path)
-    painter.drawPixmap(0, 0, pm)
-    painter.end()
-    label.setPixmap(rounded)
 
 
 

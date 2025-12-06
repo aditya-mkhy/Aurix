@@ -1,10 +1,12 @@
 from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QIcon, QPen
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QScrollArea, QFrame, QMenu
 )
+
+from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
 import os
 import sys
@@ -137,6 +139,29 @@ def get_pixmap(path: str):
             return pix
         
     return QPixmap()
+
+def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
+
+    pm = pix.scaled(
+        size,
+        size,
+        Qt.KeepAspectRatioByExpanding,
+        Qt.SmoothTransformation
+    )
+
+    rounded = QPixmap(QSize(size, size))
+    rounded.fill(Qt.transparent)
+
+    painter = QPainter(rounded)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    path = QPainterPath()
+    path.addRoundedRect(0, 0, size, size, radius, radius)
+
+    painter.setClipPath(path)
+    painter.drawPixmap(0, 0, pm)
+    painter.end()
+    label.setPixmap(rounded)
 
 
 class LocalFilesLoader(QThread):
