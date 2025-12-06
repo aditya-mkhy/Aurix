@@ -82,13 +82,19 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar = BottomBar(parent=self)
         outer.addWidget(self.bottom_bar)
 
+        duration = 3 * 60 + 34
+        self.bottom_bar.set_track(
+            "Barbaad",
+            "Jubin Nautiyal • 155M views • 982K likes",
+            duration_seconds=duration
+        )
+
     def _play_requested(self, file_path: str):
         print(f"PlayingByPlayer : {file_path}")
         self.home_screen.play_song(file_path)
 
     def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
         self.home_screen.add_item(title, subtitle_text, path, pix, play = play)
-
 
         # ---- connect engine signals ----
         # self.engine.positionChanged.connect(self.on_engine_position)

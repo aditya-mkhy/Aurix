@@ -1,5 +1,3 @@
-# bottom_bar.py
-# Aurix bottom player bar - YouTube web style with animated inline volume slider
 import os
 import sys
 from PyQt5.QtCore import (
@@ -7,7 +5,7 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel,
-    QToolButton, QMainWindow, QSlider
+    QToolButton, QMainWindow, QSlider, QFrame
 )
 from PyQt5.QtGui import (
     QPainter, QColor, QPen, QPixmap, QFont, QIcon
@@ -188,7 +186,7 @@ class BottomBar(QWidget):
         self._shuffle = False
         self._repeat_mode = 0  # 0 off, 1 all, 2 one
 
-        # self.setStyleSheet("background: #bdbdbd;")
+        self.setStyleSheet("background: #1f1f1f;")
 
         # SEEK BAR
         self.seekbar = SeekBar(self)
@@ -206,7 +204,7 @@ class BottomBar(QWidget):
 
         # -> Left 
         left_w = QWidget(controls)
-        # left_w.setStyleSheet("background: pink;")
+        left_w.setStyleSheet("background: transparent;")
         left_l = QHBoxLayout(left_w)
         left_l.setContentsMargins(0, 0, 0, 10)
         left_l.setSpacing(15)
@@ -217,7 +215,7 @@ class BottomBar(QWidget):
         self.next_btn = self._make_btn(icon("next.png"), size=34)
 
         self.time_label = QLabel("0:00 / 0:00", left_w)
-        self.time_label.setFont(QFont("Segoe UI", 9))
+        self.time_label.setFont(QFont("Segoe UI", 9, QFont.DemiBold))
         self.time_label.setStyleSheet("color: #bdbdbd;")
 
         left_l.addWidget(self.prev_btn)
@@ -228,7 +226,7 @@ class BottomBar(QWidget):
 
         # -> Center
         center_w = QWidget(controls)
-        # center_w.setStyleSheet("background: orange;")
+        center_w.setStyleSheet("background: transparent;")
         center_l = QHBoxLayout(center_w)
         center_l.setContentsMargins(0, 0, 0, 10)
         center_l.setSpacing(10)
@@ -255,7 +253,7 @@ class BottomBar(QWidget):
 
 
         text_wrap = QWidget(center_w)
-        # text_wrap.setStyleSheet("background: black;")
+        text_wrap.setStyleSheet("background: transparent;")
         text_wrap.setFixedHeight(60)
         text_v = QVBoxLayout(text_wrap)
         text_v.setContentsMargins(0, 0, 0, 0)
@@ -291,7 +289,7 @@ class BottomBar(QWidget):
 
         # -> Right
         right_w = QWidget(controls)
-        # right_w.setStyleSheet("background: rgba(204, 197, 10, 0.744)")
+        right_w.setStyleSheet("background: transparent;")
         right_w.setFixedWidth(330)
         right_l = QHBoxLayout(right_w)
         right_l.setContentsMargins(0, 0, 0, 10)
@@ -303,23 +301,23 @@ class BottomBar(QWidget):
         self.volume_slider = QSlider(Qt.Horizontal, right_w)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(int(self._volume * 100))
-        self.volume_slider.setFixedHeight(16)
+        self.volume_slider.setFixedHeight(20)
         self.volume_slider.setMinimumWidth(0)
         self.volume_slider.setMaximumWidth(0)  # start hidden (width=0)
         self.volume_slider.valueChanged.connect(self._on_volume_slider)
 
         self.volume_slider.setStyleSheet("""
             QSlider::groove:horizontal {
-                background: rgba(255,255,255,8%);
+                background: rgba(255, 255, 255, 8%);
                 height: 4px;
                 border-radius: 2px;
             }
             QSlider::handle:horizontal {
                 background: white;
-                width: 20px;
-                height: 20px;
-                margin: -8px 0;
-                border-radius: 10px;
+                width: 14px;
+                height: 14px;
+                margin: -5px 0;
+                border-radius: 7px;
             }
             QSlider::sub-page:horizontal {
                 background: #ff0060;

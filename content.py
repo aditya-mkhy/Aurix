@@ -610,10 +610,10 @@ class ContentArea(QFrame):
         self.player.set_volume(0.6)
 
         # load local mp3 files....
-        self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
-        self.local_file_loader.config_one.connect(self.add_item)
-        self.local_file_loader.finished.connect(self._finish_adding_loc_files)
-        self.local_file_loader.start()
+        # self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
+        # self.local_file_loader.config_one.connect(self.add_item)
+        # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
+        # self.local_file_loader.start()
 
     def play_song(self, path: str = None):
         if not path:
