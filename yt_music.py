@@ -252,6 +252,7 @@ class HoverThumb(QWidget):
 
 class TrackRow(QWidget):
     downloadRequested = pyqtSignal(str, str, str, int)
+    playRequested = pyqtSignal(str)
 
     def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, my_id: int = None, parent=None):
         super().__init__(parent)
@@ -259,6 +260,7 @@ class TrackRow(QWidget):
         self.subtitle_txt = subtitle
         self.url = url
         self.my_id = my_id
+        self.file_path = None
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(108)
@@ -271,6 +273,7 @@ class TrackRow(QWidget):
         # cover
         self.thumb = HoverThumb(pix=pix, parent=self)
         self.thumb.downloadRequested.connect(self._download_requested)
+        self.thumb.playRequested.connect(self._play_requested)
         main.addWidget(self.thumb)
 
         # text block
@@ -415,14 +418,20 @@ class TrackRow(QWidget):
 
     def get_mode(self):
         return self.thumb.mode
+    
+    def set_file_path(self, file_path: str):
+        self.file_path = file_path
 
     def setProgress(self, value: int):
         self.thumb.setProgress(value)
 
-
     def _download_requested(self, txt):
         print(f"Recieved [TrackRow] : {txt}")
         self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url, self.my_id)
+
+    def _play_requested(self, txt):
+        print(f"Play Requested : {txt}")
+        self.playRequested.emit(self.file_path)
 
 
     def show_menu(self):
@@ -440,6 +449,8 @@ class TrackRow(QWidget):
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
     addItemHomeRequested = pyqtSignal(str, str, str, QPixmap, bool)
+    playRequested = pyqtSignal(str)
+
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -515,6 +526,7 @@ class YtScreen(QFrame):
         _id = len(self.track_list)
         row = TrackRow(title, subtitle, url, pix, my_id = _id)
         row.downloadRequested.connect(self._download_requested)
+        row.playRequested.connect(self._play_requested)
         self.main_layout.addWidget(row)
 
         # add row in track_list
@@ -570,8 +582,14 @@ class YtScreen(QFrame):
         self._search_threads.append(thread)
 
 
-    def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None):
+    def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None, track_id: int = None):
         print(f"FileDownloaded : {path}")
+
+        # set the downloaded file path
+        if track_id:
+            track_obj = self.track_list[track_id]
+            track_obj.set_file_path(path)
+
         play = True
         self.addItemHomeRequested.emit(title, subtitle_text, path,  get_pixmap(path), play)
 
@@ -581,29 +599,6 @@ class YtScreen(QFrame):
 
         thread.deleteLater()
 
-    def tick(self, track_id):
-        self.count += 2
-        req_item_obj = self.track_list[track_id]
-
-        if req_item_obj.get_mode() == "loading":
-            if self.count < 50:
-                return
-            self.count = 0
-            req_item_obj.set_mode("downloading")
-
-
-        if req_item_obj.get_mode() == "downloading":
-            req_item_obj.setProgress(self.count)
-            if self.count < 100:
-                return
-            
-            self.count = 0
-            req_item_obj.set_mode("converting")
-
-
-        if self.count >= 50:
-            self.timer.stop()
-            req_item_obj.set_mode("done")
 
     def download_progress(self, track_id, mode, value: int = 0):
         if mode == "error":
@@ -614,13 +609,20 @@ class YtScreen(QFrame):
         track_obj = self.track_list[track_id]
 
         if mode != "percentage":
-            print(f"From track_id[{track_id}]  -> {mode}")
             track_obj.set_mode(mode)
+            return
 
-        print(f"From track_id[{track_id}]  -> {mode} = {value}")
         # set progess value
         track_obj.setProgress(int(value))
+    
+    def _play_requested(self, file_path: str):
+        if not file_path:
+            print(f"Can't play an invalid file path")
+            return
         
+        print(f"sending request to play : {file_path}")
+        self.playRequested.emit(file_path)
+
 
     def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, track_id: int = None):
         print(f"Track[{track_id}] [download request] => {title}")

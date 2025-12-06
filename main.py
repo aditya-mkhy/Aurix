@@ -64,6 +64,7 @@ class MusicMainWindow(QMainWindow):
         self.yt_screen = YtScreen(parent=self)
         # call when yt want to all item to home screen and play
         self.yt_screen.addItemHomeRequested.connect(self.add_item_home_requested)
+        self.yt_screen.playRequested.connect(self._play_requested)
 
 
         outer.addWidget(middle_frame, 1)
@@ -79,6 +80,10 @@ class MusicMainWindow(QMainWindow):
         # bottombar
         self.bottom_bar = Bottombar(parent=self)
         outer.addWidget(self.bottom_bar)
+
+    def _play_requested(self, file_path: str):
+        print(f"PlayingByPlayer : {file_path}")
+        self.home_screen.play_song(file_path)
 
     def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
         self.home_screen.add_item(title, subtitle_text, path, pix, play = play)

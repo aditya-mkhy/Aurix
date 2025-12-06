@@ -37,7 +37,7 @@ class NoLogger:
 
 
 class Dtube(QThread): # download tube
-    finished = pyqtSignal(str, str, str)
+    finished = pyqtSignal(str, str, str, int)
     progress = pyqtSignal(int, str, int)
 
     def __init__(
@@ -96,11 +96,11 @@ class Dtube(QThread): # download tube
             self._add_tags(info) #
 
             self._emit_progress_hook("done")
-            self.finished.emit(self.title, self.subtitle_text, self.file_path)
+            self.finished.emit(self.title, self.subtitle_text, self.file_path, self.track_id)
         except Exception as e:
             print(f"Error In Downloading : {e}")
             self._emit_progress_hook("error")
-            self.finished.emit(None, None, None)
+            self.finished.emit(None, None, None, None)
 
 
     def _file_path(self):

@@ -494,15 +494,21 @@ class PlaylistGrid(QListWidget):
 
         # self.itemClicked.connect(self._on_item_clicked)
 
-    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None):
+    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None, top=False):
         item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle_text, path, pix, play_callback=play_callback, parent=self)
+        tile = PlaylistCard(title, subtitle_text, path, pix,
+                            play_callback=play_callback, parent=self)
         item.setSizeHint(tile.size() + QSize(30, 30))
-        self.addItem(item)
+
+        if top:
+            # insert at index 0 → pushes previous items down
+            self.insertItem(0, item)
+        else:
+            # normal behavior → add at end
+            self.addItem(item)
+
         self.setItemWidget(item, tile)
         self._update_height_for_content()
-
-        item = QListWidgetItem()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -560,8 +566,8 @@ class PlaylistSection(QWidget):
         self.grid = PlaylistGrid()
         layout.addWidget(self.grid)
 
-    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None):
-        self.grid.add_playlist(title, subtitle_text, path, pix, play_callback = play_callback)
+    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None, top = False):
+        self.grid.add_playlist(title, subtitle_text, path, pix, play_callback = play_callback, top=top)
 
 
 
@@ -604,10 +610,10 @@ class ContentArea(QFrame):
         self.player.set_volume(0.6)
 
         # load local mp3 files....
-        # self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
-        # self.local_file_loader.config_one.connect(self.add_item)
-        # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
-        # self.local_file_loader.start()
+        self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
+        self.local_file_loader.config_one.connect(self.add_item)
+        self.local_file_loader.finished.connect(self._finish_adding_loc_files)
+        self.local_file_loader.start()
 
     def play_song(self, path: str = None):
         if not path:
@@ -627,7 +633,8 @@ class ContentArea(QFrame):
 
 
     def add_item(self, title, subtitle_text, path, pix, play = False):
-        self.section_library.add_playlist(title, subtitle_text, path, pix, play_callback=self.play_song)
+        # is play then add on top
+        self.section_library.add_playlist(title, subtitle_text, path, pix, play_callback=self.play_song, top=play)
 
         if play:
             self.play_song(path)
