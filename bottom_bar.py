@@ -31,19 +31,21 @@ class SeekBar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setStyleSheet("background: pink;")
+        self.setFixedHeight(30)
+
         self._duration = 0         # seconds
         self._position = 0         # seconds
         self._dragging = False
 
         self._bar_height = 4
-        self._knob_radius = 7
+        self._knob_radius = 10
 
-        self._bg_top = QColor(0, 0, 0)          # top (page) color
-        self._bg_bottom = QColor(31, 31, 31)    # bottom bar color
+        self._bg_top = QColor(0, 0, 0)         # top (page) color
+        self._bg_bottom = QColor(31, 31, 31)   # bottom bar color
         self._track_bg = QColor(80, 80, 80)     # grey track
         self._track_fill = QColor(242, 0, 0)   # red bar
         self._knob_color = QColor(242, 0, 0)
-        self._knob_border = QColor(30, 30, 30)
 
         self.setMouseTracking(True)
         self.setMinimumHeight(20)
@@ -96,15 +98,16 @@ class SeekBar(QWidget):
         knob_x = fill_w
         knob_y = mid_y
 
-        # Shadow
-        p.setBrush(QColor(0, 0, 0, 110))
-        p.drawEllipse(QPoint(int(knob_x), int(knob_y) + 1),
-                    self._knob_radius + 1, self._knob_radius + 1)
+        # # Shadow
+        # p.setBrush(QColor(0, 0, 0, 110))
+        # p.drawEllipse(QPoint(int(knob_x), int(knob_y) + 1),
+        #             self._knob_radius + 1, self._knob_radius + 1)
 
         # Knob
         p.setBrush(self._knob_color)
-        p.setPen(QPen(self._knob_border, 2))
+        p.setPen(Qt.NoPen)
         p.drawEllipse(QPoint(int(knob_x), int(knob_y)), self._knob_radius, self._knob_radius)
+
 
         p.end()
 
@@ -173,7 +176,7 @@ class BottomBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("BottomBar")
-        self.setMinimumHeight(125)
+        self.setFixedHeight(120)
 
         # internal state
         self._duration = 0
@@ -185,28 +188,33 @@ class BottomBar(QWidget):
         self._shuffle = False
         self._repeat_mode = 0  # 0 off, 1 all, 2 one
 
-        # ========== SEEK BAR ==========
+        # self.setStyleSheet("background: #bdbdbd;")
+
+        # SEEK BAR
         self.seekbar = SeekBar(self)
         self.seekbar.seekRequested.connect(self._on_seek)
         self.seekbar.positionPreview.connect(self._on_preview)
 
-        # ========== CONTROLS ROW ==========
+        # CONTROLS ROW 
         controls = QWidget(self)
         controls.setObjectName("ControlsRow")
+        # controls.setFixedHeight(100)
         controls_layout = QHBoxLayout(controls)
-        controls_layout.setContentsMargins(12, 8, 12, 8)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
         controls_layout.setSpacing(10)
+        controls_layout.addSpacing(30)
 
-        # ----- Left (prev / play / next / time) -----
+        # -> Left 
         left_w = QWidget(controls)
+        # left_w.setStyleSheet("background: pink;")
         left_l = QHBoxLayout(left_w)
-        left_l.setContentsMargins(0, 0, 0, 0)
-        left_l.setSpacing(8)
+        left_l.setContentsMargins(0, 0, 0, 10)
+        left_l.setSpacing(15)
 
-        self.prev_btn = self._make_btn(icon("previous.png"))
-        self.play_btn = self._make_btn(icon("play-card.png"))
+        self.prev_btn = self._make_btn(icon("previous.png"), size=34)
+        self.play_btn = self._make_btn(icon("play-card.png"), size=44)
         self.play_btn.setCheckable(True)
-        self.next_btn = self._make_btn(icon("next.png"))
+        self.next_btn = self._make_btn(icon("next.png"), size=34)
 
         self.time_label = QLabel("0:00 / 0:00", left_w)
         self.time_label.setFont(QFont("Segoe UI", 9))
@@ -218,17 +226,19 @@ class BottomBar(QWidget):
         left_l.addWidget(self.time_label)
         left_l.addStretch(1)
 
-        # ----- Center (cover + title/meta + like/dislike/more) -----
+        # -> Center
         center_w = QWidget(controls)
+        # center_w.setStyleSheet("background: orange;")
         center_l = QHBoxLayout(center_w)
-        center_l.setContentsMargins(0, 0, 0, 0)
+        center_l.setContentsMargins(0, 0, 0, 10)
         center_l.setSpacing(10)
+        center_l.setAlignment(Qt.AlignCenter) 
 
         # cover...
         path = "C:\\Users\\freya\\Music\\Barbaad.mp3"
         pix  = get_pixmap(path)
 
-        size = 48
+        size = 80
 
         self.cover = QLabel(center_w)
         # self.image_label.setAlignment(Qt.AlignCenter)
@@ -245,37 +255,47 @@ class BottomBar(QWidget):
 
 
         text_wrap = QWidget(center_w)
+        # text_wrap.setStyleSheet("background: black;")
+        text_wrap.setFixedHeight(60)
         text_v = QVBoxLayout(text_wrap)
         text_v.setContentsMargins(0, 0, 0, 0)
-        text_v.setSpacing(2)
+        text_v.setSpacing(0)
 
-        self.title_label = QLabel("Track Title", text_wrap)
-        self.title_label.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        self.title_label = QLabel("", text_wrap)
+        self.title_label.setFont(QFont("Segoe UI", 13, QFont.Bold))
         self.title_label.setStyleSheet("color: white;")
-        self.meta_label = QLabel("Artist • Album • 2018", text_wrap)
-        self.meta_label.setFont(QFont("Segoe UI", 9))
+        self.meta_label = QLabel("", text_wrap)
+        self.meta_label.setFont(QFont("Segoe UI", 12, QFont.DemiBold))
         self.meta_label.setStyleSheet("color: #bdbdbd;")
 
         text_v.addWidget(self.title_label)
         text_v.addWidget(self.meta_label)
 
-        self.dislike_btn = self._make_btn(icon("dislike.png"))
-        self.like_btn = self._make_btn(icon("like.png"))
-        self.more_btn = self._make_btn(QIcon())  # placeholder
-        self.more_btn.setText("⋯")
+        self.dislike_btn = self._make_btn(icon("dislike.png"), size=33)
+        self.like_btn = self._make_btn(icon("like.png"), size=33)
+        # self.more_btn = self._make_btn(QIcon())  # placeholder
+        # self.more_btn.setText("⋯")
 
+        center_l.addStretch()
         center_l.addWidget(self.cover)
-        center_l.addWidget(text_wrap)
-        center_l.addWidget(self.dislike_btn)
-        center_l.addWidget(self.like_btn)
-        center_l.addWidget(self.more_btn)
-        center_l.addStretch(1)
+        center_l.addSpacing(10)
 
-        # ----- Right (animated volume slider + shuffle + repeat) -----
+        center_l.addWidget(text_wrap)
+        center_l.addSpacing(10)
+        center_l.addWidget(self.dislike_btn)
+        center_l.addSpacing(10)
+        center_l.addWidget(self.like_btn)
+        # center_l.addWidget(self.more_btn)
+        center_l.addStretch()
+
+
+        # -> Right
         right_w = QWidget(controls)
+        # right_w.setStyleSheet("background: rgba(204, 197, 10, 0.744)")
+        right_w.setFixedWidth(330)
         right_l = QHBoxLayout(right_w)
-        right_l.setContentsMargins(0, 0, 0, 0)
-        right_l.setSpacing(6)
+        right_l.setContentsMargins(0, 0, 0, 10)
+        right_l.setSpacing(10)
 
         right_l.addStretch(1)
 
@@ -296,10 +316,10 @@ class BottomBar(QWidget):
             }
             QSlider::handle:horizontal {
                 background: white;
-                width: 10px;
-                height: 10px;
-                margin: -4px 0;
-                border-radius: 5px;
+                width: 20px;
+                height: 20px;
+                margin: -8px 0;
+                border-radius: 10px;
             }
             QSlider::sub-page:horizontal {
                 background: #ff0060;
@@ -308,32 +328,35 @@ class BottomBar(QWidget):
         """)
 
         # speaker button
-        self.volume_btn = self._make_btn(icon("volume.png"))
+        self.volume_btn = self._make_btn(icon("volume.png"), size=33)
         self.volume_btn.clicked.connect(self._on_volume_btn_clicked)
 
-        # add in order: slider (left) then button
+    
         right_l.addWidget(self.volume_slider)
         right_l.addWidget(self.volume_btn)
+        right_l.addSpacing(15)
 
-        self.shuffle_btn = self._make_btn(icon("shuffle-off.png"))
-        self.repeat_btn = self._make_btn(icon("repeat-off.png"))
+        self.shuffle_btn = self._make_btn(icon("shuffle-off.png"), size=33)
+        self.repeat_btn = self._make_btn(icon("repeat-off.png"), size=33)
 
         right_l.addWidget(self.shuffle_btn)
+        right_l.addSpacing(15)
         right_l.addWidget(self.repeat_btn)
+        right_l.addSpacing(45)
 
         # assemble controls row
         controls_layout.addWidget(left_w, 0)
         controls_layout.addWidget(center_w, 1)
         controls_layout.addWidget(right_w, 0)
 
-        # ========== main layout ==========
+        # main layout
         vbox = QVBoxLayout(self)
         vbox.setContentsMargins(0, 0, 0, 0)
         vbox.setSpacing(0)
         vbox.addWidget(self.seekbar)
         vbox.addWidget(controls)
 
-        # styling
+        # styling #1f1f1f
         self.setStyleSheet("""
         QWidget#BottomBar {
             background-color: #1f1f1f;
@@ -341,14 +364,6 @@ class BottomBar(QWidget):
         }
         QWidget#ControlsRow {
             background-color: #1f1f1f;
-        }
-        QToolButton {
-            border: none;
-            padding: 4px;
-        }
-        QToolButton:hover {
-            background-color: rgba(255,255,255,6%);
-            border-radius: 4px;
         }
         """)
 
@@ -367,13 +382,24 @@ class BottomBar(QWidget):
         self._volume_anim.setEasingCurve(QEasingCurve.OutCubic)
         self._volume_target_width = 120
 
-    # -------------- helpers & API -------------- #
-    def _make_btn(self, ic: QIcon) -> QToolButton:
+    # helpers & API
+    def _make_btn(self, ic: QIcon, size:int = 24) -> QToolButton:
         btn = QToolButton(self)
         btn.setIcon(ic)
-        btn.setIconSize(QSize(24, 24))  # your PNGs are 64px; scaled down
+        btn.setIconSize(QSize(size, size))  # your PNGs are 64px; scaled down
         btn.setCursor(Qt.PointingHandCursor)
         btn.setAutoRaise(True)
+
+        btn.setStyleSheet(f"""
+            QToolButton {{
+                border: none;
+                padding: 10px;
+            }}
+            QToolButton:hover {{
+                background-color: rgba(255,255,255, 5%);
+                border-radius: {(size + 20)// 2}px;
+            }}
+        """)
         return btn
 
     def set_track(self, title: str, meta: str, duration_seconds: int, cover: QPixmap = None):
@@ -413,7 +439,7 @@ class BottomBar(QWidget):
         self._update_volume_icon()
         self.volumeChanged.emit(volume)
 
-    # -------------- internal handlers -------------- #
+    # handlers
     def _format_time(self, secs: int) -> str:
         m = secs // 60
         s = secs % 60
@@ -436,7 +462,7 @@ class BottomBar(QWidget):
     def _on_play_clicked(self):
         self.set_playing(not self._playing)
 
-    # ---- volume slider + animation ---- #
+    # volume slider + animation 
     def _on_volume_btn_clicked(self):
         # animate show/hide by changing maximumWidth
         self._volume_anim.stop()
@@ -462,7 +488,7 @@ class BottomBar(QWidget):
         else:
             self.volume_btn.setIcon(icon("volume.png"))
 
-    # ---- like / dislike / shuffle / repeat ---- #
+    # like / dislike / shuffle / repeat
     def _on_like_clicked(self):
         self._liked = not self._liked
         if self._liked:
@@ -503,7 +529,6 @@ class BottomBar(QWidget):
         self.repeatModeChanged.emit(self._repeat_mode)
 
 
-# ===================== DEMO (optional) ===================== #
 class DemoWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -522,12 +547,11 @@ class DemoWindow(QMainWindow):
 
         duration = 3 * 60 + 34
         self.bottom.set_track(
-            "Baarish Lete Aana",
-            "Darshan Raval • Baarish Lete Aana • 2018",
+            "Barbaad",
+            "Jubin Nautiyal • 155M views • 982K likes",
             duration_seconds=duration
         )
 
-        # demo timer to move progress
         self._timer = QTimer(self)
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._advance)
