@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 from sidebar import Sidebar
 from topbar import Topbar
 from bottombar import Bottombar
+from bottom_bar import BottomBar
 from content import ContentArea
 from util import dark_title_bar
 # from yt import YtScreen
@@ -78,7 +79,7 @@ class MusicMainWindow(QMainWindow):
         self.content_area.setCurrentIndex(0)
 
         # bottombar
-        self.bottom_bar = Bottombar(parent=self)
+        self.bottom_bar = BottomBar(parent=self)
         outer.addWidget(self.bottom_bar)
 
     def _play_requested(self, file_path: str):
