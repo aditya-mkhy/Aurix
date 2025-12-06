@@ -605,37 +605,33 @@ class YtScreen(QFrame):
             self.timer.stop()
             req_item_obj.set_mode("done")
 
-    def download_progress(self, track_id, mode, value):
+    def download_progress(self, track_id, mode, value: int = 0):
         if mode == "error":
             print(f"Error occured during downloading..")
             return
         
+        # track object...
+        track_obj = self.track_list[track_id]
+
         if mode != "percentage":
             print(f"From track_id[{track_id}]  -> {mode}")
+            track_obj.set_mode(mode)
 
         print(f"From track_id[{track_id}]  -> {mode} = {value}")
+        # set progess value
+        track_obj.setProgress(int(value))
         
 
-
     def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, track_id: int = None):
-        print(f"track_id => {track_id}")
-        req_item_obj = self.track_list[track_id]
-        req_item_obj.set_mode("loading")
-    
-
-        self.count = 0
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda: self.tick(track_id))
-        self.timer.start(200)
-
+        print(f"Track[{track_id}] [download request] => {title}")
 
         if not url:
             print(f"Path is empty")
             return
         
-        print(f" Downloading Song : {title}  =>  {url}")
         thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, track_id=track_id, parent=self)
         thread.finished.connect(self.download_finished)
+        thread.progress.connect(self.download_progress)
         thread.start()
         print(f"start thread_id ==> {thread}")
 
