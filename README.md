@@ -43,6 +43,7 @@ Aurix is an open-source project.
 Free to use, modify, and experiment with.
 &nbsp; &nbsp; &nbsp; 
 
+## Credits
 
 **Made with ❤️, Python, and late-night coding.**
 
