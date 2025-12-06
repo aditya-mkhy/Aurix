@@ -41,8 +41,8 @@ class SeekBar(QWidget):
         self._bg_top = QColor(0, 0, 0)          # top (page) color
         self._bg_bottom = QColor(31, 31, 31)    # bottom bar color
         self._track_bg = QColor(80, 80, 80)     # grey track
-        self._track_fill = QColor(242, 0, 0)   # pink bar
-        self._knob_color = QColor(255, 0, 96)
+        self._track_fill = QColor(242, 0, 0)   # red bar
+        self._knob_color = QColor(242, 0, 0)
         self._knob_border = QColor(30, 30, 30)
 
         self.setMouseTracking(True)
