@@ -194,6 +194,7 @@ class HoverThumb(QWidget):
             self.overlay.hide()
             self.download_btn.setIcon(self.down_icon)
             self.download_btn.show() # download btn
+            self.download_btn.clicked.disconnect(self._play_requested)
             self.download_btn.clicked.connect(self._download_requested)
 
 
@@ -218,6 +219,7 @@ class HoverThumb(QWidget):
             self.overlay.hide()
             self.download_btn.show()
             self.download_btn.setIcon(self.play_icon)  # or use your icon
+            self.download_btn.clicked.disconnect(self._download_requested)
             self.download_btn.clicked.connect(self._play_requested)
 
 
