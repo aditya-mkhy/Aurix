@@ -1,5 +1,9 @@
 import ctypes
 import sys
+import os
+
+def is_mp3(path: str):
+    return os.path.splitext(path)[0] == ".mp3"
 
 def dark_title_bar(window):
     """Enable immersive dark mode title bar on Windows 10+."""

@@ -15,6 +15,54 @@ from ytmusicapi import YTMusic
 
 YT_MUSIC = YTMusic()
 
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3
+from PyQt5.QtGui import QPixmap
+
+def get_mp3_metadata(path: str):
+    audio = MP3(path)
+    info = {
+        "duration": int(audio.info.length),
+        "sample_rate": audio.info.sample_rate,
+        "channels": audio.info.channels,
+        "bitrate": audio.info.bitrate,
+        "mode": audio.info.mode,  # Stereo, JointStereo etc.
+        "version": audio.info.version,
+        "layer": audio.info.layer,
+        "cover": None,
+        "title": None,
+        "publisher": None,
+        "artist": None,
+        "album": None
+    }
+
+    # tags
+    tags = ID3(path)
+    title = tags.get("TIT2")
+    publisher = tags.get("TPUB")
+    print(f"publisher : {publisher}")
+    artist = tags.get("TPE1")
+    print(f"artist : {artist}")
+    album = tags.get("TALB")
+    print(f"album : {album}")
+
+
+    info["title"] = title.text[0] if title else None
+    info["publisher"] = publisher.text[0] if publisher else None
+    info["artist"] = artist.text[0] if artist else None
+    info["album"] = album.text[0] if album else None
+
+    # cover
+    for key in tags.keys():
+        if key.startswith("APIC"):
+            pix = QPixmap()
+            pix.loadFromData(tags[key].data)
+            info["cover"] = pix
+            break
+
+    return info
+
+
 class YTSearchThread(QThread):
     finished = pyqtSignal(list, list)
 
@@ -218,6 +266,7 @@ class LocalFilesLoader(QThread):
             self.count += 1
             print(self.count)
             if self.count > 6:
+                return
                 QThread.sleep(2)
                 self.count = -1
                 
@@ -251,8 +300,6 @@ class LocalFilesLoader(QThread):
                 self.config_one.emit(title, publisher, path, pix)
                 # song with cover is uselesss... 
                 break
-
-
 
 
 class CircularProgress(QWidget):
@@ -371,5 +418,9 @@ class LoadingSpinner(QWidget):
 
 
 if __name__ == "__main__":
-    yts = YTSearchThread("Naach Meri Jaan")
-    # yts.run()
+    path  = "C:\\Users\\freya\\Music\\Humdum.mp3"
+    info = get_mp3_metadata(path)
+    info["cover"] = None
+
+    print("")
+    print(info)
