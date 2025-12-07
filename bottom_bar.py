@@ -11,7 +11,7 @@ from PyQt5.QtGui import (
     QPainter, QColor, QPen, QPixmap, QFont, QIcon
 )
 
-from helper import get_pixmap, applyRoundedImage
+from helper import get_pixmap
 from util import format_time, trim_text
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -516,7 +516,7 @@ class BottomBar(QWidget):
 
     def set_repeat_mode(self, value: int):
         self._repeat_mode = value
-        
+
         if self._repeat_mode == 0:
             ic = "repeat-off.png"
         elif self._repeat_mode == 1:

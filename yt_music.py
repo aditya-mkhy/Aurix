@@ -25,7 +25,7 @@ from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
 import requests
 from tube import Dtube
-from helper import get_pixmap, applyRoundedImage
+from helper import get_pixmap
 from common import ScrollArea
 from helper import YTSearchThread, ConfigResult, ConvertingSpinner
 from PyQt5.QtCore import (
