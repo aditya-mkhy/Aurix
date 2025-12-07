@@ -123,14 +123,22 @@ class PlayerEngine(QObject):
         self._is_paused = False
 
     def play_toggled(self, value: bool):
-        if self.is_playing():
+        if self.is_playing(): # playing -> paused
             mixer.music.pause()
             self._is_paused = True
 
-        else:
+        elif self._is_paused: # paused -> resuming
             mixer.music.unpause()
             self._is_paused = False
 
+        else: # song ended...
+            # if there is current path.. then play it... again
+            # as resume is clicked...
+            if self._current_path:
+                self.play(self._current_path)
+                # not emmiting the play signal.. as self.play fun gonna do it
+                return 
+            
         # set the play or pause button 
         self.setPlaying.emit(self.is_playing())
 
@@ -152,6 +160,7 @@ class PlayerEngine(QObject):
             self._timer.stop()
             self.setSeekPos.emit(self.duration)
             self.setPlaying.emit(self.is_playing())
+            self._is_paused = False
             return
 
 
