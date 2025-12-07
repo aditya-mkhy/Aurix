@@ -221,31 +221,6 @@ def get_pixmap(path: str):
         
     return QPixmap()
 
-def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
-    if pix is None:
-        return
-
-    pm = pix.scaled(
-        size,
-        size,
-        Qt.KeepAspectRatioByExpanding,
-        Qt.SmoothTransformation
-    )
-
-    rounded = QPixmap(QSize(size, size))
-    rounded.fill(Qt.transparent)
-
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, size, size, radius, radius)
-
-    painter.setClipPath(path)
-    painter.drawPixmap(0, 0, pm)
-    painter.end()
-    label.setPixmap(rounded)
-
 
 class LocalFilesLoader(QThread):
     config_one = pyqtSignal(str, str, str, QPixmap)

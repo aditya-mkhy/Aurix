@@ -9,11 +9,9 @@ from PyQt5.QtWidgets import (
 # project import
 from sidebar import Sidebar
 from topbar import Topbar
-from bottombar import Bottombar
 from bottom_bar import BottomBar
 from content import ContentArea
 from util import dark_title_bar
-# from yt import YtScreen
 from yt_music import YtScreen
 from player import PlayerEngine
 
