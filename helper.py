@@ -25,7 +25,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QColor
 
 
-def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, padding = 0) -> QPixmap:
+def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, padding = None) -> QPixmap:
     if pix.isNull():
         return pix
     

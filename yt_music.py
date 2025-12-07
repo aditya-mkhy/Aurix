@@ -25,7 +25,7 @@ from ytmusicapi import YTMusic
 from PyQt5.QtGui import QPixmap
 import requests
 from tube import Dtube
-from helper import get_pixmap
+from helper import get_pixmap, crop_and_round_pix
 from common import ScrollArea
 from helper import YTSearchThread, ConfigResult, ConvertingSpinner
 from PyQt5.QtCore import (
@@ -50,7 +50,8 @@ class HoverThumb(QWidget):
 
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.image_label, pix, size=size, radius=8)
+        self.image_label.setPixmap(crop_and_round_pix(pix, size, size, 6))
+
         self.image_label.setStyleSheet(f"""
             QLabel {{
                 border: none;
