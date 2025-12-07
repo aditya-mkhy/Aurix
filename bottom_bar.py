@@ -402,7 +402,7 @@ class BottomBar(QWidget):
         self.meta_label.setText(trim_text(subtitle, max_length=38))
         self._duration = duration_seconds
         self._position = 0
-        self.seekbar.setDuration(self._duration)
+        self.seekbar.setDuration(self._duration * 1000)
         self.seekbar.setPosition(0)
         self._update_time()
         if cover:
@@ -414,8 +414,8 @@ class BottomBar(QWidget):
 
 
     def set_position(self, seconds: int):
-        self._position = seconds
-        self.seekbar.setPosition(self._position)
+        self._position = seconds // 1000
+        self.seekbar.setPosition(seconds)
         self._update_time()
 
     def set_playing(self, playing: bool):
@@ -444,9 +444,9 @@ class BottomBar(QWidget):
         )
 
     def _on_seek(self, seconds: int):
-        self._position = seconds
+        self._position = seconds // 1000
         self._update_time()
-        self.seekRequested.emit(seconds)
+        self.seekRequested.emit(seconds // 1000)
 
     def _on_preview(self, seconds: int):
         self._position = seconds

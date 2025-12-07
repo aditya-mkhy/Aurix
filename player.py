@@ -37,7 +37,7 @@ class PlayerEngine(QObject):
 
         # time
         self._timer = QTimer(self)
-        self._timer.setInterval(1000)   # ~60 FPS (16 ms)
+        self._timer.setInterval(100)   # ~60 FPS (16 ms)
         self._timer.timeout.connect(self._update_position)
         self.elapsed_sec = 0
         self.duration = 0
@@ -74,7 +74,7 @@ class PlayerEngine(QObject):
         except:
             mixer.music.play(1, sec)
 
-        self.elapsed_sec = sec
+        self.elapsed_sec = sec * 1000
 
     def set_repeat_mode(self, value: int):
         if value not in (0, 1, 2):
@@ -123,7 +123,7 @@ class PlayerEngine(QObject):
 
         # load music
         self._current_path = path
-        self.duration = int(duration)
+        self.duration = int(duration) * 1000
         mixer.music.load(path)
 
         # emit setTrackInfo
@@ -194,5 +194,5 @@ class PlayerEngine(QObject):
             self.stop()
             return
 
-        self.elapsed_sec = min(self.elapsed_sec + 1, self.duration)
+        self.elapsed_sec = min(self.elapsed_sec + 100, self.duration)
         self.setSeekPos.emit(self.elapsed_sec)
