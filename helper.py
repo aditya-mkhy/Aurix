@@ -279,7 +279,7 @@ class LocalFilesLoader(QThread):
                 QThread.sleep(2)
                 self.count = -1
         else:
-            QThread.msleep(10)
+            QThread.msleep(15)
   
 
         tags = ID3(path)
