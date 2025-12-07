@@ -126,10 +126,24 @@ class PlayerEngine(QObject):
         self._is_paused = False
         self.setPlaying.emit(self.is_playing())
 
+    def _after_stop(self):
+        if self._repeat_mode == 2:
+            # repeat one song...
+            if not self._current_path:
+                # can't repeat with empty path
+                return
+            
+            self.play(path=self._current_path)
+            return
+            
 
     def stop(self):
+        self._timer.stop()
         mixer.music.stop()
         self._is_paused = False
+        
+        self._after_stop()
+
 
     def play_toggled(self, value: bool):
         if self.is_playing(): # playing -> paused
@@ -166,18 +180,10 @@ class PlayerEngine(QObject):
             return
         
         if not mixer.music.get_busy():
-            self._timer.stop()
             self.setSeekPos.emit(self.duration)
-            self.setPlaying.emit(self.is_playing())
-            self._is_paused = False
+            self.setPlaying.emit(False)
+            self.stop()
             return
-
-
-        elapsed_ms = mixer.music.get_pos()
-        elapsed = elapsed_ms / 1000.0
 
         self.elapsed_sec = min(self.elapsed_sec + 1, self.duration)
         self.setSeekPos.emit(self.elapsed_sec)
-
-        print(f"elapsed time   => {format_time(elapsed)}")
-        print(f"My Elapsed Sec => {format_time(self.elapsed_sec)}")
