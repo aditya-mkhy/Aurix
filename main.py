@@ -95,11 +95,13 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.seekRequested.connect(self.playerEngine.set_seek)
         self.bottom_bar.volumeChanged.connect(self.playerEngine.set_volume)
         self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
+        self.bottom_bar.repeatModeChanged.connect(self.playerEngine.set_repeat_mode)
 
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
         self.playerEngine.setPlaying.connect(self.bottom_bar.set_playing)
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
+        self.playerEngine.setRepeatMode.connect(self.bottom_bar.set_repeat_mode)
 
         # duration = 3 * 60 + 34
         # self.bottom_bar.set_track(

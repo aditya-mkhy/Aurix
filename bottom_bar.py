@@ -511,7 +511,12 @@ class BottomBar(QWidget):
 
     def _on_repeat_clicked(self):
         # 0 -> 1 -> 2 -> 0
-        self._repeat_mode = (self._repeat_mode + 1) % 3
+        change_mode = (self._repeat_mode + 1) % 3
+        self.repeatModeChanged.emit(change_mode)
+
+    def set_repeat_mode(self, value: int):
+        self._repeat_mode = value
+        
         if self._repeat_mode == 0:
             ic = "repeat-off.png"
         elif self._repeat_mode == 1:
@@ -519,7 +524,6 @@ class BottomBar(QWidget):
         else:
             ic = "repeat-one.png"
         self.repeat_btn.setIcon(icon(ic))
-        self.repeatModeChanged.emit(self._repeat_mode)
 
 
 class DemoWindow(QMainWindow):

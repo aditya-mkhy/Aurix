@@ -21,6 +21,7 @@ class PlayerEngine(QObject):
     setTrackInfo = pyqtSignal(str, str, int, QPixmap)
     setPlaying = pyqtSignal(bool)
     setSeekPos = pyqtSignal(int)
+    setRepeatMode = pyqtSignal(int)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -32,6 +33,7 @@ class PlayerEngine(QObject):
         self._freq = None
         self._out_dev = None
         self._volume = 0.8
+        self._repeat_mode = 0 # 0=off,1=all,2=one
 
         # time
         self._timer = QTimer(self)
@@ -73,6 +75,13 @@ class PlayerEngine(QObject):
             mixer.music.play(1, sec)
 
         self.elapsed_sec = sec
+
+    def set_repeat_mode(self, value: int):
+        if value not in (0, 1, 2):
+            return
+        print(f"RepeatModeChanged : {value}")
+        self._repeat_mode = value
+        self.setRepeatMode.emit(self._repeat_mode)
 
      
     def play(self, path:str, out_dev = None):
