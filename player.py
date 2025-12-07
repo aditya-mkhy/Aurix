@@ -145,15 +145,15 @@ class PlayerEngine(QObject):
 
     def _update_position(self):
         print(f"busy ==> {mixer.music.get_busy()}")
-        
-        if not mixer.music.get_busy():
-            self.setSeekPos.emit(self.duration)
-            self._timer.stop()
-            return
-        
         if self._is_paused:
             return
         
+        if not mixer.music.get_busy():
+            self._timer.stop()
+            self.setSeekPos.emit(self.duration)
+            self.setPlaying.emit(self.is_playing())
+            return
+
 
         elapsed_ms = mixer.music.get_pos()
         elapsed = elapsed_ms / 1000.0
