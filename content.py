@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
-from player import MusicPlayer
 from helper import LocalFilesLoader
 
 class HoverButton(QPushButton):
@@ -572,6 +571,8 @@ class PlaylistSection(QWidget):
 
 
 class ContentArea(QFrame):
+    playRequested = pyqtSignal(str)
+
     def __init__(self, parent = None, music_dirs: list = None):
         super().__init__(parent)
 
@@ -606,8 +607,6 @@ class ContentArea(QFrame):
         # keep sections pinned to top if there are few
         main_layout.addStretch(1)
 
-        self.player = MusicPlayer()
-        self.player.set_volume(0.6)
 
         # load local mp3 files....
         self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
@@ -620,8 +619,9 @@ class ContentArea(QFrame):
             print(f"Path is empty")
             return
         
-        print(f"Playing : {path}")
-        self.player.play(path)
+        print(f"playRequested : {path}")
+        self.playRequested.emit(path)
+        
 
     def _finish_adding_loc_files(self, status):
         if status:

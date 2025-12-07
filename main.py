@@ -15,11 +15,13 @@ from content import ContentArea
 from util import dark_title_bar
 # from yt import YtScreen
 from yt_music import YtScreen
+from player import PlayerEngine
 
 def get_music_path(paths: list = []):
     default_music_path = os.path.join(Path.home(), "Music")
     paths.append(default_music_path)
     return paths
+
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
@@ -30,8 +32,9 @@ class MusicMainWindow(QMainWindow):
 
         music_dirs = get_music_path()
 
-        # ---- engine & playlist state ----
-        # self.engine = PlayerEngine(self)
+        # init player engine
+        self.playerEngine = PlayerEngine(parent=self)
+
         self.playlist_paths = []
         self.current_index = -1
 
@@ -59,9 +62,15 @@ class MusicMainWindow(QMainWindow):
         self.sidebar = Sidebar(parent=self, nav_call=self._nav_call)
         middle_layout.addWidget(self.sidebar)
 
-        # mainarea
+        # HOME SCREEN
         self.home_screen = ContentArea(music_dirs=music_dirs)
+        self.home_screen.playRequested.connect(self._play_requested)
+
+
+        #LIBRARAY SCREEN
         self.library_screen = ContentArea()
+
+        # TY SCREEN
         self.yt_screen = YtScreen(parent=self)
         # call when yt want to all item to home screen and play
         self.yt_screen.addItemHomeRequested.connect(self.add_item_home_requested)
@@ -82,16 +91,30 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar = BottomBar(parent=self)
         outer.addWidget(self.bottom_bar)
 
-        duration = 3 * 60 + 34
-        self.bottom_bar.set_track(
-            "Barbaad",
-            "Jubin Nautiyal • 155M views • 982K likes",
-            duration_seconds=duration
-        )
+        # connect bottom_bar signal
+        self.bottom_bar.seekRequested.connect(self.playerEngine.set_seek)
+        self.bottom_bar.volumeChanged.connect(self.playerEngine.set_volume)
+        self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
+
+        # connect PlayerEngine signal
+        self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
+        self.playerEngine.setPlaying.connect(self.bottom_bar.set_playing)
+
+        # duration = 3 * 60 + 34
+        # self.bottom_bar.set_track(
+        #     "Barbaad",
+        #     "Jubin Nautiyal • 155M views • 982K likes",
+        #     duration_seconds=duration
+        # )
+
+
+    def play_song(self, file_path: str):
+        self.playerEngine.play(path=file_path)
 
     def _play_requested(self, file_path: str):
         print(f"PlayingByPlayer : {file_path}")
-        self.home_screen.play_song(file_path)
+        self.play_song(file_path=file_path)
+
 
     def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
         self.home_screen.add_item(title, subtitle_text, path, pix, play = play)

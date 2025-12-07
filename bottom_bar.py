@@ -12,7 +12,7 @@ from PyQt5.QtGui import (
 )
 
 from helper import get_pixmap, applyRoundedImage
-
+from util import format_time, trim_text
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RES_DIR = os.path.join(BASE_DIR, "res")
@@ -400,9 +400,9 @@ class BottomBar(QWidget):
         """)
         return btn
 
-    def set_track(self, title: str, meta: str, duration_seconds: int, cover: QPixmap = None):
-        self.title_label.setText(title)
-        self.meta_label.setText(meta)
+    def set_track(self, title: str, subtitle: str, duration_seconds: int, cover: QPixmap = None):
+        self.title_label.setText(trim_text(title, max_length=33))
+        self.meta_label.setText(trim_text(subtitle, max_length=38))
         self._duration = max(0, int(duration_seconds))
         self._position = 0
         self.seekbar.setDuration(self._duration)
@@ -415,19 +415,22 @@ class BottomBar(QWidget):
                              Qt.SmoothTransformation)
             )
 
+
     def set_position(self, seconds: int):
         self._position = max(0, min(int(seconds), self._duration or int(seconds)))
         self.seekbar.setPosition(self._position)
         self._update_time()
 
     def set_playing(self, playing: bool):
+        print(f"PlayingSatatusRecv : {playing}")
         self._playing = bool(playing)
+
         self.play_btn.setChecked(self._playing)
         if self._playing:
             self.play_btn.setIcon(icon("pause.png"))
+
         else:
             self.play_btn.setIcon(icon("play-card.png"))
-        self.playToggled.emit(self._playing)
 
 
     def set_volume(self, volume: float):
@@ -437,15 +440,10 @@ class BottomBar(QWidget):
         self._update_volume_icon()
         self.volumeChanged.emit(volume)
 
-    # handlers
-    def _format_time(self, secs: int) -> str:
-        m = secs // 60
-        s = secs % 60
-        return f"{m}:{s:02d}"
 
     def _update_time(self):
         self.time_label.setText(
-            f"{self._format_time(self._position)} / {self._format_time(self._duration)}"
+            f"{format_time(self._position)} / {format_time(self._duration)}"
         )
 
     def _on_seek(self, seconds: int):
@@ -458,7 +456,7 @@ class BottomBar(QWidget):
         self._update_time()
 
     def _on_play_clicked(self):
-        self.set_playing(not self._playing)
+        self.playToggled.emit(not self._playing)
 
     # volume slider + animation 
     def _on_volume_btn_clicked(self):
@@ -545,8 +543,8 @@ class DemoWindow(QMainWindow):
 
         duration = 3 * 60 + 34
         self.bottom.set_track(
-            "Barbaad",
-            "Jubin Nautiyal • 155M views • 982K likes",
+            "Barbaadabcdefghijklmnopqrstuvwxyzadityamukhiyajkkjdkjjhkjfdhkjjdfakjlj".upper(),
+            "Barbaadabcdefghijklmnopqrstuvwxyzabcdekjlfkdjkjjkfdjkljkldfjkljfdkljkljdf".upper(),
             duration_seconds=duration
         )
 

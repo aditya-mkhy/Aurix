@@ -2,8 +2,30 @@ import ctypes
 import sys
 import os
 
+def format_time(seconds: int) -> str:
+    seconds = int(seconds)
+    h, r = divmod(seconds, 3600)
+    m, s = divmod(r, 60)
+
+    if h > 0:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
+
+def trim_text(text: str, max_length: int = 25) -> str:
+    if len(text) <= max_length:
+        return text
+
+    cut = text[:max_length - 3]
+
+    # try to avoid cutting mid-word
+    if " " in cut:
+        cut = cut[:cut.rfind(" ")]
+
+    return cut + "..."
+
+
 def is_mp3(path: str):
-    return os.path.splitext(path)[0] == ".mp3"
+    return os.path.splitext(path)[1].lower() == ".mp3"
 
 def dark_title_bar(window):
     """Enable immersive dark mode title bar on Windows 10+."""
@@ -36,3 +58,7 @@ def dark_title_bar(window):
         except Exception:
             # silently ignore if OS doesn't support it
             pass
+
+
+if __name__ == "__main__":
+    print(format_time(4000))

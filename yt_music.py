@@ -19,7 +19,6 @@ from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QI
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGraphicsOpacityEffect
 )
-from player import MusicPlayer
 from helper import LocalFilesLoader, CircularProgress, LoadingSpinner
 
 from ytmusicapi import YTMusic
