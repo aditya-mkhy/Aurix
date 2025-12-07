@@ -83,6 +83,17 @@ class PlayerEngine(QObject):
         self._repeat_mode = value
         self.setRepeatMode.emit(self._repeat_mode)
 
+    def prevoius_clicked(self):
+        print("Prevoius button is clicked...")
+
+        if self.elapsed_sec >= 5:
+            # Restart current track from beginning
+            self.setSeekPos.emit(0) # set the seekbar to 0 pos for smothness
+            self.set_seek(0)
+            return
+        
+        print("SongList Not Found.")
+
      
     def play(self, path:str, out_dev = None):
         if not os.path.isfile(path):
@@ -138,10 +149,10 @@ class PlayerEngine(QObject):
             
 
     def stop(self):
+        self.setPlaying.emit(False)
         self._timer.stop()
         mixer.music.stop()
         self._is_paused = False
-        
         self._after_stop()
 
 
@@ -181,7 +192,6 @@ class PlayerEngine(QObject):
         
         if not mixer.music.get_busy():
             self.setSeekPos.emit(self.duration)
-            self.setPlaying.emit(False)
             self.stop()
             return
 

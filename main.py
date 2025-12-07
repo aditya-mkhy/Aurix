@@ -96,6 +96,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.volumeChanged.connect(self.playerEngine.set_volume)
         self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
         self.bottom_bar.repeatModeChanged.connect(self.playerEngine.set_repeat_mode)
+        self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_clicked)
 
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
@@ -144,7 +145,6 @@ class MusicMainWindow(QMainWindow):
 
         elif name == "yt":
             self.content_area.setCurrentIndex(2)
-
 
 
 
