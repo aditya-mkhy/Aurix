@@ -186,7 +186,6 @@ class PlayerEngine(QObject):
     
 
     def _update_position(self):
-        print(f"busy ==> {mixer.music.get_busy()}")
         if self._is_paused:
             return
         

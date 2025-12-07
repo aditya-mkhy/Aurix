@@ -27,7 +27,7 @@ class MusicMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Aurix - Music Player")
-        self.resize(1500, 880)
+        self.resize(1520, 880)
         self.setStyleSheet("background-color: #000000;")
 
         music_dirs = get_music_path()

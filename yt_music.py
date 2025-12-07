@@ -33,9 +33,7 @@ from PyQt5.QtCore import (
 )
 
 from typing import List
-
-
-
+from util import trim_text
 
 class HoverThumb(QWidget):
     downloadRequested = pyqtSignal(str)
@@ -260,8 +258,9 @@ class TrackRow(QWidget):
         text_col = QVBoxLayout()
         text_col.setContentsMargins(5, 6, 0, 20)
         text_col.setSpacing(1)
+        
 
-        self.title_lbl = QLabel(self.title_txt)
+        self.title_lbl = QLabel(trim_text(self.title_txt, 62))
         self.title_lbl.setFont(QFont("Segoe UI", 14))
         self.title_lbl.setStyleSheet("""
             QLabel {
@@ -277,7 +276,7 @@ class TrackRow(QWidget):
         """)
         self.title_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
-        self.subtitle_lbl = QLabel(self.subtitle_txt)
+        self.subtitle_lbl = QLabel(trim_text(self.subtitle_txt, 80))
         self.subtitle_lbl.setFont(QFont("Segoe UI", 11))
         self.subtitle_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         self.subtitle_lbl.setStyleSheet("""
@@ -478,8 +477,8 @@ class YtScreen(QFrame):
 
         # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
         # pix  = QPixmap(icon_path)
-        # tite = "Naach Meri Jaan (From \"Tubelight\")"
-        # sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays"
+        # tite = "Naach Meri Jaan (From \"Tubelight\") Aditya Mukhiya and palak Thakur Lve each other and also fuck Each Other".upper()
+        # sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays Hellow mahadev ji maaf krdijiye please mahadev ".upper()
         # url = ""
         # self.config_one(tite, sub, url, pix)
 

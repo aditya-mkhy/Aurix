@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
 from helper import LocalFilesLoader
+from helper import crop_and_round_pix
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -125,30 +126,6 @@ class ScrollArea(QScrollArea):
             }
         """)
 
-def applyRoundedImage(label, pix: QPixmap, radius=16):
-
-    pm = pix.scaled(
-        label.width(),
-        label.height(),
-        Qt.KeepAspectRatioByExpanding,
-        Qt.SmoothTransformation
-    )
-
-    rounded = QPixmap(label.size())
-    rounded.fill(Qt.transparent)
-
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, label.width(), label.height(), radius, radius)
-
-    painter.setClipPath(path)
-    painter.drawPixmap(0, 0, pm)
-    painter.end()
-
-    label.setPixmap(rounded)
-
 
 class HoverFrame(QFrame):
     def __init__(self, enter_event, leave_event, parent=None):
@@ -184,22 +161,24 @@ class PlaylistCard(QWidget):
         self.mp3_path = path
         self.play_callback = play_callback
 
-        self.width = 282
-        self.height = 292#220
+        self._width = 240 # 260
+        self._height = 292  #220
+
+        self.thumb_width = self._width
+
+        add_thum_height = 85 #105
+        self.thumb_height = 158 + add_thum_height #self.height - 40
+        self._height += add_thum_height
+
 
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedSize(self.width, self.height)
+        self.setFixedSize(self._width, self._height)
         self.setStyleSheet("border: none;  background: green; margin: 20px;")
 
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
         main.setSpacing(6)
-
-
-        self.thumb_width = self.width
-        self.thumb_height = 158#self.height - 40
-
 
         self.thumb_container = HoverFrame(enter_event=self.on_enter, leave_event=self.on_leave)
         self.thumb_container.setFixedSize(self.thumb_width, self.thumb_height)
@@ -224,7 +203,10 @@ class PlaylistCard(QWidget):
         self.thumb_label = QLabel()
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
-        applyRoundedImage(self.thumb_label, pix, radius=14)
+        self.thumb_label.setPixmap(
+            crop_and_round_pix(pix, self.thumb_width, self.thumb_height, 8, 284)
+        )
+
 
         self.thumb_label.setStyleSheet(f"""
             QLabel {{
@@ -311,7 +293,7 @@ class PlaylistCard(QWidget):
 
             
         self.title_lbl = QLabel(title)
-        self.title_lbl.setFont(QFont("Segoe UI", 15))
+        self.title_lbl.setFont(QFont("Segoe UI", 14))
         self.title_lbl.setStyleSheet("""
             QLabel {
                 color: white;
@@ -337,7 +319,7 @@ class PlaylistCard(QWidget):
         self.subtitle_lbl.setFont(QFont("Segoe UI", 10))
         self.subtitle_lbl.setStyleSheet("""
             QLabel {
-                color: #bebfbd;
+                color: #b1b2b1;
                 background: transparent;
                 padding: 0;
                 font-weight: 550;

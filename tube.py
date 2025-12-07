@@ -81,9 +81,6 @@ class Dtube(QThread): # download tube
         self.is_video_dowloaded = False
         self.video_size = 0
         self.file_path = self._file_path()
-        print(f"file_path => {self.file_path}")
-        self.thumbnail_path = f"C:\\Users\\freya\\Downloads\\m\\{os.path.splitext(os.path.basename(self.file_path))[0]}.jpg"
-        print(f"thumbnail_path => {self.thumbnail_path}")
 
 
     def run(self):
@@ -152,20 +149,10 @@ class Dtube(QThread): # download tube
         try:
             url_thmb = get_thumbnail(down_info)
             print(url_thmb)
+            
             response = get_request(url_thmb)
-            data = response.content
-            with open(self.thumbnail_path, "wb") as tf:
-                tf.write(data)
+            audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="", data=response.content))
 
-            audio.tags.add(
-                APIC(
-                    encoding=0,
-                    mime="image/jpeg",
-                    type=0,
-                    desc="",
-                    data=data,
-                )
-            )
         except Exception as e:
             print("Error[thumbnail_to_mp3] :", e)
 
