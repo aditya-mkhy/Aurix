@@ -20,6 +20,97 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3
 from PyQt5.QtGui import QPixmap
 
+from PyQt5.QtGui import QPixmap
+
+from PyQt5.QtGui import QColor
+
+def _colors_close(c1: QColor, c2: QColor, tol: int = 3) -> bool:
+    return (abs(c1.red()   - c2.red())   <= tol and
+            abs(c1.green() - c2.green()) <= tol and
+            abs(c1.blue()  - c2.blue())  <= tol)
+
+
+def crop_side_padding_and_round(pix: QPixmap, tol: int = 3, min_run: int = 4, size = 46, radius = 8) -> QPixmap:
+    """
+    Detect same-color padding on left & right edges and crop it.
+    - tol: color tolerance (0 = exact, 3–5 works well)
+    - min_run: minimal columns to consider as padding (avoids cropping tiny bands)
+    """
+    if pix.isNull():
+        return pix
+
+    img = pix.toImage()
+    w = img.width()
+    h = img.height()
+    if w <= 2:
+        return pix
+
+    # --- detect left padding ---
+    left_color = img.pixelColor(0, h // 2)
+    left = 0
+
+    for x in range(w):
+        col_ok = True
+        # sample a few rows instead of all, for speed
+        for y in (0, h // 4, h // 2, 3 * h // 4, h - 1):
+            if not _colors_close(img.pixelColor(x, y), left_color, tol):
+                col_ok = False
+                break
+        if col_ok:
+            left += 1
+        else:
+            break
+
+    # --- detect right padding ---
+    right_color = img.pixelColor(w - 1, h // 2)
+    right = 0
+
+    for x in range(w - 1, -1, -1):
+        col_ok = True
+        for y in (0, h // 4, h // 2, 3 * h // 4, h - 1):
+            if not _colors_close(img.pixelColor(x, y), right_color, tol):
+                col_ok = False
+                break
+        if col_ok:
+            right += 1
+        else:
+            break
+
+    # both sides should be same-ish color, otherwise we bail
+    if not _colors_close(left_color, right_color, tol):
+        return pix
+
+    # avoid over-cropping if padding is tiny or image is almost all padding
+    if left < min_run and right < min_run:
+        return pix
+    if left + right >= w - 4:   # leave at least a few columns
+        return pix
+
+    cropped = pix.copy(left, 0, w - left - right, h)
+
+    pm = cropped.scaled(
+            size,
+            size,
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation
+        )
+
+    rounded = QPixmap(QSize(size, size))
+    rounded.fill(Qt.transparent)
+
+    painter = QPainter(rounded)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    path = QPainterPath()
+    path.addRoundedRect(0, 0, size, size, radius, radius)
+
+    painter.setClipPath(path)
+    painter.drawPixmap(0, 0, pm)
+    painter.end()
+  
+    return rounded
+
+
 def get_mp3_metadata(path: str):
     audio = MP3(path)
     info = {
@@ -58,6 +149,8 @@ def get_mp3_metadata(path: str):
         if key.startswith("APIC"):
             pix = QPixmap()
             pix.loadFromData(tags[key].data)
+            
+            pix =  crop_side_padding(pix=pix)
             info["cover"] = pix
             break
 
@@ -190,6 +283,8 @@ def get_pixmap(path: str):
     return QPixmap()
 
 def applyRoundedImage(label, pix: QPixmap, size: int = 90, radius: int = 16):
+    if pix is None:
+        return
 
     pm = pix.scaled(
         size,

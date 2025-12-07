@@ -14,6 +14,7 @@ from util import is_mp3
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
 from PyQt5.QtCore import QObject, pyqtSignal
 
+from util import format_time
 
 class PlayerEngine(QObject):
     # (title, subtitle, total_time, )
@@ -34,8 +35,10 @@ class PlayerEngine(QObject):
 
         # time
         self._timer = QTimer(self)
-        self._timer.setInterval(16)   # ~60 FPS (16 ms)
+        self._timer.setInterval(1000)   # ~60 FPS (16 ms)
         self._timer.timeout.connect(self._update_position)
+        self.elapsed_sec = 0
+        self.duration = 0
 
         self._init_mixer(freq=48000, channels=2, out_dev="default")
 
@@ -61,11 +64,15 @@ class PlayerEngine(QObject):
 
     def set_seek(self, sec: int):
         print(f"Sec --> {sec}")
+
+        # mixer.music.play(1, sec)
         
         try:
             mixer.music.set_pos(sec)
         except:
             mixer.music.play(1, sec)
+
+        self.elapsed_sec = sec
 
      
     def play(self, path:str, out_dev = None):
@@ -74,6 +81,9 @@ class PlayerEngine(QObject):
         
         if not is_mp3(path):
             raise ValueError(f"Path must be a mp3 file path not this : {path}")
+        
+        # stop prevoius timer..
+        self._timer.stop()
 
         meta = get_mp3_metadata(path)
         channels = meta["channels"]
@@ -93,13 +103,17 @@ class PlayerEngine(QObject):
 
         # load music
         self._current_path = path
+        self.duration = int(duration)
         mixer.music.load(path)
 
         # emit setTrackInfo
         self.setTrackInfo.emit(title, publisher, duration, meta["cover"])
 
         # play...
-        mixer.music.play(loops=-1)
+        mixer.music.play()
+        self.elapsed_sec = 0
+        self._timer.start()
+
         self._is_paused = False
         self.setPlaying.emit(self.is_playing())
 
@@ -131,21 +145,19 @@ class PlayerEngine(QObject):
 
     def _update_position(self):
         if not mixer.music.get_busy():
-            # when track stops, emit final position once
-            # self.positionChanged.emit(int(self.duration))
+            self.setSeekPos.emit(self.duration)
             self._timer.stop()
             return
+        
+        if self._is_paused:
+            return
+        
 
-        # pygame returns ms since last play() / unpause / seek
         elapsed_ms = mixer.music.get_pos()
         elapsed = elapsed_ms / 1000.0
 
-        current = self._seek_base + elapsed
-        if current > self.duration:
-            current = self.duration
+        self.elapsed_sec = min(self.elapsed_sec + 1, self.duration)
+        self.setSeekPos.emit(self.elapsed_sec)
 
-        # keep last valid position for debug if needed
-        self._last_seek_pos = current
-
-        # tell UI
-        self.positionChanged.emit(int(current))
+        print(f"elapsed time   => {format_time(elapsed)}")
+        print(f"My Elapsed Sec => {format_time(self.elapsed_sec)}")

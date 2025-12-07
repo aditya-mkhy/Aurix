@@ -180,7 +180,7 @@ class BottomBar(QWidget):
         self._duration = 0
         self._position = 0
         self._playing = False
-        self._volume = 0.7
+        self._volume = 0
         self._liked = False
         self._disliked = False
         self._shuffle = False
@@ -216,6 +216,7 @@ class BottomBar(QWidget):
 
         self.time_label = QLabel("0:00 / 0:00", left_w)
         self.time_label.setFont(QFont("Segoe UI", 9, QFont.DemiBold))
+        self.time_label.setFixedWidth(160)
         self.time_label.setStyleSheet("color: #bdbdbd;")
 
         left_l.addWidget(self.prev_btn)
@@ -232,17 +233,14 @@ class BottomBar(QWidget):
         center_l.setSpacing(10)
         center_l.setAlignment(Qt.AlignCenter) 
 
-        # cover...
-        path = "C:\\Users\\freya\\Music\\Barbaad.mp3"
-        pix  = get_pixmap(path)
-
+        # cover..
         size = 80
 
         self.cover = QLabel(center_w)
         # self.image_label.setAlignment(Qt.AlignCenter)
         self.cover.setFixedSize(size, size)
         self.cover.setScaledContents(True)
-        applyRoundedImage(self.cover, pix, size=size, radius=8)
+        applyRoundedImage(self.cover, pix = None, size=size, radius=8)
         self.cover.setStyleSheet(f"""
             QLabel {{
                 border: none;
@@ -403,7 +401,7 @@ class BottomBar(QWidget):
     def set_track(self, title: str, subtitle: str, duration_seconds: int, cover: QPixmap = None):
         self.title_label.setText(trim_text(title, max_length=33))
         self.meta_label.setText(trim_text(subtitle, max_length=38))
-        self._duration = max(0, int(duration_seconds))
+        self._duration = duration_seconds
         self._position = 0
         self.seekbar.setDuration(self._duration)
         self.seekbar.setPosition(0)
@@ -417,7 +415,7 @@ class BottomBar(QWidget):
 
 
     def set_position(self, seconds: int):
-        self._position = max(0, min(int(seconds), self._duration or int(seconds)))
+        self._position = seconds
         self.seekbar.setPosition(self._position)
         self._update_time()
 
@@ -541,19 +539,13 @@ class DemoWindow(QMainWindow):
         layout.addWidget(self.bottom)
         self.setCentralWidget(central)
 
-        duration = 3 * 60 + 34
+        duration = 60 * 5
         self.bottom.set_track(
             "Barbaadabcdefghijklmnopqrstuvwxyzadityamukhiyajkkjdkjjhkjfdhkjjdfakjlj".upper(),
             "Barbaadabcdefghijklmnopqrstuvwxyzabcdekjlfkdjkjjkfdjkljkldfjkljfdkljkljdf".upper(),
             duration_seconds=duration
         )
 
-        self._timer = QTimer(self)
-        self._timer.setInterval(1000)
-        self._timer.timeout.connect(self._advance)
-
-        self.bottom.playToggled.connect(self._toggle_timer)
-        self.bottom.seekRequested.connect(self._seek)
 
     def _toggle_timer(self, playing: bool):
         if playing:

@@ -99,6 +99,7 @@ class MusicMainWindow(QMainWindow):
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
         self.playerEngine.setPlaying.connect(self.bottom_bar.set_playing)
+        self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
 
         # duration = 3 * 60 + 34
         # self.bottom_bar.set_track(
