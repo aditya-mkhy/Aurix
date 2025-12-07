@@ -150,7 +150,7 @@ def get_mp3_metadata(path: str):
             pix = QPixmap()
             pix.loadFromData(tags[key].data)
             
-            pix =  crop_side_padding(pix=pix)
+            pix =  crop_side_padding_and_round(pix=pix, size=80, radius=8)
             info["cover"] = pix
             break
 

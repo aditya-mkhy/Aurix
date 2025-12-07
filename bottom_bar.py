@@ -240,7 +240,6 @@ class BottomBar(QWidget):
         # self.image_label.setAlignment(Qt.AlignCenter)
         self.cover.setFixedSize(size, size)
         self.cover.setScaledContents(True)
-        applyRoundedImage(self.cover, pix = None, size=size, radius=8)
         self.cover.setStyleSheet(f"""
             QLabel {{
                 border: none;

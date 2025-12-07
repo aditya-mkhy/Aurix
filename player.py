@@ -144,6 +144,8 @@ class PlayerEngine(QObject):
     
 
     def _update_position(self):
+        print(f"busy ==> {mixer.music.get_busy()}")
+        
         if not mixer.music.get_busy():
             self.setSeekPos.emit(self.duration)
             self._timer.stop()
