@@ -106,13 +106,6 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
         self.playerEngine.setRepeatMode.connect(self.bottom_bar.set_repeat_mode)
 
-        # duration = 3 * 60 + 34
-        # self.bottom_bar.set_track(
-        #     "Barbaad",
-        #     "Jubin Nautiyal • 155M views • 982K likes",
-        #     duration_seconds=duration
-        # )
-
 
     def play_song(self, file_path: str):
         self.playerEngine.play(path=file_path)
@@ -125,10 +118,6 @@ class MusicMainWindow(QMainWindow):
     def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
         self.home_screen.add_item(title, subtitle_text, path, pix, play = play)
 
-        # ---- connect engine signals ----
-        # self.engine.positionChanged.connect(self.on_engine_position)
-        # self.engine.durationChanged.connect(self.on_engine_duration)
-        # self.engine.stateChanged.connect(self.on_engine_state)
 
     def search_call(self, query: str):
         print(f"Search Query : {query}")
@@ -148,86 +137,13 @@ class MusicMainWindow(QMainWindow):
         elif name == "yt":
             self.content_area.setCurrentIndex(2)
 
+    def nativeEvent(self, eventType, message):
+        return self.media_keys.nativeEvent(eventType, message)
+    
+    def closeEvent(self, event):
+        self.media_keys.unregister()
+        super().closeEvent(event)
 
-
-    # ===== ENGINE <-> UI HANDLERS (same as before) =====
-
-    def on_engine_position(self, pos_ms: int):
-        pass
-        # if self.engine.duration() > 0:
-        #     self.seek_slider.blockSignals(True)
-        #     self.seek_slider.setValue(pos_ms)
-        #     self.seek_slider.blockSignals(False)
-        # self.lbl_current_time.setText(self.format_time(pos_ms))
-
-    def on_engine_duration(self, dur_ms: int):
-        self.seek_slider.setRange(0, dur_ms)
-        self.lbl_total_time.setText(self.format_time(dur_ms))
-
-    def on_engine_state(self, state: int):
-        from PyQt5.QtMultimedia import QMediaPlayer
-        if state == QMediaPlayer.PlayingState:
-            self.btn_play.setText("⏸")
-        else:
-            self.btn_play.setText("▶")
-
-    # ----- playlist / controls -----
-
-    def on_add_files(self):
-        files, _ = QFileDialog.getOpenFileNames(
-            self,
-            "Select audio files",
-            "",
-            "Audio files (*.mp3 *.wav *.ogg *.flac);;All files (*.*)",
-        )
-        if not files:
-            return
-        for path in files:
-            self.playlist_paths.append(path)
-            self.playlist_widget.addItem(QListWidgetItem(os.path.basename(path)))
-        if self.current_index == -1 and self.playlist_paths:
-            self.play_track_at(0)
-
-    def on_playlist_double_clicked(self, item):
-        row = self.playlist_widget.row(item)
-        self.play_track_at(row)
-
-    def on_play_clicked(self):
-        if self.current_index == -1:
-            if self.playlist_paths:
-                self.play_track_at(0)
-        else:
-            self.engine.play_pause()
-
-    def on_prev_clicked(self):
-        if not self.playlist_paths:
-            return
-        new_index = (self.current_index - 1) % len(self.playlist_paths)
-        self.play_track_at(new_index)
-
-    def on_next_clicked(self):
-        if not self.playlist_paths:
-            return
-        new_index = (self.current_index + 1) % len(self.playlist_paths)
-        self.play_track_at(new_index)
-
-    def play_track_at(self, index: int):
-        if not (0 <= index < len(self.playlist_paths)):
-            return
-        self.current_index = index
-        path = self.playlist_paths[index]
-        self.engine.load(path)
-        self.engine.play()
-        self.lbl_title.setText(os.path.basename(path))
-        self.lbl_artist.setText("Local file")
-        self.playlist_widget.setCurrentRow(index)
-
-    @staticmethod
-    def format_time(ms: int) -> str:
-        seconds = ms // 1000
-        m = seconds // 60
-        s = seconds % 60
-        return f"{m:02d}:{s:02d}"
 
 
 # back to PyQt5 
