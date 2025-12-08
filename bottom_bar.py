@@ -163,7 +163,7 @@ class SeekBar(QWidget):
 class BottomBar(QWidget):
     seekRequested = pyqtSignal(int)
     volumeChanged = pyqtSignal(float)
-    playToggled = pyqtSignal(bool)
+    playToggled = pyqtSignal()
     previousClicked = pyqtSignal()
     nextClicked = pyqtSignal()
     likeToggled = pyqtSignal(bool)
@@ -453,7 +453,7 @@ class BottomBar(QWidget):
         self._update_time()
 
     def _on_play_clicked(self):
-        self.playToggled.emit(not self._playing)
+        self.playToggled.emit()
 
     # volume slider + animation 
     def _on_volume_btn_clicked(self):

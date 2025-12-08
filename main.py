@@ -5,12 +5,14 @@ from PyQt5.QtWidgets import (
     QListWidgetItem, QFileDialog, QApplication, QStackedWidget
 )
 
+from PyQt5.QtCore import QTimer
+
 # project import
 from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path
+from util import dark_title_bar, get_music_path, MediaKeys
 from yt_music import YtScreen
 from player import PlayerEngine
 
@@ -29,6 +31,17 @@ class MusicMainWindow(QMainWindow):
 
         self.playlist_paths = []
         self.current_index = -1
+
+        # Media Keys
+        self.media_keys = MediaKeys(parent=self)
+        self.media_keys.onPlayPause.connect(self.playerEngine.play_toggled)
+        self.media_keys.onPlayNext.connect(self.on_global_next)
+        self.media_keys.onPlayPrevious.connect(self.on_global_prev)
+        QTimer.singleShot(0, self.media_keys.register)
+
+
+
+
 
         central = QWidget()
         self.setCentralWidget(central)

@@ -83,7 +83,10 @@ class PlayerEngine(QObject):
         self._repeat_mode = value
         self.setRepeatMode.emit(self._repeat_mode)
 
-    def prevoius_clicked(self):
+    def next_track(self):
+        print("Next track is not implemented...")
+
+    def prevoius_track(self):
         print("Prevoius button is clicked...")
 
         if self.elapsed_sec >= 5:
@@ -156,7 +159,7 @@ class PlayerEngine(QObject):
         self._after_stop()
 
 
-    def play_toggled(self, value: bool):
+    def play_toggled(self):
         if self.is_playing(): # playing -> paused
             mixer.music.pause()
             self._is_paused = True

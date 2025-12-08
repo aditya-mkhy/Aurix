@@ -2,8 +2,88 @@ import ctypes
 import sys
 import os
 from pathlib import Path
+from ctypes import wintypes
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QMainWindow
+
 
 MUSIC_DIR_PATH = default_music_path = os.path.join(Path.home(), "Music")
+
+
+class MSG(ctypes.Structure):
+    _fields_ = [
+        ("hwnd",     wintypes.HWND),
+        ("message",  wintypes.UINT),
+        ("wParam",   wintypes.WPARAM),
+        ("lParam",   wintypes.LPARAM),
+        ("time",     wintypes.DWORD),
+        ("pt",       wintypes.POINT),
+    ]
+
+
+class MediaKeys(QObject):
+    onPlayPause = pyqtSignal()
+    onPlayNext = pyqtSignal()
+    onPlayPrevious = pyqtSignal()
+
+    def __init__(self, parent: QMainWindow = None):
+        super().__init__(parent)
+
+        self.parent_obj = parent
+
+        self.user32 = ctypes.windll.user32
+
+        self.WM_HOTKEY = 0x0312
+
+        # Virtual-Key codes for media keys
+        self.VK_MEDIA_NEXT_TRACK  = 0xB0
+        self.VK_MEDIA_PREV_TRACK  = 0xB1
+        self.VK_MEDIA_PLAY_PAUSE  = 0xB3
+        self.MOD_NOREPEAT = 0x4000
+
+
+    def register(self):
+        hwnd = int(self.parent_obj.winId())
+        self._hwnd = hwnd
+       
+        if not self.user32.RegisterHotKey(hwnd, 100, self.MOD_NOREPEAT, self.VK_MEDIA_PLAY_PAUSE):
+            print("Failed to register PLAY/PAUSE hotkey")
+
+        if not self.user32.RegisterHotKey(hwnd, 101, self.MOD_NOREPEAT, self.VK_MEDIA_NEXT_TRACK):
+            print("Failed to register NEXT hotkey")
+
+        if not self.user32.RegisterHotKey(hwnd, 102, self.MOD_NOREPEAT, self.VK_MEDIA_PREV_TRACK):
+            print("Failed to register PREV hotkey")
+
+
+    def nativeEvent(self, eventType, message):
+
+        if eventType == "windows_generic_MSG":
+            # message can be sip.voidptr / int / whatever → get address
+            msg = MSG.from_address(int(message))
+
+            if msg.message == self.WM_HOTKEY:
+                hotkey_id = msg.wParam
+
+                if hotkey_id == 100:
+                    self.onPlayPause.emit()
+
+                elif hotkey_id == 101:
+                    self.onPlayNext.emit()
+
+                elif hotkey_id == 102:
+                    self.onPlayPrevious.emit()
+
+        # must return (handled: bool, result: int)
+        return False, 0
+
+
+
+    def unregister(self):
+        # Must match ids used above
+        self.user32.UnregisterHotKey(self._hwnd, 100)
+        self.user32.UnregisterHotKey(self._hwnd, 101)
+        self.user32.UnregisterHotKey(self._hwnd, 102)
 
 
 def get_music_path(paths: list = []):
