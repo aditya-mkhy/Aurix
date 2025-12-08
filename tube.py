@@ -11,6 +11,7 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL, APIC
 from mutagen.mp3 import MP3
 from requests  import get as get_request
+from util import make_title_path
 
 def get_thumbnail(data: dict):
     thumbnails = data.get("thumbnails", [])
@@ -105,28 +106,11 @@ class Dtube(QThread): # download tube
         
 
     def filename(self):
-        title_path = self.make_title_path()
+        title_path = make_title_path(self.title)
         return f"{title_path}.mp3"
     
     def remove_ext_file_path(self):
         return os.path.splitext(self.file_path)[0]
-    
-
-    def make_title_path(self, title = None):
-        not_include = ' <>:"/\\|?*'+"'"
-        title_path = ""
-
-        if title == None:
-            title = self.title
-
-        for w in title:
-            if w in not_include:
-                if title_path[-1:] != " ":
-                    title_path += " "
-            else:
-                title_path += w
-
-        return title_path
     
 
     def _add_tags(self, down_info: dict):
@@ -149,7 +133,7 @@ class Dtube(QThread): # download tube
         try:
             url_thmb = get_thumbnail(down_info)
             print(url_thmb)
-            
+
             response = get_request(url_thmb)
             audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="", data=response.content))
 

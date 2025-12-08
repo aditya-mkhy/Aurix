@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
@@ -11,14 +10,9 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar
+from util import dark_title_bar, get_music_path
 from yt_music import YtScreen
 from player import PlayerEngine
-
-def get_music_path(paths: list = []):
-    default_music_path = os.path.join(Path.home(), "Music")
-    paths.append(default_music_path)
-    return paths
 
 
 class MusicMainWindow(QMainWindow):

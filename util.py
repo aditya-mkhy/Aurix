@@ -1,6 +1,30 @@
 import ctypes
 import sys
 import os
+from pathlib import Path
+
+MUSIC_DIR_PATH = default_music_path = os.path.join(Path.home(), "Music")
+
+
+def get_music_path(paths: list = []):
+    paths.append(MUSIC_DIR_PATH)
+    return paths
+
+def make_title_path(title: str = None) -> str:
+    if title is None:
+        raise ValueError("Title can't have \"None\" Value. It must a \"str\"")
+    
+    not_include = ' <>:"/\\|?*'+"'"
+    title_path = ""
+
+    for w in title:
+        if w in not_include:
+            if title_path[-1:] != " ":
+                title_path += " "
+        else:
+            title_path += w
+
+    return title_path
 
 def format_time(seconds: int) -> str:
     seconds = int(seconds)

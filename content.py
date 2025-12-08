@@ -479,10 +479,10 @@ class PlaylistSection(QWidget):
         self._list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         # enable drag & drop reordering
-        self._list.setDragEnabled(True)
-        self._list.setAcceptDrops(True)
+        self._list.setDragEnabled(False)
+        self._list.setAcceptDrops(False)
         self._list.setDropIndicatorShown(False)
-        self._list.setDragDropMode(QAbstractItemView.InternalMove)
+        # self._list.setDragDropMode(QAbstractItemView.InternalMove)
 
         layout.addWidget(self._list)
 
@@ -490,7 +490,7 @@ class PlaylistSection(QWidget):
         # self._list.itemClicked.connect(self._on_item_clicked)
 
     # ----------------- Public API -----------------
-    def add_playlist(self, title, subtitle_text, path, pix: QPixmap,
+    def add_song(self, title, subtitle_text, path, pix: QPixmap,
                      play_callback=None, top: bool = False):
         """
         Add a PlaylistCard tile to this section.
@@ -537,7 +537,6 @@ class PlaylistSection(QWidget):
         # Add a few extra pixels padding
         self._list.setFixedHeight(content_bottom + 4)
 
-    # ----------------- Optional: click behavior -----------------
     def _on_item_clicked(self, item: QListWidgetItem):
         clicked_tile = self._list.itemWidget(item)
         print(f"[UI] open playlist: {clicked_tile.title_text}")
@@ -614,7 +613,7 @@ class ContentArea(QFrame):
 
     def add_item(self, title, subtitle_text, path, pix, play = False):
         # is play then add on top
-        self.section_library.add_playlist(title, subtitle_text, path, pix, play_callback=self.play_song, top=play)
+        self.section_library.add_song(title, subtitle_text, path, pix, play_callback=self.play_song, top=play)
 
         if play:
             self.play_song(path)

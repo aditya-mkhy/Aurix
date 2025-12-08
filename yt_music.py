@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QIcon
 from PyQt5.QtWidgets import (
@@ -33,7 +33,7 @@ from PyQt5.QtCore import (
 )
 
 from typing import List
-from util import trim_text
+from util import trim_text, MUSIC_DIR_PATH, make_title_path
 
 class HoverThumb(QWidget):
     downloadRequested = pyqtSignal(str)
@@ -483,7 +483,17 @@ class YtScreen(QFrame):
         # url = ""
         # self.config_one(tite, sub, url, pix)
 
+    def is_already_downloaded(self, title: str) -> str | None:
+        # check if the file is already downloaded 
+        # use tite to make a path and then check is it esists
+        # if it is.. then change the 'mode' to 'play'
+        assume_filename = f"{make_title_path(title)}.mp3"
+        assume_path = os.path.join(MUSIC_DIR_PATH, assume_filename)
 
+        if os.path.exists(assume_path):
+            return assume_path
+         
+    
 
     def clear_results(self):
         self.track_list.clear()
@@ -511,6 +521,14 @@ class YtScreen(QFrame):
 
         # add row in track_list
         self.track_list.append(row)
+
+        # check is the file is already downloaded...
+        exists_path = self.is_already_downloaded(title)
+        if exists_path:
+            # change "mode" to "play"
+            row.set_file_path(exists_path)
+            row.set_mode("play")
+
 
     def config_finished(self, status):
         if status:
