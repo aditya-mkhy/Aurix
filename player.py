@@ -10,11 +10,38 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
 
 from helper import LocalFilesLoader, get_mp3_metadata
-from util import is_mp3
+from util import is_mp3, MUSIC_DIR_PATH
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from util import format_time
+def get_files():
+    music_files = []
+    for file in os.listdir(MUSIC_DIR_PATH):
+        path = os.path.join(MUSIC_DIR_PATH, file)
+        if is_mp3(path):
+            music_files.append(path)
+
+    return music_files
+
+def get_track_file(files: list, current_file: str = None, is_back: bool = False):
+    if current_file is None:
+        return files[0]
+    
+    try:
+        index = files.index(current_file)
+    except:
+        index = -1
+
+    if is_back:
+        index -= 1
+    else:
+        index += 1
+
+    if index < 0 or index >= len(files):
+        index = 0
+    
+    return files[index]
+    
 
 class PlayerEngine(QObject):
     # (title, subtitle, total_time, )
@@ -42,7 +69,16 @@ class PlayerEngine(QObject):
         self.elapsed_sec = 0
         self.duration = 0
 
+        self._music_files = get_files()
+
         self._init_mixer(freq=48000, channels=2, out_dev="default")
+        
+        QTimer.singleShot(0, self._init_play)
+
+
+    def _init_play(self):
+        self.play(self._music_files[0])
+        self.play_toggled()
 
 
     def _init_mixer(self, freq=48000, channels=2, out_dev="default"):
@@ -85,17 +121,20 @@ class PlayerEngine(QObject):
 
     def next_track(self):
         print("Next track is not implemented...")
+        next_file = get_track_file(self._music_files, current_file=self._current_path)
+        self.play(next_file)
 
     def prevoius_track(self):
         print("Prevoius button is clicked...")
 
-        if self.elapsed_sec >= 5:
+        if (self.elapsed_sec //1000) >= 5:
             # Restart current track from beginning
             self.setSeekPos.emit(0) # set the seekbar to 0 pos for smothness
             self.set_seek(0)
             return
         
-        print("SongList Not Found.")
+        prev_file = get_track_file(self._music_files, current_file=self._current_path, is_back=True)
+        self.play(prev_file)
 
      
     def play(self, path:str, out_dev = None):
@@ -175,6 +214,9 @@ class PlayerEngine(QObject):
                 self.play(self._current_path)
                 # not emmiting the play signal.. as self.play fun gonna do it
                 return 
+            
+            
+
             
         # set the play or pause button 
         self.setPlaying.emit(self.is_playing())
