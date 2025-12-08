@@ -438,117 +438,115 @@ class PlaylistCard(QWidget):
         self.menu.exec_(pos)
 
 
-class PlaylistGrid(QListWidget):
-    """
-    Wrapping grid of PlaylistTile cards.
-
-    IMPORTANT: scrollbars are disabled.
-    Height is auto-adjusted so the
-    *outer* page scroll area handles scrolling.
-    """
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.setViewMode(QListView.IconMode)
-        self.setFlow(QListView.LeftToRight)
-        self.setWrapping(True)
-        self.setResizeMode(QListView.Adjust)
-
-        # self.setSpacing(30)
-        # self.setContentsMargins(0, 0, 0, 0)
-        # self.setViewportMargins(0, 0, 30, 40)
-        self.setMovement(QListView.Snap)
-
-        self.setFrameShape(self.NoFrame)
-        self.setStyleSheet("QListWidget { background: transparent; border: none; }")
-
-        # 🔒 disable internal scrollbars
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        # drag & drop reorder still works
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(False)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
-
-        # self.itemClicked.connect(self._on_item_clicked)
-
-    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None, top=False):
-        item = QListWidgetItem()
-        tile = PlaylistCard(title, subtitle_text, path, pix,
-                            play_callback=play_callback, parent=self)
-        item.setSizeHint(tile.size() + QSize(30, 30))
-
-        if top:
-            # insert at index 0 → pushes previous items down
-            self.insertItem(0, item)
-        else:
-            # normal behavior → add at end
-            self.addItem(item)
-
-        self.setItemWidget(item, tile)
-        self._update_height_for_content()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._update_height_for_content()
-
-    def _update_height_for_content(self):
-        """Resize the list widget vertically so all rows are visible."""
-        if self.count() == 0:
-            self.setFixedHeight(0)
-            return
-
-        # last item rect gives us bottom of content
-        last_item = self.item(self.count() - 1)
-        rect = self.visualItemRect(last_item)
-        content_bottom = rect.bottom() + self.spacing()
-
-        # some padding
-        self.setFixedHeight(content_bottom + 4)
-
-    def _on_item_clicked(self, item):
-        clicked_tile = self.itemWidget(item)
-        print(f"[UI] open playlist: {clicked_tile.title_text}")
-
-        for i in range(self.count()):
-            it = self.item(i)
-            tile = self.itemWidget(it)
-            tile.set_active(tile is clicked_tile)
-
 
 class PlaylistSection(QWidget):
     """
-    One section like:
-        "From your library"
-        [PlaylistGrid here]
+    A titled section that shows a wrapping grid of PlaylistCard tiles.
 
-    Vertical layout: title on top, grid below.
-    No scrollbars inside; grid height grows.
+    - No scrollbars here: height auto-adjusts so the outer page scroll area
+      handles scrolling.
+    - Use add_playlist(...) to append or prepend cards.
     """
 
     def __init__(self, title: str, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_StyledBackground, True)
-        # self.setStyleSheet("background-color: red;")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(20)
 
-        self.title_label = QLabel(title)
-        self.title_label.setFont(QFont("Segoe UI", 24,  QFont.Black))
+        # --- Section title ---
+        self.title_label = QLabel(title, self)
+        self.title_label.setFont(QFont("Segoe UI", 24, QFont.Black))
         self.title_label.setStyleSheet("color: #ffffff;")
-
         layout.addWidget(self.title_label)
 
-        self.grid = PlaylistGrid()
-        layout.addWidget(self.grid)
+        # --- Internal list acting as grid ---
+        self._list = QListWidget(self)
 
-    def add_playlist(self, title, subtitle_text, path, pix, play_callback=None, top = False):
-        self.grid.add_playlist(title, subtitle_text, path, pix, play_callback = play_callback, top=top)
+        self._list.setViewMode(QListView.IconMode)
+        self._list.setFlow(QListView.LeftToRight)
+        self._list.setWrapping(True)
+        self._list.setResizeMode(QListView.Adjust)
+
+        self._list.setMovement(QListView.Snap)
+        self._list.setFrameShape(QListWidget.NoFrame)
+        self._list.setStyleSheet("QListWidget { background: transparent; border: none; }")
+
+        # disable scrollbars; outer scroll area will handle scrolling
+        self._list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        # enable drag & drop reordering
+        self._list.setDragEnabled(True)
+        self._list.setAcceptDrops(True)
+        self._list.setDropIndicatorShown(False)
+        self._list.setDragDropMode(QAbstractItemView.InternalMove)
+
+        layout.addWidget(self._list)
+
+        # optional: connect if you want select behavior
+        # self._list.itemClicked.connect(self._on_item_clicked)
+
+    # ----------------- Public API -----------------
+    def add_playlist(self, title, subtitle_text, path, pix: QPixmap,
+                     play_callback=None, top: bool = False):
+        """
+        Add a PlaylistCard tile to this section.
+        If top=True, inserts at top; otherwise appends at the end.
+        """
+        item = QListWidgetItem(self._list)
+
+        tile = PlaylistCard(
+            title, subtitle_text, path, pix,
+            play_callback=play_callback,
+            parent=self._list
+        )
+
+        # give each tile some breathing room
+        item.setSizeHint(tile.size() + QSize(30, 30))
+
+        if top:
+            self._list.insertItem(0, item)
+        else:
+            self._list.addItem(item)
+
+        self._list.setItemWidget(item, tile)
+        self._update_height_for_content()
+
+    # ----------------- Internal layout helpers -----------------
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_height_for_content()
+
+    def _update_height_for_content(self):
+        """
+        Resize the internal QListWidget vertically so all rows are visible.
+        The outer page scroll area will then scroll the whole section.
+        """
+        count = self._list.count()
+        if count == 0:
+            self._list.setFixedHeight(0)
+            return
+
+        last_item = self._list.item(count - 1)
+        rect = self._list.visualItemRect(last_item)
+        content_bottom = rect.bottom() + self._list.spacing()
+
+        # Add a few extra pixels padding
+        self._list.setFixedHeight(content_bottom + 4)
+
+    # ----------------- Optional: click behavior -----------------
+    def _on_item_clicked(self, item: QListWidgetItem):
+        clicked_tile = self._list.itemWidget(item)
+        print(f"[UI] open playlist: {clicked_tile.title_text}")
+
+        # mark only one as active
+        for i in range(self._list.count()):
+            it = self._list.item(i)
+            tile = self._list.itemWidget(it)
+            tile.set_active(tile is clicked_tile)
 
 
 

@@ -544,8 +544,8 @@ class DemoWindow(QMainWindow):
 
         duration = 60 * 5
         self.bottom.set_track(
-            "Barbaadabcdefghijklmnopqrstuvwxyzadityamukhiyajkkjdkjjhkjfdhkjjdfakjlj".upper(),
-            "Barbaadabcdefghijklmnopqrstuvwxyzabcdekjlfkdjkjjkfdjkljkldfjkljfdkljkljdf".upper(),
+            "Barbaada",
+            "Aditya Mukhiya, Palak....",
             duration_seconds=duration
         )
 
