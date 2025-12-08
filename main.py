@@ -35,12 +35,9 @@ class MusicMainWindow(QMainWindow):
         # Media Keys
         self.media_keys = MediaKeys(parent=self)
         self.media_keys.onPlayPause.connect(self.playerEngine.play_toggled)
-        self.media_keys.onPlayNext.connect(self.on_global_next)
-        self.media_keys.onPlayPrevious.connect(self.on_global_prev)
+        self.media_keys.onPlayNext.connect(self.playerEngine.next_track)
+        self.media_keys.onPlayPrevious.connect(self.playerEngine.prevoius_track)
         QTimer.singleShot(0, self.media_keys.register)
-
-
-
 
 
         central = QWidget()
@@ -101,7 +98,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.volumeChanged.connect(self.playerEngine.set_volume)
         self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
         self.bottom_bar.repeatModeChanged.connect(self.playerEngine.set_repeat_mode)
-        self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_clicked)
+        self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_track)
 
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
