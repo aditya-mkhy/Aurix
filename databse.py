@@ -51,9 +51,28 @@ class DataBase():
             
         self.conn.commit()
 
-    def add_into_playlist(self, playlist_id, song_id):
-        pass
+    def add_playlist(
+            self, title: str, subtitle: str, author: str, count: int, 
+            duration: int, plays: int, cover_path: str, commit = True
+        ):
+            
+        try:
+            self.cursor.execute(
+                """INSERT INTO playlist (title, subtitle, author, count, duration, plays, cover_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?) """, 
+                (title, subtitle, author, count, duration, plays, cover_path)
+            )
 
+        except sqlite3.IntegrityError:
+            # handle duplicate
+            print(f"Playlist with title '{title}' already exists")
+            return False
+        
+        if commit:
+            self.commit()
+
+        return True
+    
 
     def _db_init(self):
         self.cursor.execute("""
@@ -102,7 +121,7 @@ class DataBase():
 
         self.conn.commit()
 
-    def add_song(self, title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit = False):
+    def add_song(self, title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit = True):
         self.cursor.execute(
             """INSERT INTO songs (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) """, 
@@ -162,12 +181,15 @@ if __name__ == "__main__":
     path = "C:\\Users\\freya\\Music\\Ve Haaniyaan.mp3"
     cover_path = ""
 
-    # db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
-    songs = db.get_song(song_id=1)
-    print(db.dict_format(songs))
+    # # db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
+    # songs = db.get_song(song_id=1)
+    # print(db.dict_format(songs))
 
-    print("-------update----------------")
-    db.update_song(1, title="Love you Plaku", subtitle = "i want you", cover_path = "plak.jpg")
+    # print("-------update----------------")
+    # db.update_song(1, title="Love you Plaku", subtitle = "i want you", cover_path = "plak.jpg")
 
-    songs = db.get_song(song_id=1)
-    print(db.dict_format(songs))
+    # songs = db.get_song(song_id=1)
+    # print(db.dict_format(songs))
+
+    db.add_playlist("fav songs", "All favroute song aere there", "Aditya Mukhiya", 400, 500, 2, "fav.png")
+
