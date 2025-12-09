@@ -1,5 +1,6 @@
 import sqlite3
 from PyQt5.QtCore import QObject
+from typing import List, Dict
 
 class DataBase():
     def __init__(self):
@@ -27,10 +28,6 @@ class DataBase():
 
         self.cursor.execute("SELECT key, value FROM basic")
         return {row["key"]: row["value"] for row in self.cursor.fetchall()}
-    
-    
-    def add_into_playlist(self, playlist_id, song_id):
-        pass
 
 
     def is_not_init(self):
@@ -53,6 +50,9 @@ class DataBase():
                 ON CONFLICT(key) DO UPDATE SET value = excluded.value;""", (key, value))
             
         self.conn.commit()
+
+    def add_into_playlist(self, playlist_id, song_id):
+        pass
 
 
     def _db_init(self):
@@ -113,24 +113,61 @@ class DataBase():
             self.commit()
 
                 
+    def get_song(self, song_id: int = None):
+        if song_id is not None:
+              self.cursor.execute("SELECT * FROM songs WHERE id=?", (song_id,))
+              row = self.cursor.fetchone()
+              return row
+        
+
+        self.cursor.execute("SELECT * FROM songs")
+        return self.cursor.fetchall()
+    
+    def update_song(self, song_id, **kwargs):
+        self._update_column("songs", song_id, **kwargs)
+
+    def update_plalist(self, ):
+        pass
+
+    def _update_column(self, table: str, column_id: int, **kwargs):
+        query = f'UPDATE {table} SET {", ".join(f"{key} = ?" for key in kwargs.keys())} WHERE id = ?'
+
+        values = list(kwargs.values())
+        values.append(column_id) # id at last
+
+        self.cursor.execute(query, values)
+        self.conn.commit()
+
+    
+    def dict_format(self, items: List[Dict]):
+        if not isinstance(items, list):
+            return dict(items)
+        return [dict(row) for row in items]
 
 
 if __name__ == "__main__":
     db = DataBase()
-    vol = db.get_basic("vol")
-    print(f"Volume : {vol}")
+    # vol = db.get_basic("vol")
+    # print(f"Volume : {vol}")
 
-    title = "mhadev ji"
+    title = "Danny"
     subtitle = "best mahadev seong sing by mukho"
     artist = "aditya mukhiya"
     vid = "none"
-    duration = 2345
-    plays = 45
-    liked = 1
-    skip = 5
+    duration = 565
+    plays = 10
+    liked = 10
+    skip = 500
 
-    path = "C:\\Users\\freya\\Music\\Bhala.mp3"
+    path = "C:\\Users\\freya\\Music\\Ve Haaniyaan.mp3"
     cover_path = ""
 
-    db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
+    # db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
+    songs = db.get_song(song_id=1)
+    print(db.dict_format(songs))
 
+    print("-------update----------------")
+    db.update_song(1, title="Love you Plaku", subtitle = "i want you", cover_path = "plak.jpg")
+
+    songs = db.get_song(song_id=1)
+    print(db.dict_format(songs))
