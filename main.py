@@ -106,12 +106,14 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.setPlaying.connect(self.bottom_bar.set_playing)
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
         self.playerEngine.setRepeatMode.connect(self.bottom_bar.set_repeat_mode)
+        self.playerEngine.broadcastMsg.connect(self.broadcast_msg)
 
 
     def broadcast_msg(self, type: str, item_id: str, value: bool):
+        print(f"Boradcast[main] => {type} | {item_id} | {value}")
         self.yt_screen.set_broadcast(type, item_id, value)
         self.home_screen.set_broadcast(type, item_id, value)
-        
+
 
     def play_song(self, file_path: str):
         self.playerEngine.play(path=file_path)

@@ -14,6 +14,7 @@ from typing import Dict
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
         super().__init__(*args, **kwargs)
+        self._size = size
 
         self.transform_scale = transform_scale
 
@@ -29,7 +30,7 @@ class HoverButton(QPushButton):
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: rgba(0, 0, 0, 0.55);
-                border-radius: { size//2 }px;
+                border-radius: { self._size//2 }px;
                 border: none;
                 color: #000000;
                 padding-left: 12px;        
@@ -45,8 +46,17 @@ class HoverButton(QPushButton):
             }}
         """)
 
+    def set_padding(self, value):
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background-color: rgba(0, 0, 0, 0.55);
+                border-radius: { self._size//2 }px;
+                border: none;
+                color: #000000;
+                padding-left: {value}px;        
+            }}
+        """)
 
-        
     def enterEvent(self, event):
         self.setFixedSize(self.hover_size)
         self.setIconSize(self.hover_icon_size)
@@ -404,33 +414,32 @@ class SongCard(QWidget):
 
     def set_active(self, active: bool):
         if active:
-            self.play_btn.clicked.disconnect(self._on_play_clicked)
+            self.play_btn.clicked.disconnect()
             self.play_btn.clicked.connect(self.playToggleRequested.emit)
+            self.overlay.show()
 
         else:
-            self.play_btn.clicked.disconnect(self.playToggleRequested.emit)
+            self.play_btn.clicked.disconnect()
             self.play_btn.clicked.connect(self._on_play_clicked)
+            self.overlay.hide()
 
 
     def set_play(self, value: bool):
         if value:
             self.play_btn.setIcon(self.pause_icon)
+            self.play_btn.set_padding(0)
+
         else:
             self.play_btn.setIcon(self.play_icon)
-            
+            self.play_btn.set_padding(0)
 
     def on_enter(self):
         self.overlay.show()
 
     def on_leave(self):
         self.overlay.hide()
-        self._apply_style()
 
     def _on_play_clicked(self):
-        if not self.play_callback:
-            print(f"[UI] play playlist: {self.title_text}")
-            return
-        
         self.playRequested.emit(self.mp3_path)
         
 
@@ -614,6 +623,8 @@ class ContentArea(QFrame):
         self.local_file_loader.start()
 
     def set_broadcast(self, type: str, item_id: str, value: bool):
+        print(f"Boradcast[Content] => {type} | {item_id} | {value}")
+
         self.section_library.set_broadcast(type, item_id, value)
 
     def play_requested(self, path: str = None):
@@ -635,8 +646,8 @@ class ContentArea(QFrame):
 
     def add_item(self, title, subtitle_text, path, pix, play = False):
         # is play then add on top
-        self.section_library.add_song(title, subtitle_text, path, pix, play_callback=self.play_song, top=play)
+        self.section_library.add_song(title, subtitle_text, path, pix, top=play)
 
         if play:
-            self.play_song(path)
+            self.play_requested(path)
 
