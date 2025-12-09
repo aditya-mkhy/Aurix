@@ -73,6 +73,14 @@ class DataBase():
 
         return True
     
+    def get_playlist(self, playlist_id: int = None):
+        if playlist_id is not None:
+              self.cursor.execute("SELECT * FROM playlist WHERE id=?", (playlist_id,))
+              row = self.cursor.fetchone()
+              return row
+        
+        self.cursor.execute("SELECT * FROM playlist")
+        return self.cursor.fetchall()
 
     def _db_init(self):
         self.cursor.execute("""
@@ -169,18 +177,6 @@ if __name__ == "__main__":
     # vol = db.get_basic("vol")
     # print(f"Volume : {vol}")
 
-    title = "Danny"
-    subtitle = "best mahadev seong sing by mukho"
-    artist = "aditya mukhiya"
-    vid = "none"
-    duration = 565
-    plays = 10
-    liked = 10
-    skip = 500
-
-    path = "C:\\Users\\freya\\Music\\Ve Haaniyaan.mp3"
-    cover_path = ""
-
     # # db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
     # songs = db.get_song(song_id=1)
     # print(db.dict_format(songs))
@@ -191,5 +187,8 @@ if __name__ == "__main__":
     # songs = db.get_song(song_id=1)
     # print(db.dict_format(songs))
 
-    db.add_playlist("fav songs", "All favroute song aere there", "Aditya Mukhiya", 400, 500, 2, "fav.png")
+    # db.add_playlist("Hindi songs", "best hindi song", "Palak Mukhiya", 100, 20, 0, "palak.png")
+
+    playlists = db.get_playlist(playlist_id=1)
+    print(db.dict_format(playlists))
 
