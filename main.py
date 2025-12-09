@@ -67,6 +67,7 @@ class MusicMainWindow(QMainWindow):
         # HOME SCREEN
         self.home_screen = ContentArea(music_dirs=music_dirs)
         self.home_screen.playRequested.connect(self._play_requested)
+        self.home_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
 
 
         #LIBRARAY SCREEN
@@ -106,6 +107,9 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
         self.playerEngine.setRepeatMode.connect(self.bottom_bar.set_repeat_mode)
 
+
+    def broadcast_msg(self, type: str, item_id: str, value: bool):
+        
 
     def play_song(self, file_path: str):
         self.playerEngine.play(path=file_path)

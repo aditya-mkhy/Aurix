@@ -482,6 +482,9 @@ class YtScreen(QFrame):
         # sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays Hellow mahadev ji maaf krdijiye please mahadev ".upper()
         # url = ""
         # self.config_one(tite, sub, url, pix)
+        
+    def set_broadcast(self, type: str, item_id: str, value: bool):
+        pass
 
     def is_already_downloaded(self, title: str) -> str | None:
         # check if the file is already downloaded 
@@ -492,7 +495,7 @@ class YtScreen(QFrame):
 
         if os.path.exists(assume_path):
             return assume_path
-         
+             
     
 
     def clear_results(self):
@@ -529,6 +532,7 @@ class YtScreen(QFrame):
             row.set_file_path(exists_path)
             row.set_mode("play")
 
+    
 
     def config_finished(self, status):
         if status:

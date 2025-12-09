@@ -9,6 +9,7 @@ from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QI
 
 from helper import LocalFilesLoader
 from helper import crop_and_round_pix
+from typing import Dict
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -151,15 +152,16 @@ class ClickableOverlay(QWidget):
         super().mouseReleaseEvent(event)
 
 
-class PlaylistCard(QWidget):
+class SongCard(QWidget):
+    playRequested = pyqtSignal(str)
+    playToggleRequested = pyqtSignal()
 
-    def __init__(self, title: str, subtitle_text: str, path: str, pix: QPixmap, play_callback=None, parent=None):
+    def __init__(self, title: str, subtitle_text: str, path: str, pix: QPixmap, parent=None):
         super().__init__(parent)
         self.title_text = title
         self.subtitle_text = subtitle_text
         self._active = False
         self.mp3_path = path
-        self.play_callback = play_callback
 
         self._width = 240 # 260
         self._height = 292  #220
@@ -274,9 +276,12 @@ class PlaylistCard(QWidget):
         ov.addStretch(1)
 
         # center play
+        self.play_icon = QIcon("res/play-card.png")
+        self.pause_icon = QIcon("res/pause.png")
+        
         self.play_btn = HoverButton(parent=self.overlay, size=76, icon_size=38, transform_scale=6)
         self.play_btn.setCursor(Qt.PointingHandCursor)
-        self.play_btn.setIcon(QIcon("res/play-card.png"))  # or use your icon
+        self.play_btn.setIcon(self.play_icon)  # or use your icon
 
         self.play_btn.clicked.connect(self._on_play_clicked)
         ov.addWidget(self.play_btn, 0, Qt.AlignHCenter)
@@ -343,21 +348,13 @@ class PlaylistCard(QWidget):
         main.addLayout(text_layout)
 
         # active vs normal
-        self._normal_style = """
+        self.setStyleSheet("""
             QWidget {
                 background-color: transparent;
                 border-radius: 16px;
                 border: none;
             }
-        """
-        self._active_style = """
-            QWidget {
-                background-color: transparent;
-                border-radius: 16px;
-                border: none;
-            }
-        """
-        self._apply_style()
+        """)
         
 
         # menu
@@ -406,14 +403,21 @@ class PlaylistCard(QWidget):
                 
 
     def set_active(self, active: bool):
-        self._active = active
-        self._apply_style()
+        if active:
+            self.play_btn.clicked.disconnect(self._on_play_clicked)
+            self.play_btn.clicked.connect(self.playToggleRequested.emit)
 
-    def _apply_style(self):
-        if self._active:
-            self.setStyleSheet(self._active_style)
         else:
-            self.setStyleSheet(self._normal_style)
+            self.play_btn.clicked.disconnect(self.playToggleRequested.emit)
+            self.play_btn.clicked.connect(self._on_play_clicked)
+
+
+    def set_play(self, value: bool):
+        if value:
+            self.play_btn.setIcon(self.pause_icon)
+        else:
+            self.play_btn.setIcon(self.play_icon)
+            
 
     def on_enter(self):
         self.overlay.show()
@@ -427,8 +431,8 @@ class PlaylistCard(QWidget):
             print(f"[UI] play playlist: {self.title_text}")
             return
         
-        if self.play_callback:
-            self.play_callback(self.mp3_path)
+        self.playRequested.emit(self.mp3_path)
+        
 
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
@@ -440,16 +444,14 @@ class PlaylistCard(QWidget):
 
 
 class PlaylistSection(QWidget):
-    """
-    A titled section that shows a wrapping grid of PlaylistCard tiles.
-
-    - No scrollbars here: height auto-adjusts so the outer page scroll area
-      handles scrolling.
-    - Use add_playlist(...) to append or prepend cards.
-    """
+    playRequested = pyqtSignal(str)
+    playToggleRequested = pyqtSignal()
 
     def __init__(self, title: str, parent=None):
         super().__init__(parent)
+
+        self.items: dict[str, SongCard] = {}
+
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         layout = QVBoxLayout(self)
@@ -486,36 +488,51 @@ class PlaylistSection(QWidget):
 
         layout.addWidget(self._list)
 
-        # optional: connect if you want select behavior
-        # self._list.itemClicked.connect(self._on_item_clicked)
 
-    # ----------------- Public API -----------------
-    def add_song(self, title, subtitle_text, path, pix: QPixmap,
-                     play_callback=None, top: bool = False):
+    def set_broadcast(self, type: str, item_id: str, value: bool):
+        card_obj = self.items.get(item_id)
+        if not card_obj:
+            return
+        
+        if type == "active":
+            card_obj.set_active(value)
+
+        elif type == "playing":
+            card_obj.set_play(value)
+
+        else:
+            print(f"[PlaylistSection][broadcast] => not implemented for type : {type}")
+
+
+    def request_play(self, path: str):
+        self.playRequested.emit(path)
+        
+    def add_song(self, title, subtitle_text, path, pix: QPixmap, top: bool = False):
         """
-        Add a PlaylistCard tile to this section.
+        Add a PlaylistCard title to this section.
         If top=True, inserts at top; otherwise appends at the end.
         """
         item = QListWidgetItem(self._list)
 
-        tile = PlaylistCard(
-            title, subtitle_text, path, pix,
-            play_callback=play_callback,
-            parent=self._list
-        )
+        song_card = SongCard(title, subtitle_text, path, pix, parent=self._list)
+        song_card.playRequested.connect(self.request_play)
+        song_card.playToggleRequested.connect(self.playToggleRequested.emit)
+        
+        # add song_card object to items dict with path as key..
+        self.items[path] = song_card
 
-        # give each tile some breathing room
-        item.setSizeHint(tile.size() + QSize(30, 30))
+        # give each title some breathing room
+        item.setSizeHint(song_card.size() + QSize(30, 30))
 
         if top:
             self._list.insertItem(0, item)
         else:
             self._list.addItem(item)
 
-        self._list.setItemWidget(item, tile)
+        self._list.setItemWidget(item, song_card)
         self._update_height_for_content()
 
-    # ----------------- Internal layout helpers -----------------
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._update_height_for_content()
@@ -538,19 +555,19 @@ class PlaylistSection(QWidget):
         self._list.setFixedHeight(content_bottom + 4)
 
     def _on_item_clicked(self, item: QListWidgetItem):
-        clicked_tile = self._list.itemWidget(item)
-        print(f"[UI] open playlist: {clicked_tile.title_text}")
+        clicked_title = self._list.itemWidget(item)
+        print(f"[UI] open playlist: {clicked_title.title_text}")
 
-        # mark only one as active
-        for i in range(self._list.count()):
-            it = self._list.item(i)
-            tile = self._list.itemWidget(it)
-            tile.set_active(tile is clicked_tile)
-
+        # # mark only one as active
+        # for i in range(self._list.count()):
+        #     it = self._list.item(i)
+        #     title = self._list.itemWidget(it)
+        #     title.set_active(title is clicked_title)
 
 
 class ContentArea(QFrame):
     playRequested = pyqtSignal(str)
+    playToggleRequested = pyqtSignal()
 
     def __init__(self, parent = None, music_dirs: list = None):
         super().__init__(parent)
@@ -577,11 +594,14 @@ class ContentArea(QFrame):
 
         # Section 1
         self.section_library = PlaylistSection("From your library")
+        self.section_library.playRequested.connect(self.play_requested)
+        self.section_library.playToggleRequested.connect(self.playToggleRequested.emit)
+
         main_layout.addWidget(self.section_library)
 
-        # Section 2
-        self.section_featured = PlaylistSection("Featured playlists for you")
-        main_layout.addWidget(self.section_featured)
+        # # Section 2
+        # self.section_featured = PlaylistSection("Featured playlists for you")
+        # main_layout.addWidget(self.section_featured)
 
         # keep sections pinned to top if there are few
         main_layout.addStretch(1)
@@ -593,7 +613,10 @@ class ContentArea(QFrame):
         self.local_file_loader.finished.connect(self._finish_adding_loc_files)
         self.local_file_loader.start()
 
-    def play_song(self, path: str = None):
+    def set_broadcast(self, type: str, item_id: str, value: bool):
+        self.section_library.set_broadcast(type, item_id, value)
+
+    def play_requested(self, path: str = None):
         if not path:
             print(f"Path is empty")
             return
@@ -609,7 +632,6 @@ class ContentArea(QFrame):
             print("Maybe some Error in loading local files..")
 
         self.local_file_loader.deleteLater()
-
 
     def add_item(self, title, subtitle_text, path, pix, play = False):
         # is play then add on top

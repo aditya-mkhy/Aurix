@@ -49,6 +49,7 @@ class PlayerEngine(QObject):
     setPlaying = pyqtSignal(bool)
     setSeekPos = pyqtSignal(int)
     setRepeatMode = pyqtSignal(int)
+    broadcastMsg = pyqtSignal(str, str, bool)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -188,6 +189,9 @@ class PlayerEngine(QObject):
             
             self.play(path=self._current_path)
             return
+        
+        if self._repeat_mode == 1:
+            self.next_track()
             
 
     def stop(self):
