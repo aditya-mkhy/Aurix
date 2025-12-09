@@ -110,7 +110,7 @@ class MusicMainWindow(QMainWindow):
 
 
     def broadcast_msg(self, type: str, item_id: str, value: bool):
-        print(f"Boradcast[main] => {type} | {item_id} | {value}")
+        # print(f"Boradcast[main] => {type} | {item_id} | {value}")
         self.yt_screen.set_broadcast(type, item_id, value)
         self.home_screen.set_broadcast(type, item_id, value)
 

@@ -416,11 +416,15 @@ class SongCard(QWidget):
         if active:
             self.play_btn.clicked.disconnect()
             self.play_btn.clicked.connect(self.playToggleRequested.emit)
+            self._active = True
             self.overlay.show()
+
 
         else:
             self.play_btn.clicked.disconnect()
             self.play_btn.clicked.connect(self._on_play_clicked)
+            self._active = False
+            self.set_play(False)
             self.overlay.hide()
 
 
@@ -434,10 +438,12 @@ class SongCard(QWidget):
             self.play_btn.set_padding(0)
 
     def on_enter(self):
-        self.overlay.show()
+        if not self._active:
+            self.overlay.show()
 
     def on_leave(self):
-        self.overlay.hide()
+        if not self._active:
+            self.overlay.hide()
 
     def _on_play_clicked(self):
         self.playRequested.emit(self.mp3_path)
@@ -623,9 +629,9 @@ class ContentArea(QFrame):
         self.local_file_loader.start()
 
     def set_broadcast(self, type: str, item_id: str, value: bool):
-        print(f"Boradcast[Content] => {type} | {item_id} | {value}")
-
+        # print(f"Boradcast[Content] => {type} | {item_id} | {value}")
         self.section_library.set_broadcast(type, item_id, value)
+        
 
     def play_requested(self, path: str = None):
         if not path:
