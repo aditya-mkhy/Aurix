@@ -98,8 +98,7 @@ class DataBase():
     def get_playlist(self, playlist_id: int = None):
         if playlist_id is not None:
               self.cursor.execute("SELECT * FROM playlist WHERE id=?", (playlist_id,))
-              row = self.cursor.fetchone()
-              return row
+              return self.cursor.fetchone()
         
         self.cursor.execute("SELECT * FROM playlist")
         return self.cursor.fetchall()
@@ -107,14 +106,31 @@ class DataBase():
     def update_playlist(self, playlist_id: int, **update: PlaylistUpdate):
         self._update_column("playlist", playlist_id, **update)
 
-    def add_playlist_song(self, playlist_id: int, song_id: int, commit = False):
-        self.cursor.execute(
-                "INSERT INTO playlist_song (p_id, s_id) VALUES (?, ?)", (playlist_id, song_id)
-                )
+    def add_playlist_song(self, playlist_id: int, song_id: int, commit = True):
+        try:
+            self.cursor.execute(
+                    "INSERT INTO playlist_song (p_id, s_id) VALUES (?, ?)", (playlist_id, song_id)
+                    )
+        
+        except sqlite3.IntegrityError:
+            # handle duplicate
+            print(f"Song with id : {song_id} already exists in playlist : {playlist_id}")
+            return False
         
         if commit:
             self.commit()
 
+        return True
+    
+
+    def get_playlist_song(self, playlist_id: int):
+        if playlist_id is not None:
+              self.cursor.execute("SELECT s_id FROM playlist_song WHERE p_id=?", (playlist_id,))
+              return self.cursor.fetchall()
+        
+        self.cursor.execute("SELECT * FROM playlist_song")
+        return self.cursor.fetchall()
+    
 
     def _db_init(self):
         self.cursor.execute("""
@@ -167,14 +183,22 @@ class DataBase():
         self.conn.commit()
 
     def add_song(self, title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit = True):
-        self.cursor.execute(
-            """INSERT INTO songs (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) """, 
-            (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
-        )
+        try:
+            self.cursor.execute(
+                """INSERT INTO songs (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) """, 
+                (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
+            )
+
+        except sqlite3.IntegrityError:
+            # handle duplicate
+            print(f"Song with path : {path} already exists.")
+            return False
 
         if commit:
             self.commit()
+
+        return True
 
                 
     def get_song(self, song_id: int = None):
@@ -223,11 +247,15 @@ if __name__ == "__main__":
     # songs = db.get_song(song_id=1)
     # print(db.dict_format(songs))
 
-    db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
+    # db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
 
     # playlists = db.get_playlist(playlist_id=1)
     # print(db.dict_format(playlists))
 
-    # db.add_playlist_song(1, 1)
+    db.add_playlist_song(1, 20)
+
+    pl_songs = db.get_playlist_song(1)
+    print(db.dict_format(pl_songs))
+
 
 
