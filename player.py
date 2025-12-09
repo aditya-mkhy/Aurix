@@ -113,12 +113,14 @@ class PlayerEngine(QObject):
 
         self.elapsed_sec = sec * 1000
 
+
     def set_repeat_mode(self, value: int):
         if value not in (0, 1, 2):
             return
         print(f"RepeatModeChanged : {value}")
         self._repeat_mode = value
         self.setRepeatMode.emit(self._repeat_mode)
+
 
     def next_track(self):
         print("Next track is not implemented...")
@@ -148,6 +150,9 @@ class PlayerEngine(QObject):
         # stop prevoius timer..
         self._timer.stop()
 
+
+
+
         meta = get_mp3_metadata(path)
         channels = meta["channels"]
         freq = meta["sample_rate"]
@@ -165,6 +170,7 @@ class PlayerEngine(QObject):
         self._init_mixer(freq=freq, channels=channels, out_dev=out_dev)
 
         # load music
+        prev_path = self._current_path # to broadcast de-active status
         self._current_path = path
         self.duration = int(duration) * 1000
         mixer.music.load(path)
@@ -179,6 +185,18 @@ class PlayerEngine(QObject):
 
         self._is_paused = False
         self.setPlaying.emit(self.is_playing())
+        # to set prevoius Active -> False
+
+        if prev_path:
+            # to deactive prevoius song card
+            self.broadcastMsg.emit("active", prev_path, False)
+
+        # to active current song card
+        self.broadcastMsg.emit("active", self._current_path, True)
+
+        # to set playing status to song card
+        self.broadcastMsg.emit("playing", self._current_path, self.is_playing())
+
 
     def _after_stop(self):
         if self._repeat_mode == 2:
@@ -195,9 +213,11 @@ class PlayerEngine(QObject):
             
 
     def stop(self):
-        self.setPlaying.emit(False)
         self._timer.stop()
         mixer.music.stop()
+        self.setPlaying.emit(False)
+        self.broadcastMsg.emit("active", self._current_path, False)
+        
         self._is_paused = False
         self._after_stop()
 
@@ -224,6 +244,8 @@ class PlayerEngine(QObject):
             
         # set the play or pause button 
         self.setPlaying.emit(self.is_playing())
+        self.broadcastMsg.emit("playing", self._current_path, self.is_playing())
+
 
     def set_volume(self, vol: float):
         vol = max(0.0, min(1.0, float(vol)))

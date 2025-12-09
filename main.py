@@ -109,6 +109,8 @@ class MusicMainWindow(QMainWindow):
 
 
     def broadcast_msg(self, type: str, item_id: str, value: bool):
+        self.yt_screen.set_broadcast(type, item_id, value)
+        self.home_screen.set_broadcast(type, item_id, value)
         
 
     def play_song(self, file_path: str):
