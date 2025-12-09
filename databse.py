@@ -1,6 +1,28 @@
 import sqlite3
 from PyQt5.QtCore import QObject
-from typing import List, Dict
+from typing import List, Dict, TypedDict
+
+class PlaylistUpdate(TypedDict, total=False):
+    title: str
+    subtitle : str
+    author: str
+    count: int
+    duration: int
+    plays: int
+    cover_path: str
+
+class SongUpdate(TypedDict, total=False):
+    title: str
+    subtitle : str
+    artist: str
+    vid: str
+    duration: int
+    plays: int
+    liked: int
+    skip: int
+    path: str
+    cover_path: str
+
 
 class DataBase():
     def __init__(self):
@@ -81,6 +103,18 @@ class DataBase():
         
         self.cursor.execute("SELECT * FROM playlist")
         return self.cursor.fetchall()
+    
+    def update_playlist(self, playlist_id: int, **update: PlaylistUpdate):
+        self._update_column("playlist", playlist_id, **update)
+
+    def add_playlist_song(self, playlist_id: int, song_id: int, commit = False):
+        self.cursor.execute(
+                "INSERT INTO playlist_song (p_id, s_id) VALUES (?, ?)", (playlist_id, song_id)
+                )
+        
+        if commit:
+            self.commit()
+
 
     def _db_init(self):
         self.cursor.execute("""
@@ -103,13 +137,6 @@ class DataBase():
         )
         """)
 
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS playlist_song (
-                p_id INTEGER,
-                s_id INTEGER
-        )
-        """)
-
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS songs (
@@ -124,6 +151,16 @@ class DataBase():
                 skip INTEGER,
                 path TEXT UNIQUE,  
                 cover_path TEXT
+        )
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS playlist_song (
+                p_id INTEGER,
+                s_id INTEGER,
+                FOREIGN KEY(p_id) REFERENCES playlist(id),
+                FOREIGN KEY(s_id) REFERENCES songs(id),
+                UNIQUE(p_id, s_id)
         )
         """)
 
@@ -150,11 +187,9 @@ class DataBase():
         self.cursor.execute("SELECT * FROM songs")
         return self.cursor.fetchall()
     
-    def update_song(self, song_id, **kwargs):
-        self._update_column("songs", song_id, **kwargs)
+    def update_song(self, song_id, **update: SongUpdate):
+        self._update_column("songs", song_id, **update)
 
-    def update_plalist(self, ):
-        pass
 
     def _update_column(self, table: str, column_id: int, **kwargs):
         query = f'UPDATE {table} SET {", ".join(f"{key} = ?" for key in kwargs.keys())} WHERE id = ?'
@@ -177,7 +212,8 @@ if __name__ == "__main__":
     # vol = db.get_basic("vol")
     # print(f"Volume : {vol}")
 
-    # # db.add_song(title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path, commit=True)
+    # db.add_song("Tu har lamha", "Bobby-Imran Topic", "aditya", "", 400, 1, 1, 34, "tuhar.mp3", "none")
+    # db.add_song("Ve haaniyaan", "Palak & Adi", "aditya", "", 200, 1, 1, 3, "vehniya.mp3", "tuhar.mp3")
     # songs = db.get_song(song_id=1)
     # print(db.dict_format(songs))
 
@@ -187,8 +223,11 @@ if __name__ == "__main__":
     # songs = db.get_song(song_id=1)
     # print(db.dict_format(songs))
 
-    # db.add_playlist("Hindi songs", "best hindi song", "Palak Mukhiya", 100, 20, 0, "palak.png")
+    db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
 
-    playlists = db.get_playlist(playlist_id=1)
-    print(db.dict_format(playlists))
+    # playlists = db.get_playlist(playlist_id=1)
+    # print(db.dict_format(playlists))
+
+    # db.add_playlist_song(1, 1)
+
 
