@@ -504,10 +504,13 @@ class BottomBar(QWidget):
             self.dislike_btn.setIcon(icon("dislike.png"))
         self.dislikeToggled.emit(self._disliked)
 
-    def _on_shuffle_clicked(self):
-        self._shuffle = not self._shuffle
+    def set_shuffle(self, value: bool):
+        self._shuffle = value
         self.shuffle_btn.setIcon(icon("shuffle-on.png" if self._shuffle else "shuffle-off.png"))
-        self.shuffleToggled.emit(self._shuffle)
+
+
+    def _on_shuffle_clicked(self):
+        self.shuffleToggled.emit(not self._shuffle)
 
     def _on_repeat_clicked(self):
         # 0 -> 1 -> 2 -> 0

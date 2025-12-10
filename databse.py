@@ -22,6 +22,10 @@ class DataBase():
     def commit(self):
         self.conn.commit()
 
+    def add_basic(self, key: str, value: str| int):
+        self.cursor.execute('UPDATE basic SET value = ? WHERE key = ?', (str(value), key))
+        self.conn.commit()
+
     def get_basic(self, key: str | None = None):
         if key is not None:
               self.cursor.execute("SELECT value FROM basic WHERE key=?", (key,))
@@ -214,8 +218,9 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
-    # vol = db.get_basic("vol")
-    # print(f"Volume : {vol}")
+    basic = db.get_basic()
+    print(basic)
+
 
     # db.add_song("Tu har lamha", "Bobby-Imran Topic", "aditya", "", 400, 1, 1, 34, "tuhar.mp3", "none")
     # db.add_song("Ve haaniyaan", "Palak & Adi", "aditya", "", 200, 1, 1, 3, "vehniya.mp3", "tuhar.mp3")
@@ -230,8 +235,8 @@ if __name__ == "__main__":
 
     # db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
 
-    playlists = db.get_playlist(playlist_id=1)
-    print(db.dict_format(playlists))
+    # playlists = db.get_playlist(playlist_id=1)
+    # print(db.dict_format(playlists))
 
     # db.add_playlist_song(1, 20)
 

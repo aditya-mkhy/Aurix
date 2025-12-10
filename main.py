@@ -15,6 +15,7 @@ from content import ContentArea
 from util import dark_title_bar, get_music_path, MediaKeys
 from yt_music import YtScreen
 from player import PlayerEngine
+from databse import DataBase
 
 
 class MusicMainWindow(QMainWindow):
@@ -25,6 +26,9 @@ class MusicMainWindow(QMainWindow):
         self.setStyleSheet("background-color: #000000;")
 
         music_dirs = get_music_path()
+
+        # DataBase
+        self.dataBase = DataBase()
 
         # init player engine
         self.playerEngine = PlayerEngine(parent=self)
@@ -100,14 +104,49 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
         self.bottom_bar.repeatModeChanged.connect(self.playerEngine.set_repeat_mode)
         self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_track)
+        self.bottom_bar.shuffleToggled.connect(self.set_shuffle)
 
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
         self.playerEngine.setPlaying.connect(self.bottom_bar.set_playing)
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
-        self.playerEngine.setRepeatMode.connect(self.bottom_bar.set_repeat_mode)
+        self.playerEngine.setRepeatMode.connect(self.set_repeat_mode)
         self.playerEngine.broadcastMsg.connect(self.broadcast_msg)
 
+        self.is_setting = False
+        self.is_suffle = False
+
+        QTimer.singleShot(0, self.load_basic_settings)
+
+
+    def load_basic_settings(self):
+        basic_info = self.dataBase.get_basic()
+        
+        self.is_setting = True
+        for key, value in basic_info.items():
+            
+            # setting the repeat mode as prev
+            if key == "repeat":
+                self.playerEngine.set_repeat_mode(int(value))
+
+            elif key == "suffle":
+                value =  True if int(value) else False
+                self.set_shuffle(value)
+
+        self.is_setting = False
+
+
+    def set_shuffle(self, value: bool):
+        self.bottom_bar.set_shuffle(value)
+
+        if not self.is_setting:
+            value = 1 if value else 0
+            self.dataBase.add_basic(key="suffle", value=value)
+
+    def set_repeat_mode(self, value: int):
+        self.bottom_bar.set_repeat_mode(value)
+        if not self.is_setting:
+            self.dataBase.add_basic(key="repeat", value=value)
 
     def broadcast_msg(self, type: str, item_id: str, value: bool):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")
