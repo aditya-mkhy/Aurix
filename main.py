@@ -123,6 +123,9 @@ class MusicMainWindow(QMainWindow):
         basic_info = self.dataBase.get_basic()
         
         self.is_setting = True
+
+        prev_song = None
+
         for key, value in basic_info.items():
             
             # setting the repeat mode as prev
@@ -133,15 +136,20 @@ class MusicMainWindow(QMainWindow):
                 value =  True if int(value) else False
                 self.set_shuffle(value)
 
-            elif key == "":
+            elif key == "current_song":
                 if not os.path.exists(value):
                     # save file doesn't exists anymore
                     continue
                 
                 if not is_mp3(value): # save file is not and mp3
                     continue
-                self.playerEngine.init_play(value)
+                
+                # saving it to play after all settings done
+                prev_song = value
 
+        # loading the last played song
+        if prev_song is not None:
+            self.playerEngine.init_play(prev_song)
 
         self.is_setting = False
 
