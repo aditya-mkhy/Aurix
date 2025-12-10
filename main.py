@@ -12,7 +12,7 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys
+from util import dark_title_bar, get_music_path, MediaKeys, is_mp3
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
@@ -133,6 +133,16 @@ class MusicMainWindow(QMainWindow):
                 value =  True if int(value) else False
                 self.set_shuffle(value)
 
+            elif key == "":
+                if not os.path.exists(value):
+                    # save file doesn't exists anymore
+                    continue
+                
+                if not is_mp3(value): # save file is not and mp3
+                    continue
+                self.playerEngine.init_play(value)
+
+
         self.is_setting = False
 
 
@@ -152,6 +162,12 @@ class MusicMainWindow(QMainWindow):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")
         self.yt_screen.set_broadcast(type, item_id, value)
         self.home_screen.set_broadcast(type, item_id, value)
+
+        if type == "active" and value == True and not self.is_setting:
+            # saving the current playing song path
+            # if type is active and value is True -> means it's playing broadcast
+            # is not self.is_setting -> means it's not called at the time of loading settings
+            self.dataBase.add_basic("current_song", item_id)
 
 
     def play_song(self, file_path: str):

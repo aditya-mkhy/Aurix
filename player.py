@@ -74,11 +74,8 @@ class PlayerEngine(QObject):
 
         self._init_mixer(freq=48000, channels=2, out_dev="default")
         
-        QTimer.singleShot(0, self._init_play)
-
-
-    def _init_play(self):
-        self.play(self._music_files[0])
+    def init_play(self, path: str):
+        self.play(path)
         self.play_toggled()
 
 
