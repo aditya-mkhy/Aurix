@@ -1,27 +1,8 @@
 import sqlite3
 from PyQt5.QtCore import QObject
-from typing import List, Dict, TypedDict
+from typing import List, Dict
 
-class PlaylistUpdate(TypedDict, total=False):
-    title: str
-    subtitle : str
-    author: str
-    count: int
-    duration: int
-    plays: int
-    cover_path: str
 
-class SongUpdate(TypedDict, total=False):
-    title: str
-    subtitle : str
-    artist: str
-    vid: str
-    duration: int
-    plays: int
-    liked: int
-    skip: int
-    path: str
-    cover_path: str
 
 
 class DataBase():
@@ -103,7 +84,7 @@ class DataBase():
         self.cursor.execute("SELECT * FROM playlist")
         return self.cursor.fetchall()
     
-    def update_playlist(self, playlist_id: int, **update: PlaylistUpdate):
+    def update_playlist(self, playlist_id: int, **update):
         self._update_column("playlist", playlist_id, **update)
 
     def add_playlist_song(self, playlist_id: int, song_id: int, commit = True):
@@ -186,7 +167,7 @@ class DataBase():
         try:
             self.cursor.execute(
                 """INSERT INTO songs (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) """, 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
                 (title, subtitle, artist, vid, duration, plays, liked, skip, path, cover_path)
             )
 
@@ -211,7 +192,7 @@ class DataBase():
         self.cursor.execute("SELECT * FROM songs")
         return self.cursor.fetchall()
     
-    def update_song(self, song_id, **update: SongUpdate):
+    def update_song(self, song_id, **update):
         self._update_column("songs", song_id, **update)
 
 
@@ -249,13 +230,12 @@ if __name__ == "__main__":
 
     # db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
 
-    # playlists = db.get_playlist(playlist_id=1)
-    # print(db.dict_format(playlists))
+    playlists = db.get_playlist(playlist_id=1)
+    print(db.dict_format(playlists))
 
-    db.add_playlist_song(1, 20)
+    # db.add_playlist_song(1, 20)
 
-    pl_songs = db.get_playlist_song(1)
-    print(db.dict_format(pl_songs))
+    # pl_songs = db.get_playlist_song(1)
+    # print(db.dict_format(pl_songs))
 
-
-
+    # db.update_playlist(1, title = "Fav Song", subtitle= "My fav song")
