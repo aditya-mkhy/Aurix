@@ -1,26 +1,14 @@
-import time
-from pytube import YouTube ,Playlist
 import os
 from pathlib import Path
+from datetime import datetime
 import yt_dlp
-import threading
-# from util import format_size, timeCal
 import json
 
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
-from mutagen.id3 import ID3, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL, APIC
+from PyQt5.QtCore import pyqtSignal, QThread
+from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3
 from requests  import get as get_request
 from util import make_title_path
-
-
-from typing import Iterable, Optional, Union
-from mutagen.mp3 import MP3
-from mutagen.id3 import (
-    ID3, TIT2, TIT3, TPE1, TALB, COMM,
-    TDRC, TXXX, WXXX
-)
-from datetime import datetime
 
 
 class NoLogger:
@@ -31,6 +19,87 @@ class NoLogger:
 
 def date_to_id3(date_str: str) -> str:
     return datetime.strptime(date_str, "%Y%m%d").strftime("%Y-%m-%d")
+
+
+def get_mp3_tags(file_path: str, *requested_tags):
+
+    audio = MP3(file_path, ID3=ID3)
+    tags = audio.tags
+
+    if tags is None:
+        return {} if not requested_tags else {t: None for t in requested_tags}
+
+    # Helper to read a tag safely
+    def read(tag_name):
+        # TITLE
+        if tag_name == "title":
+            frame = tags.get("TIT2")
+            return frame.text[0] if frame else None
+        
+        # SUBTITLE
+        if tag_name == "subtitle":
+            frame = tags.get("TIT3")
+            return frame.text[0] if frame else None
+        
+        # ARTISTS
+        if tag_name == "artists":
+            frame = tags.get("TPE1")
+            return frame.text if frame else None
+        
+        # ALBUM
+        if tag_name == "album":
+            frame = tags.get("TALB")
+            return frame.text[0] if frame else None
+        
+        # DESCRIPTION
+        if tag_name == "description":
+            comms = tags.getall("COMM")
+            for c in comms:
+                if c.desc == "Description":
+                    return c.text
+            return None
+        
+        # RELEASE DATE
+        if tag_name == "release_date":
+            frame = tags.get("TDRC")
+            return str(frame.text[0]) if frame else None
+        
+        # YOUTUBE VIDEO ID (TXXX)
+        if tag_name == "id":
+            frames = tags.getall("TXXX")
+            for f in frames:
+                if f.desc == "YT_ID":
+                    return f.text[0]
+            return None
+        
+        # ORIGINAL URL (WXXX)
+        if tag_name == "original_url":
+            frames = tags.getall("WXXX")
+            for f in frames:
+                if f.desc == "ORIGINAL_URL":
+                    return f.url
+            return None
+
+        return None  # unknown tag
+
+    # If specific tags requested → return only those
+    if requested_tags:
+        return {tag: read(tag) for tag in requested_tags}
+
+    # Otherwise return ALL
+    all_tags = {
+        "title": read("title"),
+        "subtitle": read("subtitle"),
+        "artists": read("artists"),
+        "album": read("album"),
+        "description": read("description"),
+        "release_date": read("release_date"),
+        "id": read("id"),
+        "original_url": read("original_url"),
+    }
+
+    return all_tags
+
 
 
 class Dtube(QThread): # download tube
@@ -180,8 +249,10 @@ class Dtube(QThread): # download tube
 
         # add cover image...
         try:
+            # audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="", data=response.content))
+
             response = get_request(info['thumbnail'])
-            self.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=response.content))
+            audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="Cover", data=response.content))
 
         except Exception as e:
             print("Error [thumbnail_to_mp3] : ", e)
@@ -347,10 +418,7 @@ class Dtube(QThread): # download tube
 
 
 if __name__ == "__main__":
-    # d = Dtube()
-
-    with open("t.json", "r") as ff:
-        json_data = json.loads(ff.read())
-
-    info = Dtube._exract_info("", json_data)
+    path = "C:\\Users\\freya\\Music\\Hum Apni Mohabbat Ka.mp3"
+    tags = get_mp3_tags(path, "id", "subtitle")
+    print(tags)
 
