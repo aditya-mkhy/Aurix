@@ -108,7 +108,7 @@ class PlayerEngine(QObject):
         except:
             mixer.music.play(1, sec)
 
-        self.elapsed_sec = sec * 1000
+        self.elapsed_sec = (sec * 1000)
 
 
     def set_repeat_mode(self, value: int):

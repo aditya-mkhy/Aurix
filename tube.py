@@ -151,6 +151,7 @@ class Dtube(QThread): # download tube
 
         ydl_opts =ydl_opts = {
             # get best audio format from YT / YT Music
+            # "cookiesfrombrowser": ("chrome",),
             'format': 'bestaudio[acodec=opus]/bestaudio[acodec^=mp4a]/bestaudio/best',
             'quiet': True,
             'no_warnings': True,

@@ -1,15 +1,14 @@
 import sqlite3
 from PyQt5.QtCore import QObject
 from typing import List, Dict
-
-
+from util import DATABASE_PATH
 
 
 class DataBase():
     def __init__(self):
-        self.file_name = "./res/aurix.db"
-        self.conn = sqlite3.connect(self.file_name)
 
+        self.conn = sqlite3.connect(DATABASE_PATH)
+        
         # row_factory to get dict-like rows
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()

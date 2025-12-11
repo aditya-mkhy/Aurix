@@ -449,7 +449,7 @@ class BottomBar(QWidget):
         self.seekRequested.emit(seconds // 1000)
 
     def _on_preview(self, seconds: int):
-        self._position = seconds
+        self._position = seconds // 1000 # ms -> sec
         self._update_time()
 
     def _on_play_clicked(self):

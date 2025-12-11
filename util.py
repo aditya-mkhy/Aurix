@@ -5,9 +5,27 @@ from pathlib import Path
 from ctypes import wintypes
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
+import secrets
+import string
+
 
 
 MUSIC_DIR_PATH = default_music_path = os.path.join(Path.home(), "Music")
+
+AURIX_DIR_PATH = os.path.join(Path.home(), ".aurix")
+COVER_DIR_PATH = os.path.join(AURIX_DIR_PATH, "cvr")
+DATABASE_PATH = os.path.join(AURIX_DIR_PATH, "aurix.db")
+
+
+os.makedirs(COVER_DIR_PATH, exist_ok=True)
+
+def gen_unique_id(existing_ids, length=12):
+    chars = string.ascii_letters + string.digits
+    
+    while True:
+        new_id = ''.join(secrets.choice(chars) for _ in range(length))
+        if new_id not in existing_ids:
+            return new_id
 
 
 class MSG(ctypes.Structure):
