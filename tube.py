@@ -83,6 +83,32 @@ class Dtube(QThread): # download tube
         self.video_size = 0
         self.file_path = self._file_path()
 
+    def _exract_info(self, info: dict):
+        useful_info = {}
+
+        if "requested_downloads" in info:
+            # download info....
+            useful_info["filepath"] = info["requested_downloads"][0]["filepath"]
+
+        useful_info["available_at"] = info["available_at"]
+        useful_info["artists"] = info["artists"]
+        useful_info["creators"] = info["creators"]
+        useful_info["fulltitle"] = info["fulltitle"]
+        useful_info["original_url"] = info["original_url"]
+
+        useful_info["album"] = info["album"]
+        useful_info["categories"] = info["categories"]
+        useful_info["duration"] = info["duration"]
+
+        useful_info["id"] = info["id"]
+        useful_info["title"] = info["title"]
+        useful_info["description"] = info["description"]
+        useful_info["view_count"] = info["view_count"]
+        useful_info["release_date"] = info["release_date"]
+
+        return useful_info
+
+
 
     def run(self):
         try:
@@ -91,6 +117,7 @@ class Dtube(QThread): # download tube
                 self._emit_progress_hook("loading")
 
             info = self._download()
+            
             self._add_tags(info) #
 
             self._emit_progress_hook("done")
@@ -171,8 +198,9 @@ class Dtube(QThread): # download tube
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(self.url, download=True)  # Downloads the video
-                # with open("t.json", "w") as tf:
-                #     tf.write(json.dumps(info_dict))
+                with open("t.json", "w") as tf:
+                    tf.write(json.dumps(info_dict))
+
                 return info_dict
 
         except Exception as e:
@@ -250,6 +278,11 @@ class Dtube(QThread): # download tube
 
 
 if __name__ == "__main__":
-    url = "https://music.youtube.com/watch?v=Het4pXDENBI"
-    d = Dtube()
+    # d = Dtube()
+
+    with open("t.json", "r") as ff:
+        json_data = json.loads(ff.read())
+
+    info = Dtube._exract_info("",json_data)
+    print(info)
     

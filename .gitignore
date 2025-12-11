@@ -7,7 +7,7 @@ __pycache__/
 *.so
 t.html
 t.py
-
+t.json
 # Distribution / packaging
 .Python
 build/
