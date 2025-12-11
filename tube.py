@@ -13,21 +13,14 @@ from mutagen.mp3 import MP3
 from requests  import get as get_request
 from util import make_title_path
 
-def get_thumbnail(data: dict):
-    thumbnails = data.get("thumbnails", [])
-    pref = -100
-    url_thmb = ""
 
-    for thumbnail in thumbnails:
-        preference = thumbnail.get("preference")
-        if preference > pref:
-            url = thumbnail.get("url", "")
-            _, ext = os.path.splitext(url)
-            if ext == ".jpg":
-                pref = preference
-                url_thmb = url
-
-    return url_thmb
+from typing import Iterable, Optional, Union
+from mutagen.mp3 import MP3
+from mutagen.id3 import (
+    ID3, TIT2, TIT3, TPE1, TALB, COMM,
+    TDRC, TXXX, WXXX
+)
+from datetime import datetime
 
 
 class NoLogger:
@@ -35,6 +28,9 @@ class NoLogger:
     def warning(self, msg): pass
     def error(self, msg): pass
 
+
+def date_to_id3(date_str: str) -> str:
+    return datetime.strptime(date_str, "%Y%m%d").strftime("%Y-%m-%d")
 
 
 class Dtube(QThread): # download tube
@@ -83,12 +79,14 @@ class Dtube(QThread): # download tube
         self.video_size = 0
         self.file_path = self._file_path()
 
+        self.tags = None
+
     def _exract_info(self, info: dict):
         useful_info = {}
 
         if "requested_downloads" in info:
             # download info....
-            useful_info["filepath"] = info["requested_downloads"][0]["filepath"]
+            useful_info["file_path"] = info["requested_downloads"][0]["filepath"]
 
         useful_info["available_at"] = info["available_at"]
         useful_info["artists"] = info["artists"]
@@ -106,7 +104,90 @@ class Dtube(QThread): # download tube
         useful_info["view_count"] = info["view_count"]
         useful_info["release_date"] = info["release_date"]
 
+        # get best thumbnail in jpg format
+        useful_info["thumbnail"] = self._get_thumbnail(info)
+
+        if not useful_info["thumbnail"]:
+            # if not found.. use the default one
+            useful_info["thumbnail"] = info["thumbnail"]
+    
         return useful_info
+
+    def _set_single_frame(self, frame):
+        if not self.tags:
+            raise ValueError("Tag is not set to the object")
+        
+        self.tags.delall(frame.FrameID)
+        self.tags.add(frame)
+
+    def _add_tag(self, info: dict) -> None:
+        # if downloaf  file exists in the info
+        if "file_path" in info and os.path.exists(info["file_path"]):
+            self.file_path = info["file_path"]
+
+        audio = MP3(self.file_path, ID3=ID3)
+
+        # Ensure the file has an ID3 tag container
+        if audio.tags is None:
+            audio.add_tags()
+
+        self.tags = audio.tags
+
+        # title
+        title = info['title'] if 'title' in info else self.title
+        self._set_single_frame(TIT2(encoding=3, text=str(title)))
+
+        # Subtitle
+        self._set_single_frame(TIT3(encoding=3, text=str(self.subtitle_text)))
+
+        # Artists -> list
+        artists = info.get("artists")
+        if artists:
+            artist_list = [str(a) for a in artists]
+            self._set_single_frame(TPE1(encoding=3, text=artist_list))
+
+        # Album
+        album = info.get("album")
+        if album:
+            self._set_single_frame(TALB(encoding=3, text=str(album)))
+
+        # Description
+        description = info.get("description")
+        if description:
+            # Delete all COMM frames with this description/lang to avoid duplicates
+            self.tags.delall("COMM")
+            self.tags.add(COMM(encoding=3, lang="eng", desc="Description", text=str(description),))
+
+
+        # Release date
+        release_date = info.get("release_date")
+        if release_date:
+            release_date = date_to_id3(release_date)
+            self._set_single_frame(TDRC(encoding=3, text=str(release_date)))
+
+        # Custom: YouTube video ID (user-defined text frame)
+        video_id = info.get("id")
+        if video_id:
+            # TXXX with desc="YT_ID"
+            # Remove any previous YT_ID frame
+            for frame in list(self.tags.getall("TXXX")):
+                if getattr(frame, "desc", "") == "YT_ID":
+                    self.tags.delall("TXXX")
+                    break
+
+            self.tags.add(TXXX(encoding=3, desc="YT_ID", text=str(video_id),))
+
+
+        # add cover image...
+        try:
+            response = get_request(info['thumbnail'])
+            self.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=response.content))
+
+        except Exception as e:
+            print("Error [thumbnail_to_mp3] : ", e)
+
+        # Finally, write the tags to file
+        audio.save()
 
 
 
@@ -127,6 +208,22 @@ class Dtube(QThread): # download tube
             self._emit_progress_hook("error")
             self.finished.emit(None, None, None, None)
 
+    def _get_thumbnail(self, data: dict):
+        thumbnails = data.get("thumbnails", [])
+        pref = -100
+        url_thmb = None
+
+        for thumbnail in thumbnails:
+            preference = thumbnail.get("preference")
+            if preference > pref:
+                url = thumbnail.get("url", "")
+                _, ext = os.path.splitext(url)
+                if ext == ".jpg":
+                    pref = preference
+                    url_thmb = url
+
+        return url_thmb
+
 
     def _file_path(self):
         return f"{self.down_path}\\{self.filename()}"
@@ -138,40 +235,8 @@ class Dtube(QThread): # download tube
     
     def remove_ext_file_path(self):
         return os.path.splitext(self.file_path)[0]
-    
-
-    def _add_tags(self, down_info: dict):
-        channel = down_info.get("channel", "Aurix")
-        description = down_info.get("description", "Aurix")
-        original_url = down_info.get("original_url", "Aurix")
-                    # add ID3 tags
-        audio = MP3(self.file_path, ID3=ID3)
-        audio.tags.add(TIT2(encoding=3, text=str(self.title)))
-        audio.tags.add(TPE1(encoding=3, text=str(channel)))
-        audio.tags.add(TDES(encoding=3, text=str(description)))
-        audio.tags.add(TPUB(encoding=3, text=str(channel)))
-        audio.tags.add(WPUB(encoding=3, text=str(original_url)))
-
-        try:
-            audio.add_tags()
-        except Exception as e:
-            print("Error[ID3_add_tag] :", e)
-
-        try:
-            url_thmb = get_thumbnail(down_info)
-            print(url_thmb)
-
-            response = get_request(url_thmb)
-            audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="", data=response.content))
-
-        except Exception as e:
-            print("Error[thumbnail_to_mp3] :", e)
-
-        audio.save()
 
 
-
-        
     def _download(self) -> dict:
         if self.url == None:
             raise ValueError("Please provide a video or playlist url....")
@@ -198,8 +263,8 @@ class Dtube(QThread): # download tube
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(self.url, download=True)  # Downloads the video
-                with open("t.json", "w") as tf:
-                    tf.write(json.dumps(info_dict))
+                # with open("t.json", "w") as tf:
+                #     tf.write(json.dumps(info_dict))
 
                 return info_dict
 
@@ -283,6 +348,5 @@ if __name__ == "__main__":
     with open("t.json", "r") as ff:
         json_data = json.loads(ff.read())
 
-    info = Dtube._exract_info("",json_data)
-    print(info)
-    
+    info = Dtube._exract_info("", json_data)
+
