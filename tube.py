@@ -81,7 +81,7 @@ class Dtube(QThread): # download tube
 
         self.tags = None
 
-    def _exract_info(self, info: dict):
+    def _extract_info(self, info: dict):
         useful_info = {}
 
         if "requested_downloads" in info:
@@ -120,7 +120,7 @@ class Dtube(QThread): # download tube
         self.tags.delall(frame.FrameID)
         self.tags.add(frame)
 
-    def _add_tag(self, info: dict) -> None:
+    def _add_tags(self, info: dict) -> None:
         # if downloaf  file exists in the info
         if "file_path" in info and os.path.exists(info["file_path"]):
             self.file_path = info["file_path"]
@@ -198,11 +198,15 @@ class Dtube(QThread): # download tube
                 self._emit_progress_hook("loading")
 
             info = self._download()
-            
-            self._add_tags(info) #
+            ext_info = self._extract_info(info)
 
+            # add tags...
+            self._add_tags(ext_info) #
+
+            # emit status
             self._emit_progress_hook("done")
             self.finished.emit(self.title, self.subtitle_text, self.file_path, self.track_id)
+
         except Exception as e:
             print(f"Error In Downloading : {e}")
             self._emit_progress_hook("error")
