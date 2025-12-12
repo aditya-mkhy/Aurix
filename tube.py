@@ -6,7 +6,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3
 from requests  import get as get_request
-from util import make_title_path
+from util import make_title_path, MUSIC_DIR_PATH, COVER_DIR_PATH
 
 
 class NoLogger:
@@ -97,20 +97,62 @@ def get_mp3_tags(file_path: str, *requested_tags):
     }
 
     return all_tags
+    def _file_path(self):
+        return f"{self.down_path}\\{self.filename()}"
+        
 
 
+    
+def gen_path(title: str, vid: str, artists: list = None) -> str | None:
+    title_path = make_title_path(title)
+    filename = f"{title_path}.mp3"
+
+    path = os.path.join(MUSIC_DIR_PATH, filename)
+    
+    # if path not exists
+    if not os.path.exists(path):
+        return path
+    
+    # artists
+    last = None
+    if len(artists) > 1:
+        last = artists.pop()
+
+    all_artists = ", ".join(artists) + (f" & {last}" if last else "")
+
+    # file path with artists
+    filename = f"{title_path} by {all_artists}.mp3"
+    path = os.path.join(MUSIC_DIR_PATH, filename)
+
+    if not os.path.exists(path):
+        return path
+    
+    # if still exists. add yt_id
+    filename = f"{title_path} by {all_artists} with id - {vid}.mp3"
+    path = os.path.join(MUSIC_DIR_PATH, filename)
+
+    if not os.path.exists(path):
+        return path
+    
+    # if still exits.. means all ready downloaded..
+
+
+    
 
 class Dtube(QThread): # download tube
     finished = pyqtSignal(str, str, str, int)
     progress = pyqtSignal(int, str, int)
 
     def __init__(
-            self, title: str = None, 
-            subtitle_text: str = None, 
+            self, 
+            title: str = None, 
+            subtitle_text: str = None,
+            artists: list = None,
+            vid: str = None,
             url: str = None, 
             track_id: int = None, 
             parent = None, 
-            folder: str = None
+            
     ):
         
         super().__init__(parent)
@@ -122,20 +164,13 @@ class Dtube(QThread): # download tube
         # to send dowloading mode only once
         self.is_converting_emitted = False 
 
-
-        # save folder... default music
-        self.down_path = str(Path.home())+f'\\Music'
-
-        if folder:
-            if os.path.exists(folder):
-                self.down_path = folder
-            else:
-                print(f"Folder Not Exists : {folder}")
-                print(f"using default : {self.down_path}")
-
-
         self.title = title
-        self.subtitle_text = subtitle_text
+
+        # remove song from subtitle_text
+        if "song" in subtitle_text.lower():
+            subtitle_text = subtitle_text[subtitle_text.find("•") + 1 : ]
+
+        self.subtitle_text = subtitle_text.strip()
         
         if title == None:
             raise ValueError("Title can't be empty...")
@@ -144,7 +179,7 @@ class Dtube(QThread): # download tube
 
         self.is_video_dowloaded = False
         self.video_size = 0
-        self.file_path = self._file_path()
+        self.file_path = gen_path(title, vid, artists)
 
         self.tags = None
 
@@ -297,14 +332,6 @@ class Dtube(QThread): # download tube
 
         return url_thmb
 
-
-    def _file_path(self):
-        return f"{self.down_path}\\{self.filename()}"
-        
-
-    def filename(self):
-        title_path = make_title_path(self.title)
-        return f"{title_path}.mp3"
     
     def remove_ext_file_path(self):
         return os.path.splitext(self.file_path)[0]
