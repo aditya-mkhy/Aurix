@@ -272,7 +272,7 @@ class Dtube(QThread): # download tube
             ext_info = self._extract_info(info)
 
             # add tags...
-            self._add_tags(ext_info) #
+            self._add_tags(ext_info) # 
 
             # emit status
             self._emit_progress_hook("done")

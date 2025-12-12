@@ -598,7 +598,7 @@ class YtScreen(QFrame):
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:
             self._down_threads.remove(thread)
-
+            
         thread.deleteLater()
 
 

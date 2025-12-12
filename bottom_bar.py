@@ -1,17 +1,12 @@
 import os
 import sys
-from PyQt5.QtCore import (
-    Qt, QSize, QRectF, QPoint, QTimer, pyqtSignal, QPropertyAnimation, QEasingCurve
-)
+from PyQt5.QtCore import Qt, QSize, QRectF, QPoint, pyqtSignal, QPropertyAnimation, QEasingCurve
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel,
-    QToolButton, QMainWindow, QSlider, QFrame
+    QToolButton, QMainWindow, QSlider
 )
-from PyQt5.QtGui import (
-    QPainter, QColor, QPen, QPixmap, QFont, QIcon
-)
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QIcon
 
-from helper import get_pixmap
 from util import format_time, trim_text
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +17,6 @@ def icon(name: str) -> QIcon:
     return QIcon(os.path.join(RES_DIR, name))
 
 
-# ===================== SEEK BAR (click + drag) ===================== #
 class SeekBar(QWidget):
     seekRequested = pyqtSignal(int)         # final seek (mouse release) in seconds
     positionPreview = pyqtSignal(int)       # while dragging, preview pos (seconds)
