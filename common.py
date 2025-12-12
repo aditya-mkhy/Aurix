@@ -1,18 +1,5 @@
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
-from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
-    QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QAbstractItemView, QMenu, 
-    QSizePolicy, 
-)
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
-
-from ytmusicapi import YTMusic
-from PyQt5.QtGui import QPixmap
-import requests
-from tube import Dtube
-from helper import get_pixmap
-
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QScrollArea
 
 class ScrollArea(QScrollArea):
     def __init__(self, parent=None):
