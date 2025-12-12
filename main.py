@@ -1,10 +1,6 @@
 import os
 import sys
-from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, 
-    QListWidgetItem, QFileDialog, QApplication, QStackedWidget
-)
-
+from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
 from PyQt5.QtCore import QTimer
 
 # project import

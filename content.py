@@ -1,15 +1,12 @@
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QAbstractItemView, QMenu, 
-    QSizePolicy, 
+    QListWidget, QListView, QMenu, QSizePolicy, 
 )
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
-
+from PyQt5.QtGui import QFont, QPixmap, QFontMetrics, QIcon
 from helper import LocalFilesLoader
 from helper import crop_and_round_pix
-from typing import Dict
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):

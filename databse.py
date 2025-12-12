@@ -1,5 +1,4 @@
 import sqlite3
-from PyQt5.QtCore import QObject
 from typing import List, Dict
 from util import DATABASE_PATH
 
