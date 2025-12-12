@@ -3,7 +3,6 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
 from PyQt5.QtGui import QIcon, QFont
 
-
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)

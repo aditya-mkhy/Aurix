@@ -1,18 +1,9 @@
 import os
 from pygame import mixer
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread
-from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
-    QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QAbstractItemView, QMenu, 
-    QSizePolicy, 
-)
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
-
-from helper import LocalFilesLoader, get_mp3_metadata
+from PyQt5.QtCore import QTimer, pyqtSignal, QObject
+from PyQt5.QtGui import QPixmap
+from helper import get_mp3_metadata
 from util import is_mp3, MUSIC_DIR_PATH
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
-from PyQt5.QtCore import QObject, pyqtSignal
 
 def get_files():
     music_files = []
