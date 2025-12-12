@@ -1,29 +1,14 @@
-from mutagen.id3 import ID3, APIC, TIT2, TLEN, TCON, TPE1, TALB, TDES, TPUB, WPUB, TDRL
+from mutagen.id3 import ID3, APIC
+from mutagen.mp3 import MP3
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
-from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QIcon, QPen
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QScrollArea, QFrame, QMenu
-)
-
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
-
+from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QPen, QColor, QPainterPath
+from PyQt5.QtWidgets import QWidget
 import os
-import sys
 import requests
 from ytmusicapi import YTMusic
 from util import is_mp3
 
 YT_MUSIC = YTMusic()
-
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3
-from PyQt5.QtGui import QPixmap
-
-from PyQt5.QtGui import QPixmap
-
-from PyQt5.QtGui import QColor
-from tube import get_mp3_tags
 
 def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, padding = None) -> QPixmap:
     if pix.isNull():
@@ -297,18 +282,6 @@ class LocalFilesLoader(QThread):
         if not publisher:
             publisher = _get_text("TIT3")
 
-        # info = {
-        #     "title":   _get_text("TIT2"),
-        #     "publisher": _get_text("TPUB"),
-        #     # "length":  _get_text("TLEN"),
-        #     # "genre":   _get_text("TCON"),
-        #     # "artist":  _get_text("TPE1"),
-        #     # "album":   _get_text("TALB"),
-        #     # "desc":    _get_text("TDES"),
-        #     # "publisher_url": _get_text("WPUB"),
-        #     # "release_date": _get_text("TDRL"),
-        # }
-
         for frame in tags.values():
             if isinstance(frame, APIC):
                 pix = QPixmap()
@@ -428,7 +401,7 @@ class LoadingSpinner(QWidget):
         pen = QPen(QColor("#FFFFFF"), 6)
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
-        # draw an arc (chunk) that rotates
+        # draw an arc that rotates
         painter.drawArc(rect, self.angle * 16, 120 * 16)
 
 
