@@ -104,6 +104,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.playToggled.connect(self.playerEngine.play_toggled)
         self.bottom_bar.repeatModeChanged.connect(self.playerEngine.set_repeat_mode)
         self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_track)
+        self.bottom_bar.nextClicked.connect(self.playerEngine.next_track)
         self.bottom_bar.shuffleToggled.connect(self.set_shuffle)
 
         # connect PlayerEngine signal
@@ -217,7 +218,7 @@ class MusicMainWindow(QMainWindow):
 
 
 
-# back to PyQt5 
+# back to PyQt5 # 4549 12/10/12025
 
 if __name__ == "__main__":
 

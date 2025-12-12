@@ -23,7 +23,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QPixmap
 
 from PyQt5.QtGui import QColor
-
+from tube import get_mp3_tags
 
 def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, padding = None) -> QPixmap:
     if pix.isNull():
@@ -72,6 +72,8 @@ def get_mp3_metadata(path: str):
     tags = ID3(path)
     title = tags.get("TIT2")
     publisher = tags.get("TPUB")
+    if not publisher:
+        publisher = tags.get("TIT3")
     print(f"publisher : {publisher}")
     artist = tags.get("TPE1")
     print(f"artist : {artist}")
@@ -292,6 +294,8 @@ class LocalFilesLoader(QThread):
         
         title = _get_text("TIT2")
         publisher = _get_text("TPUB")
+        if not publisher:
+            publisher = _get_text("TIT3")
 
         # info = {
         #     "title":   _get_text("TIT2"),
