@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 from datetime import datetime
 import yt_dlp
-import json
-
 from PyQt5.QtCore import pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3

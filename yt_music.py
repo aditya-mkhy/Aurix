@@ -1,37 +1,14 @@
-import sys, os
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QIcon
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QScrollArea, QFrame, QMenu
-)
-
-
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread, QTimer
+import os
+from PyQt5.QtGui import QFont, QPixmap, QIcon
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
-    QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QAbstractItemView, QMenu, 
-    QSizePolicy, 
+    QLabel, QPushButton, QMenu, QGraphicsOpacityEffect
 )
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QFontMetrics, QPainterPath, QIcon
-
-from PyQt5.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGraphicsOpacityEffect
-)
-from helper import LocalFilesLoader, CircularProgress, LoadingSpinner
-
-from ytmusicapi import YTMusic
-from PyQt5.QtGui import QPixmap
-import requests
+from helper import CircularProgress, LoadingSpinner, YTSearchThread, ConfigResult, ConvertingSpinner
 from tube import Dtube
 from helper import get_pixmap, crop_and_round_pix
 from common import ScrollArea
-from helper import YTSearchThread, ConfigResult, ConvertingSpinner
-from PyQt5.QtCore import (
-    Qt, QTimer, QPropertyAnimation, QEasingCurve, QSize, pyqtSignal
-)
-
 from typing import List
 from util import trim_text, MUSIC_DIR_PATH, make_title_path
 
@@ -598,7 +575,7 @@ class YtScreen(QFrame):
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:
             self._down_threads.remove(thread)
-            
+
         thread.deleteLater()
 
 
