@@ -10,13 +10,8 @@ from util import is_mp3
 
 YT_MUSIC = YTMusic()
 
-def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, padding = None) -> QPixmap:
-    if pix.isNull():
-        return pix
-    
-    if padding:
-        new_width = max(1, pix.width() - padding - padding)
-        pix = pix.copy(padding, 0, new_width, pix.height())
+def round_pix_form_path(path: str, width:int, height:int, radius: int = 8) -> QPixmap:
+    pix = QPixmap(path)
 
     rounded = QPixmap(QSize(width, height))
     rounded.fill(Qt.transparent)
@@ -28,7 +23,28 @@ def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, paddin
     path.addRoundedRect(0, 0, width, height, radius, radius)
 
     painter.setClipPath(path)
-                                # pix
+
+    painter.drawPixmap(0, 0, pix.scaled(width, height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
+    painter.end()
+  
+    return rounded
+
+
+def round_pix(pix: QPixmap, width = 46, height = 46, radius = 8) -> QPixmap:
+    if pix.isNull():
+        return pix
+    
+    rounded = QPixmap(QSize(width, height))
+    rounded.fill(Qt.transparent)
+
+    painter = QPainter(rounded)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    path = QPainterPath()
+    path.addRoundedRect(0, 0, width, height, radius, radius)
+
+    painter.setClipPath(path)
+
     painter.drawPixmap(0, 0, pix.scaled(width, height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
     painter.end()
   
