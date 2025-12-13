@@ -19,13 +19,12 @@ DATABASE_PATH = os.path.join(AURIX_DIR_PATH, "aurix.db")
 
 os.makedirs(COVER_DIR_PATH, exist_ok=True)
 
-def gen_unique_id(existing_ids, length=12):
-    chars = string.ascii_letters + string.digits
+
+def gen_unique_id(length=12):
+    chars = "abcdefghijklmnopqrstuvwxyz1234567890"
+    new_id = ''.join(secrets.choice(chars) for _ in range(length))
+    return new_id
     
-    while True:
-        new_id = ''.join(secrets.choice(chars) for _ in range(length))
-        if new_id not in existing_ids:
-            return new_id
 
 
 class MSG(ctypes.Structure):
@@ -193,4 +192,6 @@ def format_views(count: int) -> str:
 
 
 if __name__ == "__main__":
-    print(format_views(477126150))
+    # print(format_views(477126150))
+
+    print(gen_unique_id(20))
