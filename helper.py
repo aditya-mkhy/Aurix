@@ -36,6 +36,57 @@ def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, paddin
 
 
 
+def edit_save_image(img_data: bytes, out_path: str, radius=8, padding=None) -> str:
+    if not out_path:
+        raise ValueError("Enter a valid out_path")
+
+    # Load pixmap from bytes
+    pix = QPixmap()
+    pix.loadFromData(img_data)
+    if pix.isNull():
+        raise ValueError("Invalid image data")
+
+    width = pix.width()
+    height = pix.height()
+
+    # Optional horizontal padding crop
+    if padding:
+        width2 = max(1, width - padding*2)
+        pix = pix.copy(padding, 0, width2, height)
+        width = width2
+
+    # Create a transparent output pixmap
+    rounded = QPixmap(width, height)
+    rounded.fill(Qt.transparent)
+
+    # Begin painting
+    painter = QPainter(rounded)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    # Activate Source mode so transparency is preserved
+    painter.setCompositionMode(QPainter.CompositionMode_Source)
+
+    # Create rounded rect clipping mask
+    path = QPainterPath()
+    path.addRoundedRect(0, 0, width, height, radius, radius)
+
+    # Set clip and draw scaled pixmap
+    painter.setClipPath(path)
+    painter.drawPixmap(
+        0, 0,
+        pix.scaled(width, height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+    )
+
+    painter.end()
+
+    # Save file
+    ext = os.path.splitext(out_path)[1][1:].upper() or "PNG"
+    rounded.save(out_path, ext)
+
+    return out_path
+
+
+
 def get_mp3_metadata(path: str):
     audio = MP3(path)
     info = {

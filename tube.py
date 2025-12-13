@@ -8,7 +8,7 @@ from mutagen.mp3 import MP3
 from requests  import get as get_request
 from util import make_title_path, MUSIC_DIR_PATH, COVER_DIR_PATH
 from util import gen_unique_id
-
+from helper import edit_save_image
 
 class NoLogger:
     def debug(self, msg): pass
@@ -446,8 +446,26 @@ class Dtube(QThread): # download tube
             print("Error Occured...")
             self._emit_progress_hook("error")
 
-
-if __name__ == "__main__":
+def test():
+    url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
     path = gen_thumbnail_path()
     print(path)
+
+    response = get_request(url)
+    print(response)
+
+    path = edit_save_image(img_data=response.content, out_path=path, radius=8, padding=284)
+    print(f"saved to : {path}")
+
+
+if __name__ == "__main__":
+    url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
+    path = gen_thumbnail_path()
+    print(path)
+
+    response = get_request(url)
+    print(response)
+
+    path = edit_save_image(img_data=response.content, out_path=path, radius=8, padding=284)
+    print(f"saved to : {path}")
 
