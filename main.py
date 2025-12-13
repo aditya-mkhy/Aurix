@@ -213,14 +213,10 @@ class MusicMainWindow(QMainWindow):
         super().closeEvent(event)
 
 
-from tube import test
-# back to PyQt5 # 4549 12/10/12025
-
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     win = MusicMainWindow()
     win.show()
     dark_title_bar(win)   # make Windows title bar dark
-    test()
     sys.exit(app.exec_())

@@ -449,12 +449,9 @@ class Dtube(QThread): # download tube
 def test():
     url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
     path = gen_thumbnail_path()
-
     response = get_request(url)
-
-    print(f"id [test] => {id(response.content)}")
-
     path = crop_and_save_img(img_data=response.content, out_path=path, from_left=284, from_right=284)
+    
     print(f"saved to : {path}")
 
 
