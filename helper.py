@@ -12,25 +12,9 @@ YT_MUSIC = YTMusic()
 
 def round_pix_form_path(path: str, width:int, height:int, radius: int = 8) -> QPixmap:
     pix = QPixmap(path)
+    return round_pix(pix, width, height, radius)
 
-    rounded = QPixmap(QSize(width, height))
-    rounded.fill(Qt.transparent)
-
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, width, height, radius, radius)
-
-    painter.setClipPath(path)
-
-    painter.drawPixmap(0, 0, pix.scaled(width, height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
-    painter.end()
-  
-    return rounded
-
-
-def round_pix(pix: QPixmap, width = 46, height = 46, radius = 8) -> QPixmap:
+def round_pix(pix: QPixmap,  width:int, height:int, radius: int = 8) -> QPixmap:
     if pix.isNull():
         return pix
     
@@ -113,7 +97,7 @@ def get_mp3_metadata(path: str):
             pix = QPixmap()
             pix.loadFromData(tags[key].data)
             
-            info["cover"] = crop_and_round_pix(pix, 80, 80, 6, 284)
+            info["cover"] = round_pix(pix, 80, 80, 6)
             break
 
     return info

@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 )
 from helper import CircularProgress, LoadingSpinner, YTSearchThread, ConfigResult, ConvertingSpinner
 from tube import Dtube
-from helper import get_pixmap, crop_and_round_pix
+from helper import get_pixmap, round_pix
 from common import ScrollArea
 from typing import List
 from util import trim_text, MUSIC_DIR_PATH, make_title_path
@@ -27,7 +27,7 @@ class HoverThumb(QWidget):
 
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setPixmap(crop_and_round_pix(pix, size, size, 6))
+        self.image_label.setPixmap(round_pix(pix, size, size, 6))
 
         self.image_label.setStyleSheet(f"""
             QLabel {{

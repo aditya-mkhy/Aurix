@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QFontMetrics, QIcon
 from helper import LocalFilesLoader
-from helper import crop_and_round_pix
+from helper import round_pix
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -213,7 +213,7 @@ class SongCard(QWidget):
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
         self.thumb_label.setPixmap(
-            crop_and_round_pix(pix, self.thumb_width, self.thumb_height, 8, 284)
+            round_pix(pix, self.thumb_width, self.thumb_height, 8)
         )
 
 
