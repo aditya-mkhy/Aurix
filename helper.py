@@ -35,53 +35,22 @@ def crop_and_round_pix(pix: QPixmap, width = 46, height = 46, radius = 8, paddin
     return rounded
 
 
-
-def edit_save_image(img_data: bytes, out_path: str, radius=8, padding=None) -> str:
+def crop_and_save_img(img_data: bytes, out_path: str, from_left: int = 0, from_right: int = 0) -> str:
     if not out_path:
-        raise ValueError("Enter a valid out_path")
-
-    # Load pixmap from bytes
+        raise ValueError("Enter a valid out_path..")
+    
     pix = QPixmap()
-    pix.loadFromData(img_data)
-    if pix.isNull():
-        raise ValueError("Invalid image data")
-
+    if not pix.loadFromData(img_data):
+        raise ValueError("Invalid image data or unsupported format")
+    
     width = pix.width()
-    height = pix.height()
+    
+    width = max(1, width - from_left - from_right)
+    pix = pix.copy(from_left, 0, width, pix.height())
 
-    # Optional horizontal padding crop
-    if padding:
-        width2 = max(1, width - padding*2)
-        pix = pix.copy(padding, 0, width2, height)
-        width = width2
-
-    # Create a transparent output pixmap
-    rounded = QPixmap(width, height)
-    rounded.fill(Qt.transparent)
-
-    # Begin painting
-    painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    # Activate Source mode so transparency is preserved
-    painter.setCompositionMode(QPainter.CompositionMode_Source)
-
-    # Create rounded rect clipping mask
-    path = QPainterPath()
-    path.addRoundedRect(0, 0, width, height, radius, radius)
-
-    # Set clip and draw scaled pixmap
-    painter.setClipPath(path)
-    painter.drawPixmap(
-        0, 0,
-        pix.scaled(width, height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-    )
-
-    painter.end()
-
-    # Save file
-    ext = os.path.splitext(out_path)[1][1:].upper() or "PNG"
-    rounded.save(out_path, ext)
+    _, ext = os.path.splitext(out_path)
+    ext = ext[1:].upper() # remove dot(.) and captalize
+    pix.save(out_path, ext)
 
     return out_path
 
