@@ -150,6 +150,10 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.setRepeatMode.connect(self.set_repeat_mode)
         self.playerEngine.broadcastMsg.connect(self.broadcast_msg)
 
+        # -> play track signals
+        self.playerEngine.askForNext.connect(self.play_next_track)
+        self.playerEngine.askForPreviuos.connect(self.play_prevoius_track)
+
         self.is_setting = False
         self.is_suffle = False
 
@@ -161,6 +165,38 @@ class MusicMainWindow(QMainWindow):
         self.loader.finished.connect(self.on_finish_loader)
         # self.loader.start()
 
+        # all song_id list for playing song....
+        self.all_song_list = self.dataBase.get_all_song_id()
+
+    def _get_track(self, song_id: int = None, is_back: bool = False):
+        # retrun the next or previous song_id 
+        if song_id is None:
+            return self.all_song_list[0] # first song from list
+        
+        try:
+            index = self.all_song_list.index(song_id)
+        except:
+            index = -1
+
+        if is_back:
+            index -= 1
+        else:
+            index += 1
+
+        if index < 0 or index >= len(self.all_song_list):
+            index = 0
+        
+        return self.all_song_list[index]
+
+    def play_next_track(self, song_id: int = None):
+        next_song_id = self._get_track(song_id=song_id)
+        print(f"PlatingNextSong : {next_song_id}")
+        self.play_song(song_id=next_song_id) # play next track
+
+    def play_prevoius_track(self, song_id: int = None):
+        prev_song_id = self._get_track(song_id=song_id, is_back=True)
+        print(f"PlatingprevSong : {prev_song_id}")
+        self.play_song(song_id=prev_song_id) # play prev track
 
     def on_finish_loader(self, status):
         if status:
@@ -175,6 +211,7 @@ class MusicMainWindow(QMainWindow):
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
         # get song_id
         song_id = self.dataBase.get_song_id(path=path)
+        print(f"song_id ==> {song_id}")
 
         self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=play)
         print(f"Song : {path} saved with id : {song_id}")
@@ -185,7 +222,7 @@ class MusicMainWindow(QMainWindow):
         
         self.is_setting = True
 
-        prev_song = None
+        prev_song_id = None
 
         for key, value in basic_info.items():
             
@@ -198,19 +235,17 @@ class MusicMainWindow(QMainWindow):
                 self.set_shuffle(value)
 
             elif key == "current_song":
-                if not os.path.exists(value):
-                    # save file doesn't exists anymore
-                    continue
-                
-                if not is_mp3(value): # save file is not and mp3
-                    continue
-                
                 # saving it to play after all settings done
-                prev_song = value
+                try:
+                    # convert into integer song_id
+                    prev_song_id = int(value)
+                except:
+                    prev_song_id = None
 
         # loading the last played song
-        # if prev_song is not None:
-        #     self.playerEngine.init_play(prev_song)
+        if prev_song_id is not None:
+            song_info = self.dataBase.get_song(song_id=prev_song_id)
+            self.playerEngine.init_play(song_info)
 
         self.is_setting = False
 

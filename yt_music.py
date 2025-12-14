@@ -408,7 +408,7 @@ class TrackRow(QWidget):
 
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
-    addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int)
+    addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, bool)
     playRequested = pyqtSignal(str)
 
 
@@ -577,7 +577,7 @@ class YtScreen(QFrame):
             print("PathAdded...")
 
         play = True
-        self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, play=play)
+        self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, play)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:

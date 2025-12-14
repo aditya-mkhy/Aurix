@@ -41,6 +41,9 @@ class PlayerEngine(QObject):
     setRepeatMode = pyqtSignal(int)
     broadcastMsg = pyqtSignal(str, int, bool)
 
+    askForNext = pyqtSignal(int)
+    askForPreviuos = pyqtSignal(int)
+
     def __init__(self, parent = None):
         super().__init__(parent)
 
@@ -62,8 +65,6 @@ class PlayerEngine(QObject):
         self._timer.timeout.connect(self._update_position)
         self.elapsed_sec = 0
         self.duration = 0
-
-        self._music_files = get_files()
 
         self._init_mixer(freq=48000, channels=2, out_dev="default")
         
@@ -172,8 +173,7 @@ class PlayerEngine(QObject):
 
     def next_track(self):
         print("Next track is not implemented...")
-        next_file = get_track_file(self._music_files, current_file=self._current_path)
-        self.play(next_file)
+        self.askForNext.emit(self.song_id)
 
     def prevoius_track(self):
         print("Prevoius button is clicked...")
@@ -184,17 +184,16 @@ class PlayerEngine(QObject):
             self.set_seek(0)
             return
         
-        prev_file = get_track_file(self._music_files, current_file=self._current_path, is_back=True)
-        self.play(prev_file)
+        self.askForPreviuos.emit(self.song_id)
 
     def _after_stop(self):
         if self._repeat_mode == 2:
             # repeat one song...
-            if not self._current_path:
+            if not self.song_id:
                 # can't repeat with empty path
                 return
             
-            self.play(path=self._current_path)
+            self.play(self.song_info)
             return
         
         if self._repeat_mode == 1:
@@ -205,7 +204,7 @@ class PlayerEngine(QObject):
         self._timer.stop()
         mixer.music.stop()
         self.setPlaying.emit(False)
-        self.broadcastMsg.emit("active", self._current_path, False)
+        self.broadcastMsg.emit("active", self.song_id, False)
         
         self._is_paused = False
         self._after_stop()

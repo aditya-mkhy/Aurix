@@ -207,6 +207,12 @@ class DataBase():
         self.cursor.execute("SELECT * FROM songs")
         return self.cursor.fetchall()
     
+    def get_all_song_id(self):
+        self.cursor.execute("SELECT id FROM songs")
+        all_song_id = [song['id'] for song in self.cursor.fetchall()]
+        return all_song_id
+
+    
     def update_song(self, song_id, **update):
         self._update_column("songs", song_id, **update)
 
@@ -231,6 +237,8 @@ if __name__ == "__main__":
     db = DataBase()
     basic = db.get_basic()
     print(basic)
+
+    print(db.get_all_song_id())
 
 
     # db.add_song("Tu har lamha", "Bobby-Imran Topic", "aditya", "", 400, 1, 1, 34, "tuhar.mp3", "none")
