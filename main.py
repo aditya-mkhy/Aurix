@@ -118,6 +118,7 @@ class MusicMainWindow(QMainWindow):
         # call when yt want to all item to home screen and play
         self.yt_screen.playRequested.connect(self._play_requested)
         self.yt_screen.addSongToDBandHome.connect(self.add_song_to_db_and_home)
+        self.yt_screen.checkForExistance.connect(self.check_for_song_existance)
 
 
         outer.addWidget(middle_frame, 1)
@@ -169,6 +170,7 @@ class MusicMainWindow(QMainWindow):
         self.all_song_list = self.dataBase.get_all_song_id()
 
     def check_for_song_existance(self, item_id: int, vid: str):
+        print(f"askingToCheckIfExists => {vid}")
         song_id = self.dataBase.get_songid_by_vid(vid)
 
         if song_id is None:

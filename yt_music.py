@@ -209,7 +209,7 @@ class HoverThumb(QWidget):
 
 class TrackRow(QWidget):
     downloadRequested = pyqtSignal(str, str, list, str, int)
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(int)
 
     def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
         super().__init__(parent)
@@ -409,7 +409,7 @@ class TrackRow(QWidget):
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
     addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, bool)
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(int)
     checkForExistance = pyqtSignal(int, str)
 
 
@@ -484,7 +484,7 @@ class YtScreen(QFrame):
                 widget.setParent(None)
                 widget.deleteLater()
 
-    def SongAlreadyexists(self, item_id: int, song_id: int):
+    def songAlreadyexists(self, item_id: int, song_id: int):
         if item_id:
             item_obj = self.items_list[item_id]
             item_obj.set_song_id(song_id)
@@ -505,7 +505,7 @@ class YtScreen(QFrame):
 
         # send check request to main if the file is already downloaded...
         self.checkForExistance.emit(track_id, vid)
-        
+
 
     def config_finished(self, status):
         if status:
