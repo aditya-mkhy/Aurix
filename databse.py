@@ -143,7 +143,7 @@ class DataBase():
                 title TEXT,
                 subtitle TEXT,
                 artist TEXT,
-                vid TEXT,
+                vid TEXT UNIQUE,
                 duration INTEGER,
                 plays INTEGER,
                 liked INTEGER,
@@ -211,7 +211,14 @@ class DataBase():
         self.cursor.execute("SELECT id FROM songs")
         all_song_id = [song['id'] for song in self.cursor.fetchall()]
         return all_song_id
-
+    
+    def get_songid_by_vid(self, vid: str):
+        self.cursor.execute("SELECT id FROM songs WHERE vid=?", (vid,))
+        data = self.cursor.fetchone()
+        if data is None:
+            return
+        
+        return data["id"]
     
     def update_song(self, song_id, **update):
         self._update_column("songs", song_id, **update)
@@ -238,7 +245,8 @@ if __name__ == "__main__":
     basic = db.get_basic()
     print(basic)
 
-    print(db.get_all_song_id())
+    idd = "usvVGXFIpTM"
+    print(db.get_songid_by_vid(idd))
 
 
     # db.add_song("Tu har lamha", "Bobby-Imran Topic", "aditya", "", 400, 1, 1, 34, "tuhar.mp3", "none")

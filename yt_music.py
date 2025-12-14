@@ -218,7 +218,7 @@ class TrackRow(QWidget):
         self.artists = artists
         self.vid = vid
         self.track_id = track_id
-        self.file_path = None
+        self.song_id = None
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(108)
@@ -378,9 +378,9 @@ class TrackRow(QWidget):
     def get_mode(self):
         return self.thumb.mode
     
-    def set_file_path(self, file_path: str):
-        print(f"setFilePath ==> {file_path}")
-        self.file_path = file_path
+    def set_song_id(self, song_id: int):
+        print(f"set_song_id ==> {song_id}")
+        self.song_id = song_id
 
     def setProgress(self, value: int):
         self.thumb.setProgress(value)
@@ -391,7 +391,7 @@ class TrackRow(QWidget):
 
     def _play_requested(self, txt):
         print(f"Play Requested : {txt}")
-        self.playRequested.emit(self.file_path)
+        self.playRequested.emit(self.song_id)
 
 
     def show_menu(self):
@@ -410,6 +410,7 @@ class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
     addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, bool)
     playRequested = pyqtSignal(str)
+    checkForExistance = pyqtSignal(int, str)
 
 
     def __init__(self, parent=None):
@@ -454,7 +455,7 @@ class YtScreen(QFrame):
         self.main_layout.setSpacing(0)
         self.main_layout.setAlignment(Qt.AlignTop)
 
-        self.track_list: List[TrackRow] = [] # store all the TrackRow
+        self.items_list: List[TrackRow] = [] # store all the TrackRow
 
         # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
         # pix  = QPixmap(icon_path)
@@ -466,19 +467,9 @@ class YtScreen(QFrame):
     def set_broadcast(self, type: str, item_id: str, value: bool):
         pass
 
-    def is_already_downloaded(self, title: str) -> str | None:
-        # check if the file is already downloaded 
-        # use tite to make a path and then check is it esists
-        # if it is.. then change the 'mode' to 'play'
-        assume_filename = f"{make_title_path(title)}.mp3"
-        assume_path = os.path.join(MUSIC_DIR_PATH, assume_filename)
-
-        if os.path.exists(assume_path):
-            return assume_path
-             
 
     def clear_results(self):
-        self.track_list.clear()
+        self.items_list.clear()
         # remove stretch first
         item = self.main_layout.takeAt(self.main_layout.count() - 1)
         if item:
@@ -493,26 +484,28 @@ class YtScreen(QFrame):
                 widget.setParent(None)
                 widget.deleteLater()
 
+    def SongAlreadyexists(self, item_id: int, song_id: int):
+        if item_id:
+            item_obj = self.items_list[item_id]
+            item_obj.set_song_id(song_id)
+            item_obj.set_mode("play")
+
+            print(f"[SongAlreadyexists] Song already exists with id : {song_id}")
 
     def config_one(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap):
-        track_id = len(self.track_list)
+        track_id = len(self.items_list)
         
         row = TrackRow(title, subtitle, artists, vid, pix, track_id, parent=self)
         row.downloadRequested.connect(self._download_requested)
         row.playRequested.connect(self._play_requested)
         self.main_layout.addWidget(row)
 
-        # add row in track_list
-        self.track_list.append(row)
+        # add row in items_list
+        self.items_list.append(row)
 
-        # check is the file is already downloaded...
-        exists_path = self.is_already_downloaded(title)
-        if exists_path:
-            # change "mode" to "play"
-            row.set_file_path(exists_path)
-            row.set_mode("play")
-
-    
+        # send check request to main if the file is already downloaded...
+        self.checkForExistance.emit(track_id, vid)
+        
 
     def config_finished(self, status):
         if status:
@@ -572,8 +565,8 @@ class YtScreen(QFrame):
 
         # set the downloaded file path
         if track_id:
-            track_obj = self.track_list[track_id]
-            track_obj.set_file_path(path)
+            item_obj = self.items_list[track_id]
+            item_obj.set_song_id("song_id")
             print("PathAdded...")
 
         play = True
@@ -592,22 +585,22 @@ class YtScreen(QFrame):
             return
         
         # track object...
-        track_obj = self.track_list[track_id]
+        item_obj = self.items_list[track_id]
 
         if mode != "percentage":
-            track_obj.set_mode(mode)
+            item_obj.set_mode(mode)
             return
 
         # set progess value
-        track_obj.setProgress(int(value))
+        item_obj.setProgress(int(value))
     
-    def _play_requested(self, file_path: str):
-        if not file_path:
-            print(f"Can't play an invalid file path")
+    def _play_requested(self, song_id: int):
+        if not song_id:
+            print(f"Can't play a song with an empty song_id")
             return
         
-        print(f"sending request to play : {file_path}")
-        self.playRequested.emit(file_path)
+        print(f"sending request to play : {song_id}")
+        self.playRequested.emit(song_id)
 
 
     def _download_requested(self, title: str, subtitle: str, artists: list, vid: str, track_id: int):

@@ -168,6 +168,15 @@ class MusicMainWindow(QMainWindow):
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
 
+    def check_for_song_existance(self, item_id: int, vid: str):
+        song_id = self.dataBase.get_songid_by_vid(vid)
+
+        if song_id is None:
+            return
+        
+        self.yt_screen.songAlreadyexists(item_id, song_id)
+
+
     def _get_track(self, song_id: int = None, is_back: bool = False):
         # retrun the next or previous song_id 
         if song_id is None:
