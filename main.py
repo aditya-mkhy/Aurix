@@ -121,7 +121,7 @@ class MusicMainWindow(QMainWindow):
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
 
         song_id = self.dataBase.get_song_id(path=path)
-        print(f"Song : {title} saved with id : {song_id}")
+        print(f"Song : {path} saved with id : {song_id}")
 
 
     def load_basic_settings(self):
@@ -170,6 +170,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.set_repeat_mode(value)
         if not self.is_setting:
             self.dataBase.add_basic(key="repeat", value=value)
+
 
     def broadcast_msg(self, type: str, item_id: str, value: bool):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")

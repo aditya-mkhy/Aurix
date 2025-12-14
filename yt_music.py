@@ -379,6 +379,7 @@ class TrackRow(QWidget):
         return self.thumb.mode
     
     def set_file_path(self, file_path: str):
+        print(f"setFilePath ==> {file_path}")
         self.file_path = file_path
 
     def setProgress(self, value: int):
@@ -575,6 +576,7 @@ class YtScreen(QFrame):
         if track_id:
             track_obj = self.track_list[track_id]
             track_obj.set_file_path(path)
+            print("PathAdded...")
 
         play = True
         self.addItemHomeRequested.emit(title, subtitle, path, cover_path, play)
