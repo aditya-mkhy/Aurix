@@ -182,6 +182,19 @@ class DataBase():
             self.commit()
 
         return True
+    
+    def get_song_id(self, path: str = None, vid: str = None):
+        if path is not None:
+            self.cursor.execute("SELECT id FROM songs WHERE path=?", (path,))
+
+        elif vid is not None:
+            self.cursor.execute("SELECT id FROM songs WHERE vid=?", (vid,))
+
+        else:
+            return 
+        
+        row = self.cursor.fetchone()
+        return row["id"]
 
                 
     def get_song(self, song_id: int = None):

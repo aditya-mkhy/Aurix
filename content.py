@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QPixmap, QFontMetrics, QIcon
 from helper import LocalFilesLoader
-from helper import round_pix
+from helper import round_pix, round_pix_form_path
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -163,7 +163,7 @@ class SongCard(QWidget):
     playRequested = pyqtSignal(str)
     playToggleRequested = pyqtSignal()
 
-    def __init__(self, title: str, subtitle_text: str, path: str, pix: QPixmap, parent=None):
+    def __init__(self, title: str, subtitle_text: str, path: str, cover_path: str, parent=None):
         super().__init__(parent)
         self.title_text = title
         self.subtitle_text = subtitle_text
@@ -213,7 +213,7 @@ class SongCard(QWidget):
         self.thumb_label.setFixedSize(self.thumb_width, self.thumb_height)
         self.thumb_label.setAlignment(Qt.AlignCenter)
         self.thumb_label.setPixmap(
-            round_pix(pix, self.thumb_width, self.thumb_height, 8)
+            round_pix_form_path(cover_path, self.thumb_width, self.thumb_height, 8)
         )
 
 
@@ -519,14 +519,14 @@ class PlaylistSection(QWidget):
     def request_play(self, path: str):
         self.playRequested.emit(path)
         
-    def add_song(self, title, subtitle_text, path, pix: QPixmap, top: bool = False):
+    def add_song(self, title, subtitle, path, cover_path, play: bool = False):
         """
         Add a PlaylistCard title to this section.
         If top=True, inserts at top; otherwise appends at the end.
         """
         item = QListWidgetItem(self._list)
 
-        song_card = SongCard(title, subtitle_text, path, pix, parent=self._list)
+        song_card = SongCard(title, subtitle, path, cover_path, parent=self._list)
         song_card.playRequested.connect(self.request_play)
         song_card.playToggleRequested.connect(self.playToggleRequested.emit)
         
@@ -536,7 +536,7 @@ class PlaylistSection(QWidget):
         # give each title some breathing room
         item.setSizeHint(song_card.size() + QSize(30, 30))
 
-        if top:
+        if play:
             self._list.insertItem(0, item)
         else:
             self._list.addItem(item)
@@ -647,9 +647,9 @@ class ContentArea(QFrame):
 
         self.local_file_loader.deleteLater()
 
-    def add_item(self, title, subtitle_text, path, pix, play = False):
+    def add_item(self, title, subtitle, path, cover_path, play = False):
         # is play then add on top
-        self.section_library.add_song(title, subtitle_text, path, pix, top=play)
+        self.section_library.add_song(title, subtitle, path, cover_path, play)
 
         if play:
             self.play_requested(path)

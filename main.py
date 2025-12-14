@@ -78,6 +78,7 @@ class MusicMainWindow(QMainWindow):
         # call when yt want to all item to home screen and play
         self.yt_screen.addItemHomeRequested.connect(self.add_item_home_requested)
         self.yt_screen.playRequested.connect(self._play_requested)
+        self.yt_screen.addSongToDB.connect(self.add_song_to_db)
 
 
         outer.addWidget(middle_frame, 1)
@@ -114,6 +115,13 @@ class MusicMainWindow(QMainWindow):
         self.is_suffle = False
 
         QTimer.singleShot(0, self.load_basic_settings)
+
+
+    def add_song_to_db(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int):
+        self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
+
+        song_id = self.dataBase.get_song_id(path=path)
+        print(f"Song : {title} saved with id : {song_id}")
 
 
     def load_basic_settings(self):
@@ -183,8 +191,8 @@ class MusicMainWindow(QMainWindow):
         self.play_song(file_path=file_path)
 
 
-    def add_item_home_requested(self, title, subtitle_text, path, pix, play = False):
-        self.home_screen.add_item(title, subtitle_text, path, pix, play = play)
+    def add_item_home_requested(self, title, subtitle, path, cover_path, play):
+        self.home_screen.add_item(title, subtitle, path, cover_path, play = play)
 
 
     def search_call(self, query: str):

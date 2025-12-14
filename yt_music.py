@@ -208,7 +208,7 @@ class HoverThumb(QWidget):
 
 
 class TrackRow(QWidget):
-    downloadRequested = pyqtSignal(str, str, str, int)
+    downloadRequested = pyqtSignal(str, str, list, str, int)
     playRequested = pyqtSignal(str)
 
     def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
@@ -407,7 +407,8 @@ class TrackRow(QWidget):
 
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
-    addItemHomeRequested = pyqtSignal(str, str, str, QPixmap, bool)
+    addItemHomeRequested = pyqtSignal(str, str, str, str, bool)
+    addSongToDB = pyqtSignal(str, str, str, str, str, str, int)
     playRequested = pyqtSignal(str)
 
 
@@ -563,9 +564,12 @@ class YtScreen(QFrame):
             self._search_threads = []
         self._search_threads.append(thread)
 
+    def download_finished(
+            self, title: str, subtitle: str, artist: str, vid: str, 
+            path: str, cover_path: str, duration: int, track_id: int
+        ):
 
-    def download_finished(self, title: str = None, subtitle: str = None, path: str = None, track_id: int = None):
-        print(f"FileDownloaded : {path}")
+        print(f"FileDownloaded : {path} and track_id => {track_id}")
 
         # set the downloaded file path
         if track_id:
@@ -573,7 +577,8 @@ class YtScreen(QFrame):
             track_obj.set_file_path(path)
 
         play = True
-        self.addItemHomeRequested.emit(title, subtitle_text, path,  get_pixmap(path), play)
+        self.addItemHomeRequested.emit(title, subtitle, path, cover_path, play)
+        self.addSongToDB.emit(title, subtitle, artist, vid, path, cover_path, duration)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:

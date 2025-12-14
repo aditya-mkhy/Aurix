@@ -221,7 +221,7 @@ class Dtube(QThread): # download tube
         except Exception as e:
             print(f"Error In Downloading : {e}")
             self._emit_progress_hook("error")
-            self.finished.emit(None, None, None, None)
+            self.finished.emit(None, None, None, None, None, None, None, None)
 
     
     def remove_ext_file_path(self):
