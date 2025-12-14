@@ -166,6 +166,7 @@ class YTSearchThread(QThread):
                 custom_result.append({
                     "title" : item["title"],
                     "subtitle" : subtitle,
+                    "artists" : item["artists"],
                     "thumbnail_url" : thumbnail_url,
                     "videoId" : item["videoId"]
                 })
@@ -175,6 +176,7 @@ class YTSearchThread(QThread):
                 custom_result2.append({
                     "title" : item["title"],
                     "subtitle" : subtitle,
+                    "artists" : item["artists"],
                     "thumbnail_url" : thumbnail_url,
                     "videoId" : item["videoId"]
                 })
@@ -185,7 +187,7 @@ class YTSearchThread(QThread):
     
 
 class ConfigResult(QThread):
-    add_one = pyqtSignal(str, str, str, QPixmap)
+    add_one = pyqtSignal(str, str, list, str, QPixmap)
     finished = pyqtSignal(bool)
 
     def __init__(self, result: dict, parent=None):
@@ -193,23 +195,26 @@ class ConfigResult(QThread):
         self.result = result
 
     def run(self):
+        #title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int
 
         for item in self.result:
             title = item["title"]
             subtitle = item["subtitle"]
-            url = f"https://music.youtube.com/watch?v={item['videoId']}"
+            artists = item["artists"]
+            vid = item['videoId']
+
             thumbnail_url = item["thumbnail_url"]
 
             try:
-                resp = requests.get(thumbnail_url, timeout=15)
+                resp = requests.get(thumbnail_url, timeout=10)
                 resp.raise_for_status()
                 pix = QPixmap()
                 pix.loadFromData(resp.content)
 
-                self.add_one.emit(title, subtitle, url, pix)
+                self.add_one.emit(title, subtitle, artists, vid, pix)
 
             except Exception as e:
-                self.add_one.emit(title, subtitle, url, pix, QPixmap())
+                self.add_one.emit(title, subtitle, artists, vid, None)
 
         self.finished.emit(True)
 

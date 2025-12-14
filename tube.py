@@ -145,22 +145,26 @@ def gen_path(title: str, vid: str, artists: list = None) -> str | None:
 
 
 class Dtube(QThread): # download tube
+    """
+    Docstring for Dtube
+
+    title : song title
+    subtitle : song subtitle
+    artists : list of artists
+    vid : video id -> SBrs9-Xb2dk
+    track_id : row_id for navigating the called UI row
+    parent: parent
+    """
     finished = pyqtSignal(str, str, str, int)
     progress = pyqtSignal(int, str, int)
 
-    def __init__(
-            self, 
-            title: str = None, 
-            subtitle_text: str = None,
-            artists: list = None,
-            vid: str = None,
-            url: str = None, 
-            track_id: int = None, 
-            parent = None, 
-            
-    ):
+
+    def __init__(self, title: str, subtitle: str, artists: list, vid: str, track_id: int, parent = None):
         
         super().__init__(parent)
+
+        self.vid = vid
+        self.artists = artists
 
         self.url = url
         self.track_id = track_id
@@ -171,11 +175,11 @@ class Dtube(QThread): # download tube
 
         self.title = title
 
-        # remove song from subtitle_text
-        if "song" in subtitle_text.lower():
-            subtitle_text = subtitle_text[subtitle_text.find("•") + 1 : ]
+        # remove song from subtitle
+        if "song" in subtitle.lower():
+            subtitle = subtitle[subtitle.find("•") + 1 : ]
 
-        self.subtitle_text = subtitle_text.strip()
+        self.subtitle = subtitle.strip()
         
         if title == None:
             raise ValueError("Title can't be empty...")
@@ -184,7 +188,7 @@ class Dtube(QThread): # download tube
 
         self.is_video_dowloaded = False
         self.video_size = 0
-        self.file_path = gen_path(title, vid, artists)
+        self.file_path = gen_path(self.title, self.vid, self.artists)
 
         self.tags = None
 
@@ -245,7 +249,7 @@ class Dtube(QThread): # download tube
         self._set_single_frame(TIT2(encoding=3, text=str(title)))
 
         # Subtitle
-        self._set_single_frame(TIT3(encoding=3, text=str(self.subtitle_text)))
+        self._set_single_frame(TIT3(encoding=3, text=str(self.subtitle)))
 
         # Artists -> list
         artists = info.get("artists")
@@ -314,7 +318,7 @@ class Dtube(QThread): # download tube
 
             # emit status
             self._emit_progress_hook("done")
-            self.finished.emit(self.title, self.subtitle_text, self.file_path, self.track_id)
+            self.finished.emit(self.title, self.subtitle, self.file_path, self.track_id)
 
         except Exception as e:
             print(f"Error In Downloading : {e}")
