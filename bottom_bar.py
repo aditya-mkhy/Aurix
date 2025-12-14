@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QIcon
 
 from util import format_time, trim_text
+from helper import round_pix_form_path
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RES_DIR = os.path.join(BASE_DIR, "res")
@@ -391,20 +392,17 @@ class BottomBar(QWidget):
         """)
         return btn
 
-    def set_track(self, title: str, subtitle: str, duration_seconds: int, cover: QPixmap = None):
+    def set_track(self, title: str, subtitle: str, liked: int, cover_path: str, duration_seconds: int):
         self.title_label.setText(trim_text(title, max_length=33))
         self.meta_label.setText(trim_text(subtitle, max_length=38))
         self._duration = duration_seconds
         self._position = 0
         self.seekbar.setDuration(self._duration * 1000)
         self.seekbar.setPosition(0)
-        self._update_time()
-        if cover:
-            self.cover.setPixmap(
-                cover.scaled(self.cover.size(),
-                             Qt.KeepAspectRatioByExpanding,
-                             Qt.SmoothTransformation)
-            )
+        self._update_time() 
+
+        # set cover image
+        self.cover.setPixmap(round_pix_form_path(cover_path, 80, 80, 6))
 
 
     def set_position(self, seconds: int):

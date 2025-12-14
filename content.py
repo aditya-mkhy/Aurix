@@ -160,7 +160,7 @@ class ClickableOverlay(QWidget):
 
 
 class SongCard(QWidget):
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
 
     def __init__(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, parent=None):
@@ -445,7 +445,7 @@ class SongCard(QWidget):
             self.overlay.hide()
 
     def _on_play_clicked(self):
-        self.playRequested.emit(self.mp3_path)
+        self.playRequested.emit(self.song_id)
         
 
     def _on_clicked(self):
@@ -458,7 +458,7 @@ class SongCard(QWidget):
 
 
 class PlaylistSection(QWidget):
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
 
     def __init__(self, title: str, parent=None):
@@ -518,8 +518,8 @@ class PlaylistSection(QWidget):
             print(f"[PlaylistSection][broadcast] => not implemented for type : {type}")
 
 
-    def request_play(self, path: str):
-        self.playRequested.emit(path)
+    def request_play(self, song_id: int):
+        self.playRequested.emit(song_id)
 
     def add_song(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play = False):
         """
@@ -622,23 +622,23 @@ class ContentArea(QFrame):
 
 
         # load local mp3 files....
-        self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
-        self.local_file_loader.config_one.connect(self.add_item)
-        self.local_file_loader.finished.connect(self._finish_adding_loc_files)
-        self.local_file_loader.start()
+        # self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
+        # self.local_file_loader.config_one.connect(self.add_item)
+        # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
+        # self.local_file_loader.start()
 
     def set_broadcast(self, type: str, item_id: str, value: bool):
         # print(f"Boradcast[Content] => {type} | {item_id} | {value}")
         self.section_library.set_broadcast(type, item_id, value)
         
 
-    def play_requested(self, path: str = None):
-        if not path:
-            print(f"Path is empty")
+    def play_requested(self, song_id: int):
+        if song_id is None:
+            print(f"Song id not found..")
             return
         
-        print(f"playRequested : {path}")
-        self.playRequested.emit(path)
+        print(f"Playing SongId : {song_id}")
+        self.playRequested.emit(song_id)
         
 
 

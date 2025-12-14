@@ -408,8 +408,7 @@ class TrackRow(QWidget):
 
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
-    addItemHomeRequested = pyqtSignal(str, str, str, str, bool)
-    addSongToDB = pyqtSignal(str, str, str, str, str, str, int)
+    addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int)
     playRequested = pyqtSignal(str)
 
 
@@ -477,7 +476,6 @@ class YtScreen(QFrame):
         if os.path.exists(assume_path):
             return assume_path
              
-    
 
     def clear_results(self):
         self.track_list.clear()
@@ -579,8 +577,7 @@ class YtScreen(QFrame):
             print("PathAdded...")
 
         play = True
-        self.addItemHomeRequested.emit(title, subtitle, path, cover_path, play)
-        self.addSongToDB.emit(title, subtitle, artist, vid, path, cover_path, duration)
+        self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, play=play)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:

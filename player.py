@@ -126,12 +126,12 @@ class PlayerEngine(QObject):
         self.play(prev_file)
 
      
-    def play(self, path:str, out_dev = None):
+    def play(self, song_info: dict, out_dev = None):
+        path = song_info['path']
+
         if not os.path.isfile(path):
             raise ValueError(f"Path not exists or it's a directory.")
         
-        if not is_mp3(path):
-            raise ValueError(f"Path must be a mp3 file path not this : {path}")
         
         # stop prevoius timer..
         self._timer.stop()
@@ -141,10 +141,10 @@ class PlayerEngine(QObject):
         freq = meta["sample_rate"]
         duration = meta["duration"]
 
-        title = meta["title"] 
-        publisher = meta["publisher"] 
-        artist = meta["artist"]
-        album = meta["album"]
+        title = song_info["title"] 
+        subtitle = song_info["subtitle"]
+        liked = song_info["liked"]
+        cover_path = song_info["cover_path"]
 
         # init mixer according to the file
         if out_dev is None:
@@ -159,7 +159,7 @@ class PlayerEngine(QObject):
         mixer.music.load(path)
 
         # emit setTrackInfo
-        self.setTrackInfo.emit(title, publisher, duration, meta["cover"])
+        self.setTrackInfo.emit(title, subtitle, liked, cover_path, duration)
 
         # play...
         mixer.music.play()

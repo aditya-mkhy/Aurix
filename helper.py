@@ -56,7 +56,7 @@ def crop_and_save_img(img_data: bytes, out_path: str, from_left: int = 0, from_r
 
 
 
-def get_mp3_metadata(path: str):
+def get_mp3_metadata(path: str) -> dict:
     audio = MP3(path)
     info = {
         "duration": int(audio.info.length),
@@ -66,39 +66,7 @@ def get_mp3_metadata(path: str):
         "mode": audio.info.mode,  # Stereo, JointStereo etc.
         "version": audio.info.version,
         "layer": audio.info.layer,
-        "cover": None,
-        "title": None,
-        "publisher": None,
-        "artist": None,
-        "album": None
     }
-
-    # tags
-    tags = ID3(path)
-    title = tags.get("TIT2")
-    publisher = tags.get("TPUB")
-    if not publisher:
-        publisher = tags.get("TIT3")
-    print(f"publisher : {publisher}")
-    artist = tags.get("TPE1")
-    print(f"artist : {artist}")
-    album = tags.get("TALB")
-    print(f"album : {album}")
-
-
-    info["title"] = title.text[0] if title else None
-    info["publisher"] = publisher.text[0] if publisher else None
-    info["artist"] = artist.text[0] if artist else None
-    info["album"] = album.text[0] if album else None
-
-    # cover
-    for key in tags.keys():
-        if key.startswith("APIC"):
-            pix = QPixmap()
-            pix.loadFromData(tags[key].data)
-            
-            info["cover"] = round_pix(pix, 80, 80, 6)
-            break
 
     return info
 

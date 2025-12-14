@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
-from PyQt5.QtCore import QTimer, QThread, pyqtSignal
+from PyQt5.QtCore import QTimer, QThread, pyqtSignal, QObject
 
 # project import
 from sidebar import Sidebar
@@ -15,7 +15,7 @@ from databse import DataBase
 from typing import List
 
 
-class LoadFiles(QThread):
+class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
     addOneSong = pyqtSignal(int, str, str, str, str)
     finished = pyqtSignal(bool)
@@ -116,9 +116,8 @@ class MusicMainWindow(QMainWindow):
         # TY SCREEN
         self.yt_screen = YtScreen(parent=self)
         # call when yt want to all item to home screen and play
-        self.yt_screen.addItemHomeRequested.connect(self.add_item_home_requested)
         self.yt_screen.playRequested.connect(self._play_requested)
-        self.yt_screen.addSongToDB.connect(self.add_song_to_db)
+        self.yt_screen.addSongToDBandHome.connect(self.add_song_to_db_and_home)
 
 
         outer.addWidget(middle_frame, 1)
@@ -154,11 +153,14 @@ class MusicMainWindow(QMainWindow):
         self.is_setting = False
         self.is_suffle = False
 
+        QTimer.singleShot(0, self.load_basic_settings)
+
         # Thread to add files...
         self.loader = LoadFiles(dataBase=self.dataBase, parent=self)
         self.loader.addOneSong.connect(self.home_screen.add_item)
+        self.loader.finished.connect(self.on_finish_loader)
+        # self.loader.start()
 
-        QTimer.singleShot(0, self.load_basic_settings)
 
     def on_finish_loader(self, status):
         if status:
@@ -169,7 +171,7 @@ class MusicMainWindow(QMainWindow):
         self.loader.deleteLater()
 
 
-    def add_song_to_db(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int, play = False):
+    def add_song_to_db_and_home(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int, play = False):
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
         # get song_id
         song_id = self.dataBase.get_song_id(path=path)
@@ -212,6 +214,9 @@ class MusicMainWindow(QMainWindow):
 
         self.is_setting = False
 
+        # loading data..
+        self.loader.run()
+
 
     def set_shuffle(self, value: bool):
         self.bottom_bar.set_shuffle(value)
@@ -238,16 +243,13 @@ class MusicMainWindow(QMainWindow):
             self.dataBase.add_basic("current_song", item_id)
 
 
-    def play_song(self, file_path: str):
-        self.playerEngine.play(path=file_path)
+    def play_song(self, song_id: int):
+        song_info = self.dataBase.get_song(song_id=song_id)
+        self.playerEngine.play(song_info)
 
-    def _play_requested(self, file_path: str):
-        print(f"PlayingByPlayer : {file_path}")
-        self.play_song(file_path=file_path)
-
-
-    def add_item_home_requested(self, title, subtitle, path, cover_path, play):
-        self.home_screen.add_item(title, subtitle, path, cover_path, play = play)
+    def _play_requested(self, song_id: int):
+        print(f"Playing Song wiht id : {song_id}")
+        self.play_song(song_id=song_id)
 
 
     def search_call(self, query: str):
