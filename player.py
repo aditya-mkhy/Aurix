@@ -39,13 +39,16 @@ class PlayerEngine(QObject):
     setPlaying = pyqtSignal(bool)
     setSeekPos = pyqtSignal(int)
     setRepeatMode = pyqtSignal(int)
-    broadcastMsg = pyqtSignal(str, str, bool)
+    broadcastMsg = pyqtSignal(str, int, bool)
 
     def __init__(self, parent = None):
         super().__init__(parent)
 
+        # store the current song info
+        self.song_info: dict = None
+        self.song_id: int = None # previous playing song id
+
         # variables
-        self._current_path = None
         self._is_paused = False
         self._channels = None
         self._freq = None
@@ -64,8 +67,8 @@ class PlayerEngine(QObject):
 
         self._init_mixer(freq=48000, channels=2, out_dev="default")
         
-    def init_play(self, path: str):
-        self.play(path)
+    def init_play(self, song_info: dict, out_dev = None):
+        self.play(song_info=song_info, out_dev=out_dev)
         self.play_toggled()
 
     def _init_mixer(self, freq=48000, channels=2, out_dev="default"):
@@ -86,6 +89,65 @@ class PlayerEngine(QObject):
 
         # set the prevous or default volume
         mixer.music.set_volume(self._volume)
+
+
+     
+    def play(self, song_info: dict, out_dev = None):
+        self.song_info = song_info # song info
+        path = song_info['path']
+
+        if not os.path.isfile(path):
+            raise ValueError(f"Path not exists or it's a directory.")
+        
+        
+        # stop prevoius timer..
+        self._timer.stop()
+
+        meta = get_mp3_metadata(path)
+        channels = meta["channels"]
+        freq = meta["sample_rate"]
+        duration = meta["duration"]
+
+        title = song_info["title"] 
+        subtitle = song_info["subtitle"]
+        liked = song_info["liked"]
+        cover_path = song_info["cover_path"]
+
+        # init mixer according to the file
+        if out_dev is None:
+            out_dev = self._out_dev
+
+        self._init_mixer(freq=freq, channels=channels, out_dev=out_dev)
+
+        # load music
+        prev_song_id = self.song_id # to broadcast de-active status
+        self.song_id = self.song_info['id'] # current song id
+        
+        self.duration = int(duration) * 1000
+        mixer.music.load(path)
+
+        # emit setTrackInfo
+        self.setTrackInfo.emit(self.song_id, title, subtitle, liked, cover_path, duration)
+
+        # play...
+        mixer.music.play()
+        self.elapsed_sec = 0
+        self._timer.start()
+
+        self._is_paused = False
+        self.setPlaying.emit(self.is_playing())
+        # to set prevoius Active -> False
+
+        if prev_song_id:
+            # to deactive prevoius song card
+            self.broadcastMsg.emit("active", prev_song_id, False)
+
+        # to active current song card
+        self.broadcastMsg.emit("active", self.song_id, True)
+
+        # to set playing status to song card
+        self.broadcastMsg.emit("playing", self.song_id, self.is_playing())
+
 
     def set_seek(self, sec: int):
         print(f"Sec --> {sec}")
@@ -125,63 +187,6 @@ class PlayerEngine(QObject):
         prev_file = get_track_file(self._music_files, current_file=self._current_path, is_back=True)
         self.play(prev_file)
 
-     
-    def play(self, song_info: dict, out_dev = None):
-        path = song_info['path']
-        song_id = song_info['id']
-
-        if not os.path.isfile(path):
-            raise ValueError(f"Path not exists or it's a directory.")
-        
-        
-        # stop prevoius timer..
-        self._timer.stop()
-
-        meta = get_mp3_metadata(path)
-        channels = meta["channels"]
-        freq = meta["sample_rate"]
-        duration = meta["duration"]
-
-        title = song_info["title"] 
-        subtitle = song_info["subtitle"]
-        liked = song_info["liked"]
-        cover_path = song_info["cover_path"]
-
-        # init mixer according to the file
-        if out_dev is None:
-            out_dev = self._out_dev
-
-        self._init_mixer(freq=freq, channels=channels, out_dev=out_dev)
-
-        # load music
-        prev_path = self._current_path # to broadcast de-active status
-        self._current_path = path
-        self.duration = int(duration) * 1000
-        mixer.music.load(path)
-
-        # emit setTrackInfo
-        self.setTrackInfo.emit(song_id, title, subtitle, liked, cover_path, duration)
-
-        # play...
-        mixer.music.play()
-        self.elapsed_sec = 0
-        self._timer.start()
-
-        self._is_paused = False
-        self.setPlaying.emit(self.is_playing())
-        # to set prevoius Active -> False
-
-        if prev_path:
-            # to deactive prevoius song card
-            self.broadcastMsg.emit("active", prev_path, False)
-
-        # to active current song card
-        self.broadcastMsg.emit("active", self._current_path, True)
-
-        # to set playing status to song card
-        self.broadcastMsg.emit("playing", self._current_path, self.is_playing())
-
-
     def _after_stop(self):
         if self._repeat_mode == 2:
             # repeat one song...
@@ -218,15 +223,15 @@ class PlayerEngine(QObject):
         else: # song ended...
             # if there is current path.. then play it... again
             # as resume is clicked...
-            if self._current_path:
-                self.play(self._current_path)
+            if self.song_id:
+                self.play(self.song_info)
                 # not emmiting the play signal.. as self.play fun gonna do it
                 return 
 
             
         # set the play or pause button 
         self.setPlaying.emit(self.is_playing())
-        self.broadcastMsg.emit("playing", self._current_path, self.is_playing())
+        self.broadcastMsg.emit("playing", self.song_id, self.is_playing())
 
 
     def set_volume(self, vol: float):

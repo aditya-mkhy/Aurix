@@ -503,8 +503,8 @@ class PlaylistSection(QWidget):
         layout.addWidget(self._list)
 
 
-    def set_broadcast(self, type: str, item_id: str, value: bool):
-        card_obj = self.items.get(item_id)
+    def set_broadcast(self, type: str, song_id: int, value: bool):
+        card_obj = self.items.get(song_id)
         if not card_obj:
             return
         
@@ -533,7 +533,7 @@ class PlaylistSection(QWidget):
         song_card.playToggleRequested.connect(self.playToggleRequested.emit)
         
         # add song_card object to items dict with path as key..
-        self.items[path] = song_card
+        self.items[song_id] = song_card
 
         # give each title some breathing room
         item.setSizeHint(song_card.size() + QSize(30, 30))
@@ -627,9 +627,9 @@ class ContentArea(QFrame):
         # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
         # self.local_file_loader.start()
 
-    def set_broadcast(self, type: str, item_id: str, value: bool):
-        # print(f"Boradcast[Content] => {type} | {item_id} | {value}")
-        self.section_library.set_broadcast(type, item_id, value)
+    def set_broadcast(self, type: str, song_id: int, value: bool):
+        # print(f"Boradcast[Content] => {type} | {song_id} | {value}")
+        self.section_library.set_broadcast(type, song_id, value)
         
 
     def play_requested(self, song_id: int):

@@ -209,8 +209,8 @@ class MusicMainWindow(QMainWindow):
                 prev_song = value
 
         # loading the last played song
-        if prev_song is not None:
-            self.playerEngine.init_play(prev_song)
+        # if prev_song is not None:
+        #     self.playerEngine.init_play(prev_song)
 
         self.is_setting = False
 
@@ -231,16 +231,16 @@ class MusicMainWindow(QMainWindow):
             self.dataBase.add_basic(key="repeat", value=value)
 
 
-    def broadcast_msg(self, type: str, item_id: str, value: bool):
+    def broadcast_msg(self, type: str, song_id: int, value: bool):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")
-        self.yt_screen.set_broadcast(type, item_id, value)
-        self.home_screen.set_broadcast(type, item_id, value)
+        self.yt_screen.set_broadcast(type, song_id, value)
+        self.home_screen.set_broadcast(type, song_id, value)
 
         if type == "active" and value == True and not self.is_setting:
             # saving the current playing song path
             # if type is active and value is True -> means it's playing broadcast
             # is not self.is_setting -> means it's not called at the time of loading settings
-            self.dataBase.add_basic("current_song", item_id)
+            self.dataBase.add_basic("current_song", song_id)
 
 
     def play_song(self, song_id: int):
