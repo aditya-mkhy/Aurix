@@ -35,7 +35,6 @@ def get_track_file(files: list, current_file: str = None, is_back: bool = False)
     
 
 class PlayerEngine(QObject):
-    # (title, subtitle, total_time, )
     setTrackInfo = pyqtSignal(str, str, int, QPixmap)
     setPlaying = pyqtSignal(bool)
     setSeekPos = pyqtSignal(int)
@@ -68,7 +67,6 @@ class PlayerEngine(QObject):
     def init_play(self, path: str):
         self.play(path)
         self.play_toggled()
-
 
     def _init_mixer(self, freq=48000, channels=2, out_dev="default"):
         if not (freq != self._freq or channels != self._channels or out_dev != self._out_dev):
@@ -137,9 +135,6 @@ class PlayerEngine(QObject):
         
         # stop prevoius timer..
         self._timer.stop()
-
-
-
 
         meta = get_mp3_metadata(path)
         channels = meta["channels"]
@@ -226,8 +221,6 @@ class PlayerEngine(QObject):
                 self.play(self._current_path)
                 # not emmiting the play signal.. as self.play fun gonna do it
                 return 
-            
-            
 
             
         # set the play or pause button 

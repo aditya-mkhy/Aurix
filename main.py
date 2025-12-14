@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, QThread, pyqtSignal
 
 # project import
 from sidebar import Sidebar
@@ -12,6 +12,46 @@ from util import dark_title_bar, get_music_path, MediaKeys, is_mp3
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
+from typing import List
+
+
+class LoadFiles(QThread):
+    config_one = pyqtSignal(str, str, str, object)
+    addOneSong = pyqtSignal(int, str, str, str, str)
+    finished = pyqtSignal(bool)
+
+    def __init__(self, dataBase: DataBase = None, parent = None):
+        super().__init__(parent)
+
+        self.dataBase = dataBase
+
+        # list of id's of the song wich does not exists anymore
+        # so to remove later add here
+        self._to_delete: List[int] = []
+
+        self.sleep_on_count = 10
+        self.count = 0
+
+
+    def run(self):
+        all_songs = self.dataBase.get_song()
+
+        for song in all_songs:
+            if not os.path.exists(song['path']):
+                print(f"PathNotFound => {song['path']}")
+                # add to delete later
+                self._to_delete.append(song['id'])
+                continue
+
+            if not os.path.exists(song['cover_path']):
+                # if cover path not found... 
+                # add logic later
+                pass
+
+            self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], song['cover_path'])
+
+        self.finished.emit(True)
+
 
 
 class MusicMainWindow(QMainWindow):
@@ -114,13 +154,27 @@ class MusicMainWindow(QMainWindow):
         self.is_setting = False
         self.is_suffle = False
 
+        # Thread to add files...
+        self.loader = LoadFiles(dataBase=self.dataBase, parent=self)
+        self.loader.addOneSong.connect(self.home_screen.add_item)
+
         QTimer.singleShot(0, self.load_basic_settings)
 
+    def on_finish_loader(self, status):
+        if status:
+            print(f"All Local Files added sucessfully")
+        else:
+            print("Maybe some Error in loading local files..")
 
-    def add_song_to_db(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int):
+        self.loader.deleteLater()
+
+
+    def add_song_to_db(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int, play = False):
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
-
+        # get song_id
         song_id = self.dataBase.get_song_id(path=path)
+
+        self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=play)
         print(f"Song : {path} saved with id : {song_id}")
 
 

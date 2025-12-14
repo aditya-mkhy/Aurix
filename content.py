@@ -163,14 +163,17 @@ class SongCard(QWidget):
     playRequested = pyqtSignal(str)
     playToggleRequested = pyqtSignal()
 
-    def __init__(self, title: str, subtitle_text: str, path: str, cover_path: str, parent=None):
+    def __init__(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, parent=None):
         super().__init__(parent)
+        # song id
+        self.song_id = song_id
         self.title_text = title
-        self.subtitle_text = subtitle_text
-        self._active = False
+        self.subtitle_text = subtitle
         self.mp3_path = path
+        self.cover_path = cover_path
 
-        self._width = 240 # 260
+        self._active = False
+        self._width  = 240  # 260
         self._height = 292  #220
 
         self.thumb_width = self._width
@@ -183,7 +186,6 @@ class SongCard(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedSize(self._width, self._height)
         self.setStyleSheet("border: none;  background: green; margin: 20px;")
-
 
         main = QVBoxLayout(self)
         main.setContentsMargins(0, 0, 0, 0)
@@ -518,15 +520,15 @@ class PlaylistSection(QWidget):
 
     def request_play(self, path: str):
         self.playRequested.emit(path)
-        
-    def add_song(self, title, subtitle, path, cover_path, play: bool = False):
+
+    def add_song(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play = False):
         """
         Add a PlaylistCard title to this section.
         If top=True, inserts at top; otherwise appends at the end.
         """
         item = QListWidgetItem(self._list)
 
-        song_card = SongCard(title, subtitle, path, cover_path, parent=self._list)
+        song_card = SongCard(song_id, title, subtitle, path, cover_path)
         song_card.playRequested.connect(self.request_play)
         song_card.playToggleRequested.connect(self.playToggleRequested.emit)
         
@@ -578,7 +580,7 @@ class PlaylistSection(QWidget):
 
 
 class ContentArea(QFrame):
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
 
     def __init__(self, parent = None, music_dirs: list = None):
@@ -639,17 +641,10 @@ class ContentArea(QFrame):
         self.playRequested.emit(path)
         
 
-    def _finish_adding_loc_files(self, status):
-        if status:
-            print(f"All Local Files added sucessfully")
-        else:
-            print("Maybe some Error in loading local files..")
 
-        self.local_file_loader.deleteLater()
-
-    def add_item(self, title, subtitle, path, cover_path, play = False):
+    def add_item(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play=False):
         # is play then add on top
-        self.section_library.add_song(title, subtitle, path, cover_path, play)
+        self.section_library.add_song(song_id, title, subtitle, path, cover_path, play=play)
 
         if play:
             self.play_requested(path)
