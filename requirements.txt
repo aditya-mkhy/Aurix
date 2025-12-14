@@ -1,0 +1,6 @@
+mutagen
+requests
+PyQt5
+yt-dlp
+ytmusicapi
+pygame

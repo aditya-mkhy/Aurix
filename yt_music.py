@@ -12,6 +12,7 @@ from common import ScrollArea
 from typing import List
 from util import trim_text, MUSIC_DIR_PATH, make_title_path
 
+
 class HoverThumb(QWidget):
     downloadRequested = pyqtSignal(str)
     playRequested = pyqtSignal(str)
