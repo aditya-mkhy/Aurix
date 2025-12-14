@@ -564,7 +564,7 @@ class YtScreen(QFrame):
         self._search_threads.append(thread)
 
 
-    def download_finished(self, title: str = None, subtitle_text: str = None, path: str = None, track_id: int = None):
+    def download_finished(self, title: str = None, subtitle: str = None, path: str = None, track_id: int = None):
         print(f"FileDownloaded : {path}")
 
         # set the downloaded file path

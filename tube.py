@@ -155,34 +155,34 @@ class Dtube(QThread): # download tube
     track_id : row_id for navigating the called UI row
     parent: parent
     """
-    finished = pyqtSignal(str, str, str, int)
+    finished = pyqtSignal(str, str, str, str, str, str, int, int)
     progress = pyqtSignal(int, str, int)
 
 
     def __init__(self, title: str, subtitle: str, artists: list, vid: str, track_id: int, parent = None):
         
         super().__init__(parent)
-
-        self.vid = vid
-        self.artists = artists
-
-        self.url = url
-        self.track_id = track_id
-        self.is_processing_emitted = False 
-        self.is_downloading_emitted = False 
-        # to send dowloading mode only once
-        self.is_converting_emitted = False 
-
         self.title = title
-
+        if title == None:
+            raise ValueError("Title can't be empty...")
+        
         # remove song from subtitle
         if "song" in subtitle.lower():
             subtitle = subtitle[subtitle.find("•") + 1 : ]
 
         self.subtitle = subtitle.strip()
-        
-        if title == None:
-            raise ValueError("Title can't be empty...")
+
+        self.artists = artists
+        self.vid = vid
+
+        self.url = f"https://music.youtube.com/watch?v={self.vid}"
+        self.track_id = track_id
+
+        self.is_processing_emitted = False 
+        self.is_downloading_emitted = False 
+
+        # to send dowloading mode only once
+        self.is_converting_emitted = False 
 
         self.format_id = "bv*"
 
@@ -190,118 +190,9 @@ class Dtube(QThread): # download tube
         self.video_size = 0
         self.file_path = gen_path(self.title, self.vid, self.artists)
 
+        # audio tags...
         self.tags = None
-
-    def _extract_info(self, info: dict):
-        useful_info = {}
-
-        if "requested_downloads" in info:
-            # download info....
-            useful_info["file_path"] = info["requested_downloads"][0]["filepath"]
-
-        useful_info["available_at"] = info["available_at"]
-        useful_info["artists"] = info["artists"]
-        useful_info["creators"] = info["creators"]
-        useful_info["fulltitle"] = info["fulltitle"]
-        useful_info["original_url"] = info["original_url"]
-
-        useful_info["album"] = info["album"]
-        useful_info["categories"] = info["categories"]
-        useful_info["duration"] = info["duration"]
-
-        useful_info["id"] = info["id"]
-        useful_info["title"] = info["title"]
-        useful_info["description"] = info["description"]
-        useful_info["view_count"] = info["view_count"]
-        useful_info["release_date"] = info["release_date"]
-
-        # get best thumbnail in jpg format
-        useful_info["thumbnail"] = self._get_thumbnail(info)
-
-        if not useful_info["thumbnail"]:
-            # if not found.. use the default one
-            useful_info["thumbnail"] = info["thumbnail"]
-    
-        return useful_info
-
-    def _set_single_frame(self, frame):
-        if not self.tags:
-            raise ValueError("Tag is not set to the object")
-        
-        self.tags.delall(frame.FrameID)
-        self.tags.add(frame)
-
-    def _add_tags(self, info: dict) -> None:
-        # if downloaf  file exists in the info
-        if "file_path" in info and os.path.exists(info["file_path"]):
-            self.file_path = info["file_path"]
-
-        audio = MP3(self.file_path, ID3=ID3)
-
-        # Ensure the file has an ID3 tag container
-        if audio.tags is None:
-            audio.add_tags()
-
-        self.tags = audio.tags
-
-        # title
-        title = info['title'] if 'title' in info else self.title
-        self._set_single_frame(TIT2(encoding=3, text=str(title)))
-
-        # Subtitle
-        self._set_single_frame(TIT3(encoding=3, text=str(self.subtitle)))
-
-        # Artists -> list
-        artists = info.get("artists")
-        if artists:
-            artist_list = [str(a) for a in artists]
-            self._set_single_frame(TPE1(encoding=3, text=artist_list))
-
-        # Album
-        album = info.get("album")
-        if album:
-            self._set_single_frame(TALB(encoding=3, text=str(album)))
-
-        # Description
-        description = info.get("description")
-        if description:
-            # Delete all COMM frames with this description/lang to avoid duplicates
-            self.tags.delall("COMM")
-            self.tags.add(COMM(encoding=3, lang="eng", desc="Description", text=str(description),))
-
-
-        # Release date
-        release_date = info.get("release_date")
-        if release_date:
-            release_date = date_to_id3(release_date)
-            self._set_single_frame(TDRC(encoding=3, text=str(release_date)))
-
-        # Custom: YouTube video ID (user-defined text frame)
-        video_id = info.get("id")
-        if video_id:
-            # TXXX with desc="YT_ID"
-            # Remove any previous YT_ID frame
-            for frame in list(self.tags.getall("TXXX")):
-                if getattr(frame, "desc", "") == "YT_ID":
-                    self.tags.delall("TXXX")
-                    break
-
-            self.tags.add(TXXX(encoding=3, desc="YT_ID", text=str(video_id),))
-
-
-        # add cover image...
-        try:
-            # audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="", data=response.content))
-
-            response = get_request(info['thumbnail'])
-            audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="Cover", data=response.content))
-
-        except Exception as e:
-            print("Error [thumbnail_to_mp3] : ", e)
-
-        # Finally, write the tags to file
-        audio.save()
-
+        self.cover_path = None  # value is added when "_add_tags" is called
 
 
     def run(self):
@@ -318,28 +209,19 @@ class Dtube(QThread): # download tube
 
             # emit status
             self._emit_progress_hook("done")
-            self.finished.emit(self.title, self.subtitle, self.file_path, self.track_id)
+
+            artist = ",".join(ext_info['artists']) # to store in database
+
+            self.finished.emit(
+                self.title, self.subtitle, artist, self.vid,
+                self.file_path, self.cover_path,
+                ext_info["duration"], self.track_id
+            )
 
         except Exception as e:
             print(f"Error In Downloading : {e}")
             self._emit_progress_hook("error")
             self.finished.emit(None, None, None, None)
-
-    def _get_thumbnail(self, data: dict):
-        thumbnails = data.get("thumbnails", [])
-        pref = -100
-        url_thmb = None
-
-        for thumbnail in thumbnails:
-            preference = thumbnail.get("preference")
-            if preference > pref:
-                url = thumbnail.get("url", "")
-                _, ext = os.path.splitext(url)
-                if ext == ".jpg":
-                    pref = preference
-                    url_thmb = url
-
-        return url_thmb
 
     
     def remove_ext_file_path(self):
@@ -450,13 +332,144 @@ class Dtube(QThread): # download tube
             print("Error Occured...")
             self._emit_progress_hook("error")
 
-def test():
-    url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
-    path = gen_thumbnail_path()
-    response = get_request(url)
-    path = crop_and_save_img(img_data=response.content, out_path=path, from_left=284, from_right=284)
     
-    print(f"saved to : {path}")
+    def _get_thumbnail(self, data: dict):
+        # get best thumbnail in jpg format
+        thumbnails = data.get("thumbnails", [])
+        pref = -100
+        url_thmb = None
+
+        for thumbnail in thumbnails:
+            preference = thumbnail.get("preference")
+            if preference > pref:
+                url = thumbnail.get("url", "")
+                _, ext = os.path.splitext(url)
+                if ext == ".jpg":
+                    pref = preference
+                    url_thmb = url
+
+        return url_thmb
+
+    def _extract_info(self, info: dict):
+        useful_info = {}
+
+        if "requested_downloads" in info:
+            # download info....
+            useful_info["file_path"] = info["requested_downloads"][0]["filepath"]
+
+        # useful_info["available_at"] = info["available_at"]
+        useful_info["artists"] = info["artists"]
+        # useful_info["creators"] = info["creators"]
+        # useful_info["fulltitle"] = info["fulltitle"]
+        # useful_info["original_url"] = info["original_url"]
+
+        useful_info["album"] = info["album"]
+        # useful_info["categories"] = info["categories"]
+        useful_info["duration"] = info["duration"]
+
+        useful_info["id"] = info["id"]
+        useful_info["title"] = info["title"]
+        useful_info["description"] = info["description"]
+        # useful_info["view_count"] = info["view_count"]
+        useful_info["release_date"] = info["release_date"]
+
+        # get best thumbnail in jpg format
+        useful_info["thumbnail"] = self._get_thumbnail(info)
+
+        if not useful_info["thumbnail"]:
+            # if not found.. use the default one
+            useful_info["thumbnail"] = info["thumbnail"]
+    
+        return useful_info
+
+    def _set_single_frame(self, frame):
+        if not self.tags:
+            raise ValueError("Tag is not set to the object")
+        
+        self.tags.delall(frame.FrameID)
+        self.tags.add(frame)
+        
+
+    def _add_tags(self, info: dict) -> None:
+        # if downloaf  file exists in the info
+        if "file_path" in info and os.path.exists(info["file_path"]):
+            self.file_path = info["file_path"]
+
+        audio = MP3(self.file_path, ID3=ID3)
+
+        # Ensure the file has an ID3 tag container
+        if audio.tags is None:
+            audio.add_tags()
+
+        self.tags = audio.tags
+
+        # title
+        title = info['title'] if 'title' in info else self.title
+        self._set_single_frame(TIT2(encoding=3, text=str(title)))
+
+        # Subtitle
+        self._set_single_frame(TIT3(encoding=3, text=str(self.subtitle)))
+
+        # Artists -> list
+        artists = info.get("artists")
+        if artists:
+            artist_list = [str(a) for a in artists]
+            self._set_single_frame(TPE1(encoding=3, text=artist_list))
+
+        # Album
+        album = info.get("album")
+        if album:
+            self._set_single_frame(TALB(encoding=3, text=str(album)))
+
+        # Description
+        description = info.get("description")
+        if description:
+            # Delete all COMM frames with this description/lang to avoid duplicates
+            self.tags.delall("COMM")
+            self.tags.add(COMM(encoding=3, lang="eng", desc="Description", text=str(description),))
+
+
+        # Release date
+        release_date = info.get("release_date")
+        if release_date:
+            release_date = date_to_id3(release_date)
+            self._set_single_frame(TDRC(encoding=3, text=str(release_date)))
+
+        # Custom: YouTube video ID (user-defined text frame)
+        video_id = info.get("id")
+        if video_id:
+            # TXXX with desc="YT_ID"
+            # Remove any previous YT_ID frame
+            for frame in list(self.tags.getall("TXXX")):
+                if getattr(frame, "desc", "") == "YT_ID":
+                    self.tags.delall("TXXX")
+                    break
+
+            self.tags.add(TXXX(encoding=3, desc="YT_ID", text=str(video_id),))
+
+
+        # add cover image...
+        try:
+            # save the cropped thumbanil into folder
+            self.cover_path = self.save_thumnail(url = info['thumbnail'])
+
+            with open(self.cover_path, "rb") as ff:
+                data = ff.read()
+
+            audio.tags.add(APIC(encoding=0, mime="image/jpeg", type=0, desc="Cover", data=data))
+
+        except Exception as e:
+            print("Error [thumbnail_to_mp3] : ", e)
+
+        # Finally, write the tags to file
+        audio.save()
+
+    def save_thumnail(self, url: str):
+        path = gen_thumbnail_path()
+        response = get_request(url)
+        path = crop_and_save_img(img_data=response.content, out_path=path, from_left=284, from_right=284)
+        return path
+
 
 
 if __name__ == "__main__":

@@ -195,7 +195,6 @@ class ConfigResult(QThread):
         self.result = result
 
     def run(self):
-        #title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int
 
         for item in self.result:
             title = item["title"]
