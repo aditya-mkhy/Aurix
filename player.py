@@ -35,7 +35,7 @@ def get_track_file(files: list, current_file: str = None, is_back: bool = False)
     
 
 class PlayerEngine(QObject):
-    setTrackInfo = pyqtSignal(str, str, int, QPixmap)
+    setTrackInfo = pyqtSignal(int, str, str, int, str, int)
     setPlaying = pyqtSignal(bool)
     setSeekPos = pyqtSignal(int)
     setRepeatMode = pyqtSignal(int)
@@ -128,6 +128,7 @@ class PlayerEngine(QObject):
      
     def play(self, song_info: dict, out_dev = None):
         path = song_info['path']
+        song_id = song_info['id']
 
         if not os.path.isfile(path):
             raise ValueError(f"Path not exists or it's a directory.")
@@ -159,7 +160,7 @@ class PlayerEngine(QObject):
         mixer.music.load(path)
 
         # emit setTrackInfo
-        self.setTrackInfo.emit(title, subtitle, liked, cover_path, duration)
+        self.setTrackInfo.emit(song_id, title, subtitle, liked, cover_path, duration)
 
         # play...
         mixer.music.play()

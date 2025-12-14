@@ -172,6 +172,7 @@ class BottomBar(QWidget):
         self.setFixedHeight(120)
 
         # internal state
+        self._song_id = None # id of current playing song
         self._duration = 0
         self._position = 0
         self._playing = False
@@ -392,7 +393,9 @@ class BottomBar(QWidget):
         """)
         return btn
 
-    def set_track(self, title: str, subtitle: str, liked: int, cover_path: str, duration_seconds: int):
+    def set_track(self, song_id: int, title: str, subtitle: str, liked: int, cover_path: str, duration_seconds: int):
+        self._song_id = song_id # current playing song
+
         self.title_label.setText(trim_text(title, max_length=33))
         self.meta_label.setText(trim_text(subtitle, max_length=38))
         self._duration = duration_seconds
@@ -520,51 +523,3 @@ class BottomBar(QWidget):
             ic = "repeat-one.png"
         self.repeat_btn.setIcon(icon(ic))
 
-
-class DemoWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Aurix Bottom Bar Demo")
-        self.resize(1500, 880)
-
-        central = QWidget(self)
-        layout = QVBoxLayout(central)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.addStretch(1)
-
-        self.bottom = BottomBar(self)
-        layout.addWidget(self.bottom)
-        self.setCentralWidget(central)
-
-        duration = 60 * 5
-        self.bottom.set_track(
-            "Barbaada",
-            "Aditya Mukhiya, Palak....",
-            duration_seconds=duration
-        )
-
-
-    def _toggle_timer(self, playing: bool):
-        if playing:
-            self._timer.start()
-        else:
-            self._timer.stop()
-
-    def _advance(self):
-        if self.bottom._position < self.bottom._duration:
-            self.bottom.set_position(self.bottom._position + 1)
-        else:
-            self._timer.stop()
-            self.bottom.set_playing(False)
-
-    def _seek(self, secs: int):
-        self.bottom.set_position(secs)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setStyleSheet("QMainWindow { background-color: #000; }")
-    win = DemoWindow()
-    win.show()
-    sys.exit(app.exec_())
