@@ -646,6 +646,4 @@ class ContentArea(QFrame):
         # is play then add on top
         self.section_library.add_song(song_id, title, subtitle, path, cover_path, play=play)
 
-        if play:
-            self.play_requested(song_id)
 

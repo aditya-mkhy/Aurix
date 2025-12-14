@@ -218,14 +218,26 @@ class MusicMainWindow(QMainWindow):
         self.loader.deleteLater()
 
 
-    def add_song_to_db_and_home(self, title: str, subtitle: str, artist: str, vid: str, path: str, cover_path: str, duration: int, play = False):
+    def add_song_to_db_and_home(
+            self, title: str, subtitle: str, artist: str, 
+            vid: str, path: str, cover_path: str, duration: int, 
+            track_id: int = None
+    ):
+        # add song to database
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
         # get song_id
         song_id = self.dataBase.get_song_id(path=path)
         print(f"song_id ==> {song_id}")
 
-        self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=play)
+        # set play status in yt_screen for TrackRow
+        if track_id is not None:
+            # do not change mode to play.. as it already in play mode set after downloading
+            self.yt_screen.songAlreadyexists(track_id, song_id, change_mode=False)
+
+        self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=True)
         print(f"Song : {path} saved with id : {song_id}")
+
+        self.play_song(song_id=song_id)
 
 
     def load_basic_settings(self):
@@ -291,6 +303,12 @@ class MusicMainWindow(QMainWindow):
 
     def play_song(self, song_id: int):
         song_info = self.dataBase.get_song(song_id=song_id)
+        if song_info is None:
+            print(f"***************************")
+            print(f"Could't find the song with id : {song_id}")
+            print("****************************")
+            return
+        
         self.playerEngine.play(song_info)
 
     def _play_requested(self, song_id: int):

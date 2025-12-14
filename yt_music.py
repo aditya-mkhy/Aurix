@@ -178,7 +178,6 @@ class HoverThumb(QWidget):
             self.download_btn.clicked.connect(self._play_requested)
 
 
-
     def _start_fade_out(self):
         self.fade_anim.setStartValue(1.0)
         self.fade_anim.setEndValue(0.0)
@@ -408,7 +407,7 @@ class TrackRow(QWidget):
 
 class YtScreen(QFrame):
     downloadRequested = pyqtSignal(str, str, str)
-    addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, bool)
+    addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, int)
     playRequested = pyqtSignal(int)
     checkForExistance = pyqtSignal(int, str)
 
@@ -484,11 +483,14 @@ class YtScreen(QFrame):
                 widget.setParent(None)
                 widget.deleteLater()
 
-    def songAlreadyexists(self, item_id: int, song_id: int):
+    def songAlreadyexists(self, item_id: int, song_id: int, change_mode = True):
         if item_id:
             item_obj = self.items_list[item_id]
             item_obj.set_song_id(song_id)
-            item_obj.set_mode("play")
+
+            # this is helpful when just need to add_song id...
+            if change_mode: # change mode to play
+                item_obj.set_mode("play")
 
             print(f"[SongAlreadyexists] Song already exists with id : {song_id}")
 
@@ -563,14 +565,7 @@ class YtScreen(QFrame):
 
         print(f"FileDownloaded : {path} and track_id => {track_id}")
 
-        # set the downloaded file path
-        if track_id:
-            item_obj = self.items_list[track_id]
-            item_obj.set_song_id("song_id")
-            print("PathAdded...")
-
-        play = True
-        self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, play)
+        self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, track_id)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:
