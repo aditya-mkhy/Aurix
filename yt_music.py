@@ -211,12 +211,13 @@ class TrackRow(QWidget):
     downloadRequested = pyqtSignal(str, str, str, int)
     playRequested = pyqtSignal(str)
 
-    def __init__(self, title: str, subtitle: str, url: str, pix: QPixmap, my_id: int = None, parent=None):
+    def __init__(self, title: str, subtitle: str, artists: list, url: str, pix: QPixmap, vid: int = None, parent=None):
         super().__init__(parent)
         self.title_txt = title
         self.subtitle_txt = subtitle
+        self.artists = artists
         self.url = url
-        self.my_id = my_id
+        self.vid = vid
         self.file_path = None
 
         self.setAttribute(Qt.WA_StyledBackground, True)
@@ -385,7 +386,7 @@ class TrackRow(QWidget):
 
     def _download_requested(self, txt):
         print(f"Recieved [TrackRow] : {txt}")
-        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.url, self.my_id)
+        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.artists, self.url, self.vid)
 
     def _play_requested(self, txt):
         print(f"Play Requested : {txt}")
@@ -495,7 +496,8 @@ class YtScreen(QFrame):
 
     def config_one(self, title: str, subtitle: str, url: str, pix: QPixmap):
         _id = len(self.track_list)
-        row = TrackRow(title, subtitle, url, pix, my_id = _id)
+        
+        row = TrackRow(title, subtitle, url, pix, vid = _id)
         row.downloadRequested.connect(self._download_requested)
         row.playRequested.connect(self._play_requested)
         self.main_layout.addWidget(row)
@@ -604,14 +606,14 @@ class YtScreen(QFrame):
         self.playRequested.emit(file_path)
 
 
-    def _download_requested(self, title: str = None, subtitle_text: str = None, url: str = None, track_id: int = None):
-        print(f"Track[{track_id}] [download request] => {title}")
+    def _download_requested(self, title: str, subtitle: str, artists: list, vid: str, url: str, track_id: int):
+        print(f"Track[{vid}] [download request] => {title}")
 
         if not url:
-            print(f"Path is empty")
+            print(f"===> Path is empty")
             return
         
-        thread = Dtube(title=title, subtitle_text=subtitle_text, url=url, track_id=track_id, parent=self)
+        thread = Dtube(title, subtitle, artists, vid, url, track_id, parent=self)
         thread.finished.connect(self.download_finished)
         thread.progress.connect(self.download_progress)
         thread.start()
