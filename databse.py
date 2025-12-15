@@ -1,6 +1,6 @@
 import sqlite3
 from typing import List, Dict
-from util import DATABASE_PATH
+from util import DATABASE_PATH, dict_format
 
 
 class DataBase():
@@ -223,6 +223,16 @@ class DataBase():
     def update_song(self, song_id, **update):
         self._update_column("songs", song_id, **update)
 
+    def delete_song(self, song_id: int):
+        self.cursor.execute("DELETE FROM songs WHERE id = ?", (song_id,))
+        self.conn.commit()
+
+        if self.cursor.rowcount == 0:
+            print(f"[From DB] No song found with this id : {song_id}")
+        else:
+            print(f"[From DB] Song deleted with id : {song_id}")
+
+
 
     def _update_column(self, table: str, column_id: int, **kwargs):
         query = f'UPDATE {table} SET {", ".join(f"{key} = ?" for key in kwargs.keys())} WHERE id = ?'
@@ -233,14 +243,12 @@ class DataBase():
         self.cursor.execute(query, values)
         self.conn.commit()
 
-    
-    def dict_format(self, items: List[Dict]):
-        if not isinstance(items, list):
-            return dict(items)
-        return [dict(row) for row in items]
 
 
 if __name__ == "__main__":
     db = DataBase()
-    basic = db.get_basic()
-    print(basic)
+    db.delete_song(song_id=40)
+
+    for song in dict_format(db.get_song()):
+        print(song)
+        print()

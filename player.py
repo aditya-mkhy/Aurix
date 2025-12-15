@@ -3,7 +3,7 @@ from pygame import mixer
 from PyQt5.QtCore import QTimer, pyqtSignal, QObject
 from PyQt5.QtGui import QPixmap
 from helper import get_mp3_metadata
-from util import is_mp3, MUSIC_DIR_PATH
+from util import is_mp3, MUSIC_DIR_PATH, dict_format
 
 def get_files():
     music_files = []
@@ -95,6 +95,9 @@ class PlayerEngine(QObject):
      
     def play(self, song_info: dict, out_dev = None):
         self.song_info = song_info # song info
+        print(f"songinfo => {song_info}")
+        print(dict_format(song_info))
+        
         path = song_info['path']
 
         if not os.path.isfile(path):

@@ -198,6 +198,9 @@ class MusicMainWindow(QMainWindow):
         except:
             index = -1
 
+        print(f"Prev_index ==> {index}")
+
+
         if is_back:
             index -= 1
         else:
@@ -205,12 +208,14 @@ class MusicMainWindow(QMainWindow):
 
         if index < 0 or index >= len(self.all_song_list):
             index = 0
-        
+
+        print(f"New_index ==> {index}")
+
         return self.all_song_list[index]
 
     def play_next_track(self, song_id: int = None):
         next_song_id = self._get_track(song_id=song_id)
-        print(f"PlatingNextSong : {next_song_id}")
+        print(f"PlatingNextSong : {song_id} --> {next_song_id}")
         self.play_song(song_id=next_song_id) # play next track
 
 

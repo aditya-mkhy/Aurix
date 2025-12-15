@@ -103,6 +103,11 @@ class MediaKeys(QObject):
         self.user32.UnregisterHotKey(self._hwnd, 102)
 
 
+def dict_format(items):
+    if not isinstance(items, list):
+        return dict(items)
+    return [dict(row) for row in items]
+
 def get_music_path(paths: list = []):
     paths.append(MUSIC_DIR_PATH)
     return paths
