@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
-from PyQt5.QtCore import QTimer, QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QTimer, QThread, pyqtSignal, QObject, QTimer
 
 # project import
 from sidebar import Sidebar
@@ -31,12 +31,13 @@ class LoadFiles(QObject):
 
         self.sleep_on_count = 10
         self.count = 0
+        self.batch_size = 10
 
+        self.all_songs = None
 
-    def run(self):
-        all_songs = self.dataBase.get_song()
+    def add_song_batch(self, from_index: int):
 
-        for song in all_songs:
+        for song in self.all_songs[from_index : from_index + self.batch_size]:
             if not os.path.exists(song['path']):
                 print(f"PathNotFound => {song['path']}")
                 # add to delete later
@@ -50,7 +51,18 @@ class LoadFiles(QObject):
 
             self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], song['cover_path'])
 
-        self.finished.emit(True)
+        from_index += self.batch_size
+        if from_index < len(self.all_songs):
+            QTimer.singleShot(300, lambda: self.add_song_batch(from_index))
+
+        else:
+            self.finished.emit(True)
+
+
+    def run(self):
+        self.all_songs = self.dataBase.get_song()
+        from_index = 0
+        self.add_song_batch(from_index)
 
 
 
@@ -160,7 +172,6 @@ class MusicMainWindow(QMainWindow):
         self.is_setting = False
         self.is_suffle = False
 
-        QTimer.singleShot(0, self.load_basic_settings)
 
         # Thread to add files...
         self.loader = LoadFiles(dataBase=self.dataBase, parent=self)
@@ -170,6 +181,9 @@ class MusicMainWindow(QMainWindow):
 
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
+
+        QTimer.singleShot(0, self.load_basic_settings)
+
 
     def save_like_dislike_song(self, song_id: int, value: int):
         print(f"song_id => {song_id} value => {value}")
