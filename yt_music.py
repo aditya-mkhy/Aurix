@@ -136,7 +136,7 @@ class HoverThumb(QWidget):
     def set_mode(self, mode: str):
         self._set_mode(mode=mode)
 
-    def _set_mode(self, mode: str):
+    def _set_mode(self, mode: str, change_icon = True):
         self.mode = mode
 
         # reset visibility
@@ -176,9 +176,16 @@ class HoverThumb(QWidget):
         elif mode == "play":
             self.overlay.hide()
             self.download_btn.show()
-            self.download_btn.setIcon(self.play_icon)  # or use your icon
-            self.download_btn.clicked.disconnect(self._download_requested)
+            try:
+                self.download_btn.clicked.disconnect(self._download_requested)
+            except:
+                pass
+
             self.download_btn.clicked.connect(self._play_requested)
+
+            if change_icon:
+                self.download_btn.setIcon(self.play_icon)  # or use your icon
+
 
 
     def _start_fade_out(self):
@@ -187,12 +194,26 @@ class HoverThumb(QWidget):
         self.fade_anim.start()
 
     def _on_fade_finished(self):
+        print(f"AfterFade---> mode ==> {self.mode}")
         if self.mode == "done":
             self._set_mode("play")
+
+        if self.mode == "active":
+            # fadeout takes some time.. 
+            # before that mode chages to 'active'
+            # and can't compromise with animation..
+            self._set_mode("play", change_icon=False)
+            self.set_active(True)
+
 
     def set_active(self, value):
         # setactive staus if this song is playing
         if value:
+            if self.mode == "done":
+                self.mode = "active"
+                # again call after animantion is done..
+                return 
+
             self.overlay.show()
             self.download_btn.show()
             try:
@@ -203,7 +224,11 @@ class HoverThumb(QWidget):
             self.download_btn.clicked.connect(self._play_toggle_request)
             self.mode = "active"
 
+            print(f"SettingValue[Ative] for => {self}")
+
         else:
+            self.mode = "play"
+
             # remove active...
             self.overlay.hide()
             self.download_btn.show()
@@ -214,7 +239,8 @@ class HoverThumb(QWidget):
                 pass
 
             self.download_btn.clicked.connect(self._play_requested)
-            self.mode = "play"
+
+            self._set_mode("play")            
 
     def _play_toggle_request(self):
         self.playToggleRequested.emit()
@@ -621,7 +647,7 @@ class YtScreen(QFrame):
 
     def search_call(self, query: str):
         print(f"YTSearch Query : {query}")
-        
+
         thread = YTSearchThread(query=query, parent=self)
         thread.finished.connect(self.config_search)
         thread.start()
