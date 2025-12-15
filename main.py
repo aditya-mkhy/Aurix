@@ -144,6 +144,7 @@ class MusicMainWindow(QMainWindow):
         self.bottom_bar.previousClicked.connect(self.playerEngine.prevoius_track)
         self.bottom_bar.nextClicked.connect(self.playerEngine.next_track)
         self.bottom_bar.shuffleToggled.connect(self.set_shuffle)
+        self.bottom_bar.likeDislikeToggled.connect(self.save_like_dislike_song)
 
         # connect PlayerEngine signal
         self.playerEngine.setTrackInfo.connect(self.bottom_bar.set_track)
@@ -169,6 +170,10 @@ class MusicMainWindow(QMainWindow):
 
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
+
+    def save_like_dislike_song(self, song_id: int, value: int):
+        print(f"song_id => {song_id} value => {value}")
+        self.dataBase.update_song(song_id, liked = value)
 
     def check_for_song_existance(self, item_id: int, vid: str):
         song_id = self.dataBase.get_songid_by_vid(vid)

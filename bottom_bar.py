@@ -154,15 +154,13 @@ class SeekBar(QWidget):
         super().leaveEvent(event)
 
 
-# ===================== MAIN BOTTOM BAR ===================== #
 class BottomBar(QWidget):
     seekRequested = pyqtSignal(int)
     volumeChanged = pyqtSignal(float)
     playToggled = pyqtSignal()
     previousClicked = pyqtSignal()
     nextClicked = pyqtSignal()
-    likeToggled = pyqtSignal(bool)
-    dislikeToggled = pyqtSignal(bool)
+    likeDislikeToggled = pyqtSignal(int, int)
     shuffleToggled = pyqtSignal(bool)
     repeatModeChanged = pyqtSignal(int)  # 0=off,1=all,2=one
 
@@ -177,8 +175,7 @@ class BottomBar(QWidget):
         self._position = 0
         self._playing = False
         self._volume = 0
-        self._liked = False
-        self._disliked = False
+        self._liked = 0
         self._shuffle = False
         self._repeat_mode = 0  # 0 off, 1 all, 2 one
 
@@ -476,28 +473,46 @@ class BottomBar(QWidget):
         else:
             self.volume_btn.setIcon(icon("volume.png"))
 
+    def set_like_dislike(self, value: int = 0, is_emmit = True):
+        self._liked = value
+
+        print(f"settin the value ==> {value}")
+
+        if value == 0:
+            self.dislike_btn.setIcon(icon("dislike.png"))
+            self.like_btn.setIcon(icon("like.png"))
+
+        elif value == 1:
+            self.dislike_btn.setIcon(icon("dislike.png"))
+            self.like_btn.setIcon(icon("like-on.png"))
+
+        elif value == 2:
+            self.like_btn.setIcon(icon("like.png"))
+            self.dislike_btn.setIcon(icon("dislike-on.png"))
+
+        else:
+            print(f"Error : Invalid value for like -> {value}")
+
+        if is_emmit:
+            self.likeDislikeToggled.emit(self._song_id, value)
+
     # like / dislike / shuffle / repeat
     def _on_like_clicked(self):
-        self._liked = not self._liked
-        if self._liked:
-            self.like_btn.setIcon(icon("like-on.png"))
-            if self._disliked:
-                self._disliked = False
-                self.dislike_btn.setIcon(icon("dislike.png"))
+        if self._liked == 1:
+            value = 0
         else:
-            self.like_btn.setIcon(icon("like.png"))
-        self.likeToggled.emit(self._liked)
+            value = 1
+
+        self.set_like_dislike(value)
+
 
     def _on_dislike_clicked(self):
-        self._disliked = not self._disliked
-        if self._disliked:
-            self.dislike_btn.setIcon(icon("dislike-on.png"))
-            if self._liked:
-                self._liked = False
-                self.like_btn.setIcon(icon("like.png"))
+        if self._liked == 2:
+            value = 0
         else:
-            self.dislike_btn.setIcon(icon("dislike.png"))
-        self.dislikeToggled.emit(self._disliked)
+            value = 2
+
+        self.set_like_dislike(value)
 
     def set_shuffle(self, value: bool):
         self._shuffle = value
