@@ -16,6 +16,8 @@ from util import trim_text, MUSIC_DIR_PATH, make_title_path
 class HoverThumb(QWidget):
     downloadRequested = pyqtSignal(str)
     playRequested = pyqtSignal(str)
+    playToggleRequested = pyqtSignal()
+
 
     def __init__(self, pix: QPixmap, parent=None):
         super().__init__(parent)
@@ -188,6 +190,31 @@ class HoverThumb(QWidget):
         if self.mode == "done":
             self._set_mode("play")
 
+    def set_active(self, value):
+        # setactive staus if this song is playing
+        if value:
+            self.overlay.show()
+            self.download_btn.show()
+            self.download_btn.clicked.disconnect(self._play_requested)
+            self.download_btn.clicked.connect(self.playToggleRequested.emit)
+            self.mode = "active"
+
+        else:
+            # remove active...
+            self.overlay.hide()
+            self.download_btn.show()
+            self.download_btn.setIcon(self.play_icon)
+            self.download_btn.clicked.disconnect(self.playToggleRequested.emit)
+            self.download_btn.clicked.connect(self._play_requested)
+            self.mode = "play"
+
+    def set_play(self, value):
+        if value:
+            self.download_btn.setIcon(self.pause_icon)
+
+        else:
+            self.download_btn.setIcon(self.play_icon)
+
     # keep overlay resized
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -205,6 +232,8 @@ class HoverThumb(QWidget):
         if self.mode in ("idle", "play"):
             self.overlay.hide()
         super().leaveEvent(event)
+
+    
 
 
 class TrackRow(QWidget):
@@ -234,6 +263,7 @@ class TrackRow(QWidget):
         self.thumb = HoverThumb(pix=pix, parent=self)
         self.thumb.downloadRequested.connect(self._download_requested)
         self.thumb.playRequested.connect(self._play_requested)
+        self.thumb.playToggleRequested.connect(self.playToggleRequested.emit)
         main.addWidget(self.thumb)
 
         # text block
@@ -374,40 +404,14 @@ class TrackRow(QWidget):
         self.setStyleSheet(self._base_style)
 
 
-    def set_active(self, value):
-        # setactive staus if this song is playing
-        if value:
-            self.thumb.overlay.show()
-            self.thumb.download_btn.show()
-            self.thumb.download_btn.clicked.disconnect(self.thumb._play_requested)
-            self.thumb.download_btn.clicked.connect(self.playToggleRequested.emit)
-            self.thumb.mode = "active"
-
-        else:
-            # remove active...
-            self.thumb.overlay.hide()
-            self.thumb.download_btn.show()
-            self.thumb.download_btn.setIcon(self.thumb.play_icon)
-            self.thumb.download_btn.clicked.disconnect(self.playToggleRequested.emit)
-            self.thumb.download_btn.clicked.connect(self.thumb._play_requested)
-            self.thumb.mode = "play"
-
-    def set_play(self, value):
-        if value:
-            self.thumb.download_btn.setIcon(self.thumb.pause_icon)
-
-        else:
-            self.thumb.download_btn.setIcon(self.thumb.play_icon)
-
-
     def set_broadcast(self, type: str, value: bool):
         print(f"[atTrackRow] [broadcast] => type : {type}, value : {value}")
 
         if type == "active":
-            self.set_active(value)
+            self.thumb.set_active(value)
 
         elif type == "playing":
-            self.set_play(value)
+            self.thumb.set_play(value)
 
         else:
             print(f"[yt-screen][trackrow][broadcast] => not implemented for type : {type}")
@@ -453,6 +457,8 @@ class YtScreen(QFrame):
     addSongToDBandHome = pyqtSignal(str, str, str, str, str, str, int, int)
     playRequested = pyqtSignal(int)
     checkForExistance = pyqtSignal(int, str)
+    playToggleRequested = pyqtSignal()
+
 
 
     def __init__(self, parent=None):
@@ -554,6 +560,7 @@ class YtScreen(QFrame):
         row = TrackRow(title, subtitle, artists, vid, pix, track_id, parent=self)
         row.downloadRequested.connect(self._download_requested)
         row.playRequested.connect(self._play_requested)
+        row.playToggleRequested.connect(self.playToggleRequested.emit)
         self.main_layout.addWidget(row)
 
         # add row in items_list

@@ -119,6 +119,7 @@ class MusicMainWindow(QMainWindow):
         self.yt_screen.playRequested.connect(self._play_requested)
         self.yt_screen.addSongToDBandHome.connect(self.add_song_to_db_and_home)
         self.yt_screen.checkForExistance.connect(self.check_for_song_existance)
+        self.yt_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
 
 
         outer.addWidget(middle_frame, 1)
@@ -227,6 +228,9 @@ class MusicMainWindow(QMainWindow):
         # get song_id
         song_id = self.dataBase.get_song_id(path=path)
         print(f"song_id ==> {song_id}")
+
+        # add this to all_song_list at 0
+        self.all_song_list.insert(0, song_id)
 
         # set play status in yt_screen for TrackRow
         if track_id is not None:
