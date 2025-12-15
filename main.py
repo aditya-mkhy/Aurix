@@ -170,9 +170,7 @@ class MusicMainWindow(QMainWindow):
         self.all_song_list = self.dataBase.get_all_song_id()
 
     def check_for_song_existance(self, item_id: int, vid: str):
-        print(f"askingToCheckIfExists => {vid}")
         song_id = self.dataBase.get_songid_by_vid(vid)
-
         if song_id is None:
             return
         
@@ -203,6 +201,7 @@ class MusicMainWindow(QMainWindow):
         next_song_id = self._get_track(song_id=song_id)
         print(f"PlatingNextSong : {next_song_id}")
         self.play_song(song_id=next_song_id) # play next track
+
 
     def play_prevoius_track(self, song_id: int = None):
         prev_song_id = self._get_track(song_id=song_id, is_back=True)
@@ -299,7 +298,6 @@ class MusicMainWindow(QMainWindow):
             # if type is active and value is True -> means it's playing broadcast
             # is not self.is_setting -> means it's not called at the time of loading settings
             self.dataBase.add_basic("current_song", song_id)
-
 
     def play_song(self, song_id: int):
         song_info = self.dataBase.get_song(song_id=song_id)

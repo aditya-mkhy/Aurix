@@ -9,7 +9,7 @@ from helper import CircularProgress, LoadingSpinner, YTSearchThread, ConfigResul
 from tube import Dtube
 from helper import get_pixmap, round_pix
 from common import ScrollArea
-from typing import List
+from typing import List, Dict
 from util import trim_text, MUSIC_DIR_PATH, make_title_path
 
 
@@ -71,6 +71,7 @@ class HoverThumb(QWidget):
         # play button---
         self.play_icon = QIcon("res/play-card.png")
         self.down_icon = QIcon("res/downloads.png")
+        self.pause_icon = QIcon("res/pause.png")
 
 
         # download button
@@ -209,6 +210,8 @@ class HoverThumb(QWidget):
 class TrackRow(QWidget):
     downloadRequested = pyqtSignal(str, str, list, str, int)
     playRequested = pyqtSignal(int)
+    playToggleRequested = pyqtSignal()
+
 
     def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
         super().__init__(parent)
@@ -370,6 +373,46 @@ class TrackRow(QWidget):
         """
         self.setStyleSheet(self._base_style)
 
+
+    def set_active(self, value):
+        # setactive staus if this song is playing
+        if value:
+            self.thumb.overlay.show()
+            self.thumb.download_btn.show()
+            self.thumb.download_btn.clicked.disconnect(self.thumb._play_requested)
+            self.thumb.download_btn.clicked.connect(self.playToggleRequested.emit)
+            self.thumb.mode = "active"
+
+        else:
+            # remove active...
+            self.thumb.overlay.hide()
+            self.thumb.download_btn.show()
+            self.thumb.download_btn.setIcon(self.thumb.play_icon)
+            self.thumb.download_btn.clicked.disconnect(self.playToggleRequested.emit)
+            self.thumb.download_btn.clicked.connect(self.thumb._play_requested)
+            self.thumb.mode = "play"
+
+    def set_play(self, value):
+        if value:
+            self.thumb.download_btn.setIcon(self.thumb.pause_icon)
+
+        else:
+            self.thumb.download_btn.setIcon(self.thumb.play_icon)
+
+
+    def set_broadcast(self, type: str, value: bool):
+        print(f"[atTrackRow] [broadcast] => type : {type}, value : {value}")
+
+        if type == "active":
+            self.set_active(value)
+
+        elif type == "playing":
+            self.set_play(value)
+
+        else:
+            print(f"[yt-screen][trackrow][broadcast] => not implemented for type : {type}")
+            
+
     def set_mode(self, mode: str):
         print(f"Setting State : {mode}")
         self.thumb.set_mode(mode)
@@ -456,6 +499,8 @@ class YtScreen(QFrame):
 
         self.items_list: List[TrackRow] = [] # store all the TrackRow
 
+        self.downloaded_items: Dict[int, TrackRow]
+
         # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
         # pix  = QPixmap(icon_path)
         # tite = "Naach Meri Jaan (From \"Tubelight\") Aditya Mukhiya and palak Thakur Lve each other and also fuck Each Other".upper()
@@ -463,12 +508,18 @@ class YtScreen(QFrame):
         # url = ""
         # self.config_one(tite, sub, url, pix)
         
-    def set_broadcast(self, type: str, item_id: str, value: bool):
-        pass
+    def set_broadcast(self, type: str, item_id: int, value: bool):
+        item_obj = self.downloaded_items.get(item_id)
 
+        if item_obj is None:
+            return
+        # transfer to that song...
+        item_obj.set_broadcast(type, value)
 
     def clear_results(self):
         self.items_list.clear()
+        self.downloaded_items.clear() # clear dowloaded items
+
         # remove stretch first
         item = self.main_layout.takeAt(self.main_layout.count() - 1)
         if item:
@@ -487,6 +538,9 @@ class YtScreen(QFrame):
         if item_id:
             item_obj = self.items_list[item_id]
             item_obj.set_song_id(song_id)
+
+            # this object to downloaded_items to broadcast message...
+            self.downloaded_items[song_id] = item_obj
 
             # this is helpful when just need to add_song id...
             if change_mode: # change mode to play
