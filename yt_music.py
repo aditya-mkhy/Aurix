@@ -411,7 +411,7 @@ class TrackRow(QWidget):
 
         else:
             print(f"[yt-screen][trackrow][broadcast] => not implemented for type : {type}")
-            
+
 
     def set_mode(self, mode: str):
         print(f"Setting State : {mode}")
@@ -499,7 +499,7 @@ class YtScreen(QFrame):
 
         self.items_list: List[TrackRow] = [] # store all the TrackRow
 
-        self.downloaded_items: Dict[int, TrackRow]
+        self.downloaded_items: Dict[int, TrackRow] = {}
 
         # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
         # pix  = QPixmap(icon_path)
