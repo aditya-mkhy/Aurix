@@ -1,9 +1,10 @@
 import os
-from pygame import mixer
 from PyQt5.QtCore import QTimer, pyqtSignal, QObject
 from PyQt5.QtGui import QPixmap
 from helper import get_mp3_metadata
 from util import is_mp3, MUSIC_DIR_PATH, dict_format
+
+MIXER = None #
 
 def get_files():
     music_files = []
@@ -66,9 +67,19 @@ class PlayerEngine(QObject):
         self.elapsed_sec = 0
         self.duration = 0
 
+
+    def init(self):
+        global MIXER
+    
+        if MIXER is not None:
+            return
+        
+        from pygame import mixer
+        MIXER = mixer
         self._init_mixer(freq=48000, channels=2, out_dev="default")
         
     def init_play(self, song_info: dict, out_dev = None):
+        self.init() # init pygame..
         self.play(song_info=song_info, out_dev=out_dev)
         self.play_toggled()
 
@@ -77,19 +88,19 @@ class PlayerEngine(QObject):
             # everything is same as previous init.. pass
             return
         
-        mixer.quit() # remove prev init
+        MIXER.quit() # remove prev init
         self._freq = freq
         self._channels = channels
         self._out_dev = out_dev
 
         if out_dev != "default":
-            mixer.init(devicename=self._out_dev, frequency=self._freq, channels = self._channels)
+            MIXER.init(devicename=self._out_dev, frequency=self._freq, channels = self._channels)
 
         else:
-            mixer.init(frequency=freq, channels=channels)
+            MIXER.init(frequency=freq, channels=channels)
 
         # set the prevous or default volume
-        mixer.music.set_volume(self._volume)
+        MIXER.music.set_volume(self._volume)
 
 
      
@@ -97,7 +108,7 @@ class PlayerEngine(QObject):
         self.song_info = song_info # song info
         print(f"songinfo => {song_info}")
         print(dict_format(song_info))
-        
+
         path = song_info['path']
 
         if not os.path.isfile(path):
@@ -128,13 +139,13 @@ class PlayerEngine(QObject):
         self.song_id = self.song_info['id'] # current song id
         
         self.duration = int(duration) * 1000
-        mixer.music.load(path)
+        MIXER.music.load(path)
 
         # emit setTrackInfo
         self.setTrackInfo.emit(self.song_id, title, subtitle, liked, cover_path, duration)
 
         # play...
-        mixer.music.play()
+        MIXER.music.play()
         self.elapsed_sec = 0
         self._timer.start()
 
@@ -159,9 +170,9 @@ class PlayerEngine(QObject):
         # mixer.music.play(1, sec)
         
         try:
-            mixer.music.set_pos(sec)
+            MIXER.music.set_pos(sec)
         except:
-            mixer.music.play(1, sec)
+            MIXER.music.play(1, sec)
 
         self.elapsed_sec = (sec * 1000)
 
@@ -205,7 +216,7 @@ class PlayerEngine(QObject):
 
     def stop(self):
         self._timer.stop()
-        mixer.music.stop()
+        MIXER.music.stop()
         self.setPlaying.emit(False)
         self.broadcastMsg.emit("active", self.song_id, False)
         
@@ -215,11 +226,11 @@ class PlayerEngine(QObject):
 
     def play_toggled(self):
         if self.is_playing(): # playing -> paused
-            mixer.music.pause()
+            MIXER.music.pause()
             self._is_paused = True
 
         elif self._is_paused: # paused -> resuming
-            mixer.music.unpause()
+            MIXER.music.unpause()
             self._is_paused = False
 
         else: # song ended...
@@ -238,18 +249,18 @@ class PlayerEngine(QObject):
 
     def set_volume(self, vol: float):
         vol = max(0.0, min(1.0, float(vol)))
-        mixer.music.set_volume(vol)
+        MIXER.music.set_volume(vol)
         self._volume = vol # to re-init
 
     def is_playing(self) -> bool:
-        return mixer.music.get_busy() and not self._is_paused
+        return MIXER.music.get_busy() and not self._is_paused
     
 
     def _update_position(self):
         if self._is_paused:
             return
         
-        if not mixer.music.get_busy():
+        if not MIXER.music.get_busy():
             self.setSeekPos.emit(self.duration)
             self.stop()
             return

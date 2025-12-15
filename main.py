@@ -181,7 +181,7 @@ class MusicMainWindow(QMainWindow):
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
 
-        QTimer.singleShot(0, self.load_basic_settings)
+        QTimer.singleShot(10, self.load_basic_settings)
 
 
     def save_like_dislike_song(self, song_id: int, value: int):
@@ -299,7 +299,7 @@ class MusicMainWindow(QMainWindow):
         # loading the last played song
         if prev_song_id is not None:
             song_info = self.dataBase.get_song(song_id=prev_song_id)
-            self.playerEngine.init_play(song_info)
+            QTimer.singleShot(10, lambda info = song_info: self.playerEngine.init_play(info))
 
         self.is_setting = False
 
