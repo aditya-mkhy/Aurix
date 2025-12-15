@@ -526,7 +526,7 @@ class PlaylistSection(QWidget):
         Add a PlaylistCard title to this section.
         If top=True, inserts at top; otherwise appends at the end.
         """
-        item = QListWidgetItem(self._list)
+        item = QListWidgetItem()
 
         song_card = SongCard(song_id, title, subtitle, path, cover_path)
         song_card.playRequested.connect(self.request_play)
