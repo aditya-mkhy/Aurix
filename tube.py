@@ -111,8 +111,8 @@ def gen_thumbnail_path():
 
     
 def gen_path(title: str, vid: str, artists: list = None) -> str | None:
+    artists = [artist['name'] for artist in artists] # dict into list
 
-    print(f"artist.. =>  {artists}")
     title_path = make_title_path(title)
     filename = f"{title_path}.mp3"
 
@@ -143,7 +143,6 @@ def gen_path(title: str, vid: str, artists: list = None) -> str | None:
     if not os.path.exists(path):
         return path
     # if still exits.. means all ready downloaded..
-
 
 
 class Dtube(QThread): # download tube

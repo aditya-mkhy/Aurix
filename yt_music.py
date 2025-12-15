@@ -552,18 +552,19 @@ class YtScreen(QFrame):
                 widget.deleteLater()
 
     def songAlreadyexists(self, item_id: int, song_id: int, change_mode = True):
-        if item_id:
-            item_obj = self.items_list[item_id]
-            item_obj.set_song_id(song_id)
+        if item_id is None:
+            return
 
-            # this object to downloaded_items to broadcast message...
-            self.downloaded_items[song_id] = item_obj
+        item_obj = self.items_list[item_id]
+        item_obj.set_song_id(song_id)
 
-            # this is helpful when just need to add_song id...
-            if change_mode: # change mode to play
-                item_obj.set_mode("play")
+        # this object to downloaded_items to broadcast message...
+        self.downloaded_items[song_id] = item_obj
 
-            print(f"[SongAlreadyexists] Song already exists with id : {song_id}")
+        # this is helpful when just need to add_song id...
+        if change_mode: # change mode to play
+            item_obj.set_mode("play")
+
 
     def config_one(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap):
         track_id = len(self.items_list)
@@ -620,11 +621,10 @@ class YtScreen(QFrame):
 
     def search_call(self, query: str):
         print(f"YTSearch Query : {query}")
-
+        
         thread = YTSearchThread(query=query, parent=self)
         thread.finished.connect(self.config_search)
         thread.start()
-        print(f"start thread_id ==> {thread}")
 
         if not hasattr(self, "_search_threads"):
             self._search_threads = []
@@ -671,7 +671,7 @@ class YtScreen(QFrame):
 
 
     def _download_requested(self, title: str, subtitle: str, artists: list, vid: str, track_id: int):
-        print(f"Track[{vid}] [download request] => {title}")
+        print(f"TRACK[{track_id}] [download request] VID[{vid}] => {title}")
 
         if not vid:
             print(f"===> Path is empty")
@@ -681,6 +681,7 @@ class YtScreen(QFrame):
         thread.finished.connect(self.download_finished)
         thread.progress.connect(self.download_progress)
         thread.start()
+        
         print(f"start thread_id ==> {thread}")
 
         if not hasattr(self, "_down_threads"):
