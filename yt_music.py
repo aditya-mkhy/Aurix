@@ -195,8 +195,12 @@ class HoverThumb(QWidget):
         if value:
             self.overlay.show()
             self.download_btn.show()
-            self.download_btn.clicked.disconnect(self._play_requested)
-            self.download_btn.clicked.connect(self.playToggleRequested.emit)
+            try:
+                self.download_btn.clicked.disconnect(self._play_requested)
+            except:
+                pass
+
+            self.download_btn.clicked.connect(self._play_toggle_request)
             self.mode = "active"
 
         else:
@@ -204,9 +208,16 @@ class HoverThumb(QWidget):
             self.overlay.hide()
             self.download_btn.show()
             self.download_btn.setIcon(self.play_icon)
-            self.download_btn.clicked.disconnect(self.playToggleRequested.emit)
+            try:
+                self.download_btn.clicked.disconnect(self._play_toggle_request)
+            except:
+                pass
+
             self.download_btn.clicked.connect(self._play_requested)
             self.mode = "play"
+
+    def _play_toggle_request(self):
+        self.playToggleRequested.emit()
 
     def set_play(self, value):
         if value:
