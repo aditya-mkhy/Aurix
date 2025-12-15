@@ -244,30 +244,3 @@ if __name__ == "__main__":
     db = DataBase()
     basic = db.get_basic()
     print(basic)
-
-    idd = "usvVGXFIpTM"
-    print(db.get_songid_by_vid(idd))
-
-
-    # db.add_song("Tu har lamha", "Bobby-Imran Topic", "aditya", "", 400, 1, 1, 34, "tuhar.mp3", "none")
-    # db.add_song("Ve haaniyaan", "Palak & Adi", "aditya", "", 200, 1, 1, 3, "vehniya.mp3", "tuhar.mp3")
-    # songs = db.get_song(song_id=1)
-    # print(db.dict_format(songs))
-
-    # print("-------update----------------")
-    # db.update_song(1, title="Love you Plaku", subtitle = "i want you", cover_path = "plak.jpg")
-
-    # songs = db.get_song(song_id=1)
-    # print(db.dict_format(songs))
-
-    # db.add_playlist("eng songs", "best eng song", "Aditya Mukhiya", 100, 20, 0, "aditya.png")
-
-    # playlists = db.get_playlist(playlist_id=1)
-    # print(db.dict_format(playlists))
-
-    # db.add_playlist_song(1, 20)
-
-    # pl_songs = db.get_playlist_song(1)
-    # print(db.dict_format(pl_songs))
-
-    # db.update_playlist(1, title = "Fav Song", subtitle= "My fav song")
