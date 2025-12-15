@@ -33,11 +33,12 @@ class LoadFiles(QObject):
         self.count = 0
         self.batch_size = 10
 
-        self.all_songs = None
+        self.all_songs = []
 
-    def add_song_batch(self, from_index: int):
+    def add_song_batch(self, start_index: int):
+        end_index = start_index + self.batch_size
 
-        for song in self.all_songs[from_index : from_index + self.batch_size]:
+        for song in self.all_songs[start_index : end_index]:
             if not os.path.exists(song['path']):
                 print(f"PathNotFound => {song['path']}")
                 # add to delete later
@@ -51,9 +52,8 @@ class LoadFiles(QObject):
 
             self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], song['cover_path'])
 
-        from_index += self.batch_size
-        if from_index < len(self.all_songs):
-            QTimer.singleShot(300, lambda: self.add_song_batch(from_index))
+        if end_index < len(self.all_songs):
+            QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
 
         else:
             self.finished.emit(True)
@@ -61,8 +61,7 @@ class LoadFiles(QObject):
 
     def run(self):
         self.all_songs = self.dataBase.get_song()
-        from_index = 0
-        self.add_song_batch(from_index)
+        self.add_song_batch(0)
 
 
 
