@@ -404,6 +404,9 @@ class BottomBar(QWidget):
         # set cover image
         self.cover.setPixmap(round_pix_form_path(cover_path, 80, 80, 6))
 
+        # update - like-dislike
+        self.set_like_dislike(value=liked, is_emmit=False)
+
 
     def set_position(self, seconds: int):
         self._position = seconds // 1000

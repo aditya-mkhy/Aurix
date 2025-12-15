@@ -204,11 +204,11 @@ class DataBase():
               return row
         
 
-        self.cursor.execute("SELECT * FROM songs")
+        self.cursor.execute("SELECT * FROM songs ORDER BY id DESC")
         return self.cursor.fetchall()
     
     def get_all_song_id(self):
-        self.cursor.execute("SELECT id FROM songs")
+        self.cursor.execute("SELECT id FROM songs ORDER BY id DESC")
         all_song_id = [song['id'] for song in self.cursor.fetchall()]
         return all_song_id
     

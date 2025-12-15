@@ -175,6 +175,11 @@ class MusicMainWindow(QMainWindow):
         print(f"song_id => {song_id} value => {value}")
         self.dataBase.update_song(song_id, liked = value)
 
+        if value == 2:
+            # this means user dislike the song.. 
+            # so skip this one and play next from all_song_list
+            self.play_next_track(song_id=song_id)
+
     def check_for_song_existance(self, item_id: int, vid: str):
         song_id = self.dataBase.get_songid_by_vid(vid)
         if song_id is None:

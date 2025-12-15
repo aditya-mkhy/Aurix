@@ -111,6 +111,8 @@ def gen_thumbnail_path():
 
     
 def gen_path(title: str, vid: str, artists: list = None) -> str | None:
+
+    print(f"artist.. =>  {artists}")
     title_path = make_title_path(title)
     filename = f"{title_path}.mp3"
 
