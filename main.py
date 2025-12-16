@@ -112,8 +112,9 @@ class MusicMainWindow(QMainWindow):
         # middle_frame.setStyleSheet("background-color: green;")
 
         # sidebar
-        self.sidebar = Sidebar(parent=self, nav_call=self._nav_call)
+        self.sidebar = Sidebar(parent=self)
         self.sidebar.requestCreatePlaylist.connect(self.req_create_playlist)
+        self.sidebar.navCall.connect(self._nav_call)
         middle_layout.addWidget(self.sidebar)
 
 
@@ -189,6 +190,35 @@ class MusicMainWindow(QMainWindow):
         print(f"Title   : {title}")
         print(f"Desc    : {desc}")
         print(f"Privacy : {privacy}")
+
+        playlist_id = self.dataBase.add_playlist(
+            title=title,
+            subtitle=desc,
+            author= "Aditya Mukhiya",
+            count=0,
+            duration=0,
+            plays = 0,
+            cover_path=""
+        )
+
+        if playlist_id is None:
+            print(f"Failed to create Playlist : {title}")
+
+            # playlist is not create
+            # maybe it already exists..
+            playlist_id = self.dataBase.get_playlist_id_by_title(title=title)
+
+            if playlist_id is None: # not found
+                print(f"Unknow Error while checking for existance for playlist : {title}")
+                return
+            
+            # found... then open that playlist.....
+            # logic will be added later
+            return
+        
+        # create playlist on sidebar
+        self.sidebar.create_playlist(playlist_id, title, desc)
+
 
     def save_like_dislike_song(self, song_id: int, value: int):
         print(f"song_id => {song_id} value => {value}")

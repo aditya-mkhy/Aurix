@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
 from PyQt5.QtGui import QIcon, QFont
 from playlist import CreatePlaylistPopup
+from typing import Dict
 
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
@@ -13,10 +14,10 @@ class PlaylistArea(QScrollArea):
         self.setWidgetResizable(True)
 
         self.container = QWidget()
-        self.layout = QVBoxLayout(self.container)
-        self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setContentsMargins(0, 0, 8, 0)
-        self.layout.setSpacing(0)
+        self.my_layout = QVBoxLayout(self.container)
+        self.my_layout.setAlignment(Qt.AlignTop)
+        self.my_layout.setContentsMargins(0, 0, 8, 0)
+        self.my_layout.setSpacing(0)
 
         self.setWidget(self.container)
 
@@ -83,16 +84,16 @@ class PlaylistArea(QScrollArea):
 
 
 
-
     def add_playlist(self, item_widget):
-        self.layout.addWidget(item_widget)
+        self.my_layout.addWidget(item_widget)
 
 
 
 class PlaylistItem(QWidget):
-    def __init__(self, title: str, subtitle: str, parent=None):
+    def __init__(self, playlist_id: int, title: str, subtitle: str, parent=None):
         super().__init__(parent)
         self.title_text = title
+        self.playlist_id = playlist_id
         self.setCursor(Qt.PointingHandCursor)
 
         self.setFixedHeight(70)
@@ -262,12 +263,10 @@ class NavButton(QPushButton):
 
 class Sidebar(QFrame):
     requestCreatePlaylist = pyqtSignal(str, str, str)
+    navCall = pyqtSignal(str)
 
-    def __init__(self, parent = None, nav_call = None):
+    def __init__(self, parent = None):
         super().__init__(parent)
-
-        # fucntions call
-        self.nav_call = nav_call
 
         self.setFixedWidth(320)
         self.setStyleSheet("background-color: #000000; border-right: 1px solid #262626;")
@@ -338,17 +337,19 @@ class Sidebar(QFrame):
 
         layout.addSpacing(20)
 
-        playlist_scroll = PlaylistArea()
-        layout.addWidget(playlist_scroll)
+        self.playlist_scroll = PlaylistArea()
+        layout.addWidget(self.playlist_scroll)
+
+        self.playlists_by_id: Dict[int : PlaylistItem] = {}
 
 
-        playlist_scroll.add_playlist(PlaylistItem("Liked Music", "Auto playlist"))
-        playlist_scroll.add_playlist(PlaylistItem("EngFav", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("Mahadev songs", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("hindi songs", "Palak Thakur"))
-        playlist_scroll.add_playlist(PlaylistItem("Eng Love", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("Best songs", "Aditya Mukhiya"))
-        playlist_scroll.add_playlist(PlaylistItem("sleep", "Aditya Mukhiya"))
+    def create_playlist(self, playlist_id: int, title: str, subtitle: str):
+        playlist_item = PlaylistItem(playlist_id, title, subtitle)
+        self.playlist_scroll.add_playlist(playlist_item)
+
+        # add object with id
+        self.playlists_by_id[playlist_id] = playlist_item
+
 
     def open_playlist_popup(self):
         main = self.window()   # top-level window
@@ -372,20 +373,22 @@ class Sidebar(QFrame):
         self.explore_nav_btn.de_activate()
         self.library_nav_btn.de_activate()
         self.home_nav_btn.activate()
-        self.nav_call("home")
+        self.navCall.emit("home")
         
 
     def show_library(self):
         self.explore_nav_btn.de_activate()
         self.home_nav_btn.de_activate()
         self.library_nav_btn.activate()
-        self.nav_call("library")
+        self.navCall.emit("library")
+
 
     def show_explore(self):
         self.home_nav_btn.de_activate()
         self.library_nav_btn.de_activate()
         self.explore_nav_btn.activate()
-        self.nav_call("yt")
+        self.navCall.emit("yt")
+
 
     
         

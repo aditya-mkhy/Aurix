@@ -75,7 +75,11 @@ class DataBase():
         
         if commit:
             self.commit()
+        
+        return self.get_playlist_id_by_title(title=title)
 
+    
+    def get_playlist_id_by_title(self, title: str):
         self.cursor.execute("SELECT id FROM playlist WHERE title=?", (title,))
         row = self.cursor.fetchone()
         if row is None:
