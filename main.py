@@ -339,6 +339,11 @@ class MusicMainWindow(QMainWindow):
 
         self.is_setting = False
 
+        # load playlist. on sidebar...
+        playlists = self.dataBase.get_playlist()
+        for playlist in playlists:
+            self.sidebar.create_playlist(playlist['id'], playlist['title'], playlist['subtitle'])
+
         # loading data..
         self.loader.run()
 
