@@ -59,7 +59,7 @@ class DataBase():
     def add_playlist(
             self, title: str, subtitle: str, author: str, count: int, 
             duration: int, plays: int, cover_path: str, commit = True
-        ):
+        ) -> int | None:
             
         try:
             self.cursor.execute(
@@ -71,12 +71,18 @@ class DataBase():
         except sqlite3.IntegrityError:
             # handle duplicate
             print(f"Playlist with title '{title}' already exists")
-            return False
+            return
         
         if commit:
             self.commit()
 
-        return True
+        self.cursor.execute("SELECT id FROM playlist WHERE title=?", (title,))
+        row = self.cursor.fetchone()
+        if row is None:
+            return
+        
+        return row["id"]
+
     
     def get_playlist(self, playlist_id: int = None):
         if playlist_id is not None:
