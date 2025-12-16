@@ -113,7 +113,7 @@ class PlaylistItem(QWidget):
         title_lbl.setStyleSheet("color: #FFFFFF; font-weight: 800; ")
 
         subtitle_lbl = QLabel(subtitle)
-        subtitle_lbl.setFont(QFont("Segoe UI", 9))
+        subtitle_lbl.setFont(QFont("Segoe UI", 9, QFont.DemiBold))
         subtitle_lbl.setStyleSheet("color: #b3b3b3;")
 
         text_box.addWidget(title_lbl)
@@ -341,6 +341,9 @@ class Sidebar(QFrame):
         layout.addWidget(self.playlist_scroll)
 
         self.playlists_by_id: Dict[int : PlaylistItem] = {}
+
+        # add songs
+        self.create_playlist(0, "Liked Music", "📌 Auto playlist")
 
 
     def create_playlist(self, playlist_id: int, title: str, subtitle: str):
