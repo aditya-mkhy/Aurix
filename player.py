@@ -106,9 +106,7 @@ class PlayerEngine(QObject):
      
     def play(self, song_info: dict, out_dev = None):
         self.song_info = song_info # song info
-        print(f"songinfo => {song_info}")
-        print(dict_format(song_info))
-
+        
         path = song_info['path']
 
         if not os.path.isfile(path):

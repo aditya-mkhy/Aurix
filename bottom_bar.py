@@ -414,7 +414,6 @@ class BottomBar(QWidget):
         self._update_time()
 
     def set_playing(self, playing: bool):
-        print(f"PlayingSatatusRecv : {playing}")
         self._playing = bool(playing)
 
         self.play_btn.setChecked(self._playing)
