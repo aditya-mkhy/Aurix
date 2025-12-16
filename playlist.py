@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QEvent
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QDialog,
@@ -14,6 +14,8 @@ from PyQt5.QtGui import QIcon, QFont, QPixmap, QColor, QPalette
 # Create Playlist Context Popup
 # ---------------------------------
 class CreatePlaylistPopup(QDialog):
+    requestCreatePlaylist = pyqtSignal(str, str, str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -21,12 +23,12 @@ class CreatePlaylistPopup(QDialog):
 
         # Context-menu like behavior
         self.setWindowFlags(
-            Qt.Tool |                 # <-- KEY FLAG
-            Qt.FramelessWindowHint |
-            Qt.WindowStaysOnTopHint
+            Qt.Tool |
+            Qt.FramelessWindowHint
         )
 
         self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.setFocusPolicy(Qt.StrongFocus)
 
         self._build_ui()
 
@@ -185,14 +187,24 @@ class CreatePlaylistPopup(QDialog):
 
 
     def focusOutEvent(self, event):
-        # self.close()
-        pass
+        self.close()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            if not self.geometry().contains(event.globalPos()):
+                self.close()
+                return True
+        return False
+
+    def closeEvent(self, event):
+        QApplication.instance().removeEventFilter(self)
+        super().closeEvent(event)
 
     def _create(self):
-        data = {
-            "title": self.title_edit.text(),
-            "description": self.desc_edit.text(),
-            "privacy": self.privacy_combo.currentText(),
-        }
-        print("Playlist created:", data)
+        self.requestCreatePlaylist.emit(
+            self.title_edit.text(),
+            self.desc_edit.text(),
+            self.privacy_combo.currentText(),
+        )
+
         self.close()

@@ -113,7 +113,9 @@ class MusicMainWindow(QMainWindow):
 
         # sidebar
         self.sidebar = Sidebar(parent=self, nav_call=self._nav_call)
+        self.sidebar.requestCreatePlaylist.connect(self.req_create_playlist)
         middle_layout.addWidget(self.sidebar)
+
 
         # HOME SCREEN
         self.home_screen = ContentArea(music_dirs=music_dirs)
@@ -183,6 +185,10 @@ class MusicMainWindow(QMainWindow):
 
         QTimer.singleShot(10, self.load_basic_settings)
 
+    def req_create_playlist(self, title: str, desc: str, privacy: str):
+        print(f"Title   : {title}")
+        print(f"Desc    : {desc}")
+        print(f"Privacy : {privacy}")
 
     def save_like_dislike_song(self, song_id: int, value: int):
         print(f"song_id => {song_id} value => {value}")
@@ -379,3 +385,5 @@ if __name__ == "__main__":
     win.show()
     dark_title_bar(win)   # make Windows title bar dark
     sys.exit(app.exec_())
+
+

@@ -1,7 +1,8 @@
 import os
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
 from PyQt5.QtGui import QIcon, QFont
+from playlist import CreatePlaylistPopup
 
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
@@ -260,6 +261,8 @@ class NavButton(QPushButton):
 
 
 class Sidebar(QFrame):
+    requestCreatePlaylist = pyqtSignal(str, str, str)
+
     def __init__(self, parent = None, nav_call = None):
         super().__init__(parent)
 
@@ -300,16 +303,17 @@ class Sidebar(QFrame):
 
 
         # New Playlist button
-        add_playlist = QPushButton(" New Playlist")       
-        add_playlist.setFixedHeight(55)
+        self.add_playlist = QPushButton(" New Playlist")       
+        self.add_playlist.setFixedHeight(55)
 
-        add_playlist.setFont(QFont("Segoe UI", 12, QFont.Black))
-        add_playlist.setCursor(Qt.PointingHandCursor)
-        add_playlist.setIcon(QIcon("./res/plus.png"))
-        add_playlist.setIconSize(QSize(22, 22))
+        self.add_playlist.setFont(QFont("Segoe UI", 12, QFont.Black))
+        self.add_playlist.setCursor(Qt.PointingHandCursor)
+        self.add_playlist.setIcon(QIcon("./res/plus.png"))
+        self.add_playlist.setIconSize(QSize(22, 22))
 
+        self.add_playlist.clicked.connect(self.open_playlist_popup)
 
-        add_playlist.setStyleSheet("""
+        self.add_playlist.setStyleSheet("""
             QPushButton {
                 text-align: left;
                 color: #ffffff;
@@ -329,7 +333,7 @@ class Sidebar(QFrame):
             }
         """)
 
-        layout.addWidget(add_playlist)
+        layout.addWidget(self.add_playlist)
 
 
         layout.addSpacing(20)
@@ -345,6 +349,24 @@ class Sidebar(QFrame):
         playlist_scroll.add_playlist(PlaylistItem("Eng Love", "Aditya Mukhiya"))
         playlist_scroll.add_playlist(PlaylistItem("Best songs", "Aditya Mukhiya"))
         playlist_scroll.add_playlist(PlaylistItem("sleep", "Aditya Mukhiya"))
+
+    def open_playlist_popup(self):
+        main = self.window()   # top-level window
+
+        createPlaylist = CreatePlaylistPopup(parent=main)
+        createPlaylist.requestCreatePlaylist.connect(self.requestCreatePlaylist.emit)
+
+        center = main.frameGeometry().center()
+
+        createPlaylist.move(
+            center.x() - createPlaylist.width() // 2,
+            center.y() - createPlaylist.height() // 2
+        )
+
+        createPlaylist.show()
+
+
+
 
     def show_home(self):
         self.explore_nav_btn.de_activate()
