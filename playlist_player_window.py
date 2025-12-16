@@ -47,9 +47,18 @@ class SongRow(QWidget):
             )
         except Exception:
             pix = QPixmap().scaled(56, 56)
-        self.cover.setPixmap(pix)
-        self.cover.setFixedSize(56, 56)
-        self.cover.setStyleSheet("border-radius: 6px;")
+        
+        size = 56
+        radius = 4
+
+        self.cover.setPixmap(round_pix_form_path(
+            path="./res/cover2.jpg",
+            width=size,
+            height=size,
+            radius=radius
+        ))
+        self.cover.setFixedSize(size, size)
+        self.cover.setStyleSheet(f"border-radius: {radius}px;")
         stacked.addWidget(self.cover)
 
         # overlay play button (initially hidden)
