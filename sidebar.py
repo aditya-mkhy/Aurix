@@ -90,10 +90,15 @@ class PlaylistArea(QScrollArea):
 
 
 class PlaylistItem(QWidget):
+    openRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int)
+    playToggleRequested = pyqtSignal()
+
     def __init__(self, playlist_id: int, title: str, subtitle: str, parent=None):
         super().__init__(parent)
         self.title_text = title
         self.playlist_id = playlist_id
+        self.is_active = True
         self.setCursor(Qt.PointingHandCursor)
 
         self.setFixedHeight(70)
@@ -122,10 +127,13 @@ class PlaylistItem(QWidget):
         main.addLayout(text_box, 1)
 
         # ---- Right side: circular play button ----
+        self.play_icon = QIcon("res/play.png")
+        self.pause_icon = QIcon("res/pause.png")
+
         self.play_btn = QPushButton()
         self.play_btn.setCursor(Qt.PointingHandCursor)
         self.play_btn.setFixedSize(34, 34)
-        self.play_btn.setIcon(QIcon("res/play.png"))  # or use your icon
+        self.play_btn.setIcon(self.play_icon)  # or use your icon
         self.play_btn.setIconSize(QSize(20, 20))
         self.play_btn.setStyleSheet("""
             QPushButton {
@@ -161,7 +169,60 @@ class PlaylistItem(QWidget):
                 border-radius: 12px;
             }
         """
+
+        self.active_style = """
+            QWidget {
+                background-color: #242424;
+                border-radius: 12px;
+            }
+        """
+        
         self.setStyleSheet(self.normal_style)
+
+    def set_active(self, value):
+        if value:
+            self.is_active = True
+            self.setStyleSheet(self.active_style)
+
+        else:
+            self.is_active = True
+            self.setStyleSheet(self.normal_style)
+
+    def set_playing(self, value):
+        if value:
+            self.play_btn.setIcon(self.pause_icon)
+            self.play_btn.setStyleSheet("""
+                        QPushButton {
+                            background-color: transparent;
+                            border-radius: 17px;
+                            border: none;
+                            color: #000000;
+                        }
+                        QPushButton:hover {
+                            background-color: #e5e5e5;
+                        }
+                        QPushButton:pressed {
+                            background-color: #d1d1d1;
+                        }
+            """)
+
+        else:
+            self.play_btn.setIcon(self.play_btn)
+            self.play_btn.setStyleSheet("""
+                        QPushButton {
+                            background-color: #FFFFFF;
+                            border-radius: 17px;
+                            border: none;
+                            color: #000000;
+                        }
+                        QPushButton:hover {
+                            background-color: #e5e5e5;
+                        }
+                        QPushButton:pressed {
+                            background-color: #d1d1d1;
+                        }
+            """)
+
 
     # ---------- interactions ----------
     def mousePressEvent(self, event):
@@ -169,20 +230,28 @@ class PlaylistItem(QWidget):
         if event.button() == Qt.LeftButton:
             # if click NOT inside play button
             if not self.play_btn.geometry().contains(event.pos()):
+                # emit playlist id...
+                self.openRequested.emit(self.playlist_id)
                 print(f"[UI] open playlist: {self.title_text}")
+
         super().mousePressEvent(event)
 
     def _on_play_clicked(self):
+        self.playRequested.emit(self.playlist_id)
         print(f"[UI] play playlist: {self.title_text}")
 
+
     def enterEvent(self, event):
-        self.setStyleSheet(self.hover_style)
-        self.play_btn.show()
+        if not self.is_active:
+            self.setStyleSheet(self.hover_style)
+            self.play_btn.show()
+
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.setStyleSheet(self.normal_style)
-        self.play_btn.hide()
+        if not self.is_active:
+            self.setStyleSheet(self.normal_style)
+            self.play_btn.hide()
         super().leaveEvent(event)
 
 

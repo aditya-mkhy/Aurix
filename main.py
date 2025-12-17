@@ -13,7 +13,7 @@ from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
 from typing import List
-from playlist_player_window import PlaylistPlayerWindow
+from playlist_win import PlaylistPlayerWindow
 
 class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
@@ -135,6 +135,8 @@ class MusicMainWindow(QMainWindow):
         self.yt_screen.checkForExistance.connect(self.check_for_song_existance)
         self.yt_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
 
+        # playlist player window...
+        self.playlistPlayerWin = PlaylistPlayerWindow(parent=self)
 
         outer.addWidget(middle_frame, 1)
 
@@ -142,6 +144,7 @@ class MusicMainWindow(QMainWindow):
         self.content_area.addWidget(self.home_screen)      # index 0
         self.content_area.addWidget(self.library_screen)   # index 1
         self.content_area.addWidget(self.yt_screen)   # index 2
+        self.content_area.addWidget(self.playlistPlayerWin) # 3
 
         middle_layout.addWidget(self.content_area, 1)
         self.content_area.setCurrentIndex(0)
@@ -185,6 +188,19 @@ class MusicMainWindow(QMainWindow):
         self.all_song_list = self.dataBase.get_all_song_id()
 
         QTimer.singleShot(10, self.load_basic_settings)
+
+        # playlist_id = 1
+        # title = "Bath Song"
+        # desc = "uset to listen while bating"
+        # meta = "Playlist • Private • 2025\n123 views • 13 tracks • 55 minutes"
+        # cover_path = "./res/cover1.jpg"
+        # self.playlistPlayerWin.init_playlist(playlist_id, title, desc, meta, cover_path)
+        
+        # cover_path = "./res/cover2.jpg"
+
+        # songs = self.dataBase.get_song()
+        # for song in songs[:10]:
+        #     self.playlistPlayerWin.add_song(song['id'], song['title'], song['subtitle'], song['duration'], song['cover_path'])
 
     def req_create_playlist(self, title: str, desc: str, privacy: str):
         print(f"Title   : {title}")
@@ -404,6 +420,10 @@ class MusicMainWindow(QMainWindow):
 
         elif name == "yt":
             self.content_area.setCurrentIndex(2)
+
+        elif name == "playlist":
+            self.content_area.setCurrentIndex(3)
+
 
     def nativeEvent(self, eventType, message):
         return self.media_keys.nativeEvent(eventType, message)

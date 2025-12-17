@@ -355,8 +355,8 @@ class SongRow(QWidget):
 
 
 class PlaylistPlayerWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent = None):
+        super().__init__(parent=parent)
         self.setWindowTitle("Aurix – Playlist Player")
         self.resize(1200, 700)
 
