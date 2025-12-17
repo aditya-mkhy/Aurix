@@ -311,7 +311,7 @@ class SongRow(QWidget):
         """
         self._hover_style = """
             QWidget {
-                background-color: rgba(255, 255, 255, 0.02);
+                background-color: rgba(255, 255, 255, 0.1);
             }
         """
         self.setStyleSheet(self._base_style)
@@ -370,7 +370,7 @@ class PlaylistPlayerWindow(QWidget):
         self.last_hovered_idx = None
 
         main = QHBoxLayout(self)
-        main.setContentsMargins(76, 50, 0, 24)
+        main.setContentsMargins(0, 10, 0, 10)
         main.setSpacing(65)
 
         # LEFT: playlist big artwork + meta + buttons
@@ -379,6 +379,7 @@ class PlaylistPlayerWindow(QWidget):
         left_panel.setMaximumWidth(500)
 
         left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(76, 40, 0, 14)
         left_layout.setSpacing(0)
         left_layout.addSpacing(20)
 
@@ -497,24 +498,64 @@ class PlaylistPlayerWindow(QWidget):
 
         # RIGHT: song list
         right_layout = QVBoxLayout()
-        right_layout.setSpacing(8)
+        right_layout.setSpacing(0)
+        
 
 
         # Scroll area (only vertical)
         scroll = ScrollArea()
         right_layout.addWidget(scroll, 2)
 
+        container = QWidget()
+
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(76, 40, 50, 50)  # 👈 margins
+        container_layout.setSpacing(0)
+
+
         self.list = QListWidget()
+        self.list.setContentsMargins(76, 40, 0, 14)
         self.list.setSpacing(0)
         self.list.setFrameShape(QFrame.NoFrame)
+
+        # Optional but recommended
+        self.list.setSelectionMode(QListWidget.NoSelection)
+
         self.list.setStyleSheet("""
-            QListWidget { background: transparent; }
-            QListWidget::item:selected { background: rgba(255,255,255,0.03); }
+            QListWidget {
+                background: transparent;
+            }
+
+            QListWidget::viewport {
+                padding: 40px 0 14px 76px;
+            }
+
+            QListWidget::item {
+                background: transparent;
+            }
+
+            QListWidget::item:hover {
+                background: transparent;
+            }
+
+            QListWidget::item:selected {
+                background: transparent;
+            }
+
+            QListWidget::item:selected:!active {
+                background: transparent;
+            }
         """)
-        # right_layout.addWidget(self.list)
+
+
         scroll.setWidget(self.list)
 
         main.addLayout(right_layout, 2)
+
+        top_spacer = QListWidgetItem()
+        top_spacer.setSizeHint(QSize(0, 50))
+        top_spacer.setFlags(Qt.NoItemFlags)
+        self.list.addItem(top_spacer)
 
 
         # sample songs
@@ -525,6 +566,11 @@ class PlaylistPlayerWindow(QWidget):
             ("Saiyaara (Movie: Saiyaara)", "Faheem Abdullah, Arslan Nizami & Irshad Kamil • SAIYAARA", "6:11"),
             ("Iktara", "Amit Trivedi, Kavita Seth & Amit • Wake Up Sid", "4:14"),
             ("Halka Halka", "Rahat Fateh Ali Khan • Halka Halka", "4:34"),
+            ("Bad Liar", "Imagine Dragons", "4:21"),
+            ("Bad Liar", "Imagine Dragons", "4:21"),
+            ("Bad Liar", "Imagine Dragons", "4:21"),
+            ("Bad Liar", "Imagine Dragons", "4:21"),
+            ("Bad Liar", "Imagine Dragons", "4:21"),
             ("Bad Liar", "Imagine Dragons", "4:21"),
         ]
 
@@ -544,12 +590,13 @@ class PlaylistPlayerWindow(QWidget):
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
 
+
         # enable mouse tracking so viewport sends MouseMove events
-        self.list.setMouseTracking(True)
-        self.list.viewport().setMouseTracking(True)
+        # self.list.setMouseTracking(True)
+        # self.list.viewport().setMouseTracking(True)
 
         # install event filter on viewport to watch mouse movement & clicks
-        self.list.viewport().installEventFilter(self)
+        # self.list.viewport().installEventFilter(self)
 
         # clicking the big play should start first song (example)
         play_btn_big.clicked.connect(lambda: self.play_song(0))
