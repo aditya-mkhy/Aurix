@@ -19,8 +19,7 @@ from common import ScrollArea
 
 
 class HoverThumb(QWidget):
-    downloadRequested = pyqtSignal(str)
-    playRequested = pyqtSignal(str)
+    playRequested = pyqtSignal()
     playToggleRequested = pyqtSignal()
 
 
@@ -75,18 +74,14 @@ class HoverThumb(QWidget):
         self.play_btn.setIcon(self.play_icon)  # or use your icon
         self.play_btn.setIconSize(QSize(30, 30))
         self.play_btn.setCursor(Qt.PointingHandCursor)
+
         self.play_btn.clicked.connect(self._play_requested)
+
         self.play_btn.setStyleSheet("color: white;")
         ov_layout.addWidget(self.play_btn)
 
-
         # internal mode
         self.mode = "idle"
-
-
-    def _play_requested(self):
-        print("...PlaySignalOriginated... Play")
-        self.playRequested.emit("play")
 
 
     def set_mode(self, mode: str):
@@ -114,6 +109,8 @@ class HoverThumb(QWidget):
             self.play_btn.clicked.connect(self._play_toggle_request)
             print(f"SettingValue[Ative] for => {self}")
 
+    def _play_requested(self):
+        self.playRequested.emit()
 
 
     def set_active(self, value):
@@ -155,19 +152,17 @@ class HoverThumb(QWidget):
 
     
 class SongRow(QWidget):
-    downloadRequested = pyqtSignal(str, str, list, str, int)
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
 
 
-    def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
+    def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, song_id: int, parent=None):
         super().__init__(parent)
         self.title_txt = title
         self.subtitle_txt = subtitle
         self.artists = artists
         self.vid = vid
-        self.track_id = track_id
-        self.song_id = None
+        self.song_id = song_id
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(108)
@@ -179,7 +174,6 @@ class SongRow(QWidget):
 
         # cover
         self.thumb = HoverThumb(pix=pix, parent=self)
-        self.thumb.downloadRequested.connect(self._download_requested)
         self.thumb.playRequested.connect(self._play_requested)
         self.thumb.playToggleRequested.connect(self.playToggleRequested.emit)
         main.addWidget(self.thumb)
@@ -341,20 +335,9 @@ class SongRow(QWidget):
 
     def get_mode(self):
         return self.thumb.mode
-    
-    def set_song_id(self, song_id: int):
-        print(f"set_song_id ==> {song_id}")
-        self.song_id = song_id
 
-    def setProgress(self, value: int):
-        self.thumb.setProgress(value)
-
-    def _download_requested(self, txt):
-        print(f"Recieved [TrackRow] : {txt}")
-        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.artists, self.vid, self.track_id)
-
-    def _play_requested(self, txt):
-        print(f"Play Requested : {txt}")
+    def _play_requested(self):
+        print(f"Request Play : {self.song_id}")
         self.playRequested.emit(self.song_id)
 
 
@@ -382,7 +365,7 @@ class PlaylistPlayerWindow(QWidget):
         """)
 
         self.current_index = None
-        self.song_widgets = []  # list of SongRow objects
+        self.song_widgets: List[SongRow] = []  # list of SongRow objects
         self.last_hovered_idx = None
 
         main = QHBoxLayout(self)
@@ -552,6 +535,10 @@ class PlaylistPlayerWindow(QWidget):
             row = SongRow(t, a, [], "", pix, idx, self)
             item.setSizeHint(row.size())
 
+            # connects
+            row.playRequested.connect(self.request_play)
+            row.playToggleRequested.connect(self.play_toogle)
+
             self.song_widgets.append(row)
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
@@ -565,6 +552,32 @@ class PlaylistPlayerWindow(QWidget):
 
         # clicking the big play should start first song (example)
         play_btn_big.clicked.connect(lambda: self.play_song(0))
+
+        self.is_playing = True
+        self.song_id = None
+
+    def request_play(self, song_id: int):
+        print(f"Playing song with id : {song_id}")
+
+        if self.song_id is not None: # previus id
+            prev_row_obj = self.song_widgets[self.song_id]
+            prev_row_obj.set_broadcast("active", value=False) 
+
+        row_obj = self.song_widgets[song_id]
+        row_obj.set_broadcast("active", value=True)
+        self.song_id = song_id
+        
+        # on pause state...
+        QTimer.singleShot(200, lambda row = row_obj : row.set_broadcast("playing", value=True))
+
+    def play_toogle(self):
+        if self.song_id is None:
+            return
+        
+        self.is_playing = not self.is_playing
+        row_obj = self.song_widgets[self.song_id]
+        row_obj.set_broadcast("playing", value=self.is_playing)
+
 
     def eventFilter2(self, obj, event):
         # viewport mouse move -> manage hover overlay
@@ -620,7 +633,6 @@ class PlaylistPlayerWindow(QWidget):
         w.show_play_overlay(True)
 
     def play_song(self, index: int):
-        # central audio-starting handler. for now we just update UI state.
         print("Request play song:", index)
         self.on_song_play_requested(index)
 
