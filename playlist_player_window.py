@@ -1,19 +1,18 @@
 import sys
-from PyQt5.QtCore import Qt, QSize, QEvent, QPoint, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve
-from PyQt5.QtGui import QPixmap, QFont, QCursor, QIcon
+from PyQt5.QtCore import Qt, QSize, QEvent, pyqtSignal, QTimer
+from PyQt5.QtGui import QPixmap, QFont, QIcon
 
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QListWidget, QListWidgetItem,
-    QHBoxLayout, QVBoxLayout, QFrame, QStackedLayout,
-    QMenu, QGraphicsOpacityEffect
+    QHBoxLayout, QVBoxLayout, QFrame,
+    QMenu
 )
 from helper import round_pix_form_path
 
-from helper import CircularProgress, LoadingSpinner, ConvertingSpinner
-from helper import get_pixmap, round_pix
+from helper import round_pix
 from common import ScrollArea
-from typing import List, Dict
+from typing import List
 from util import trim_text
 from common import ScrollArea
 
