@@ -114,7 +114,7 @@ class PlaylistItem(QWidget):
 
         subtitle_lbl = QLabel(subtitle)
         subtitle_lbl.setFont(QFont("Segoe UI", 9, QFont.DemiBold))
-        subtitle_lbl.setStyleSheet("color: #b3b3b3;")
+        subtitle_lbl.setStyleSheet("color: #c8c8c8;")
 
         text_box.addWidget(title_lbl)
         text_box.addWidget(subtitle_lbl)

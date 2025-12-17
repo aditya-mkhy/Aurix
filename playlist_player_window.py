@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt, QSize, QEvent, QPoint
-from PyQt5.QtGui import QPixmap, QFont, QCursor
+from PyQt5.QtGui import QPixmap, QFont, QCursor, QIcon
+
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QListWidget, QListWidgetItem,
@@ -158,8 +159,13 @@ class PlaylistPlayerWindow(QWidget):
         main.setSpacing(65)
 
         # LEFT: playlist big artwork + meta + buttons
-        left_layout = QVBoxLayout()
-        left_layout.setSpacing(18)
+
+        left_panel = QWidget()
+        left_panel.setMaximumWidth(500)
+
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setSpacing(0)
+        left_layout.addSpacing(20)
 
         # collage / big cover
         big_cover = QLabel()
@@ -169,46 +175,110 @@ class PlaylistPlayerWindow(QWidget):
 
         big_pix = round_pix_form_path(path="./res/cover1.jpg", width=size, height=size, radius=radius)
         big_cover.setPixmap(big_pix)
-        big_cover.setFixedSize(size, size)
-        big_cover.setStyleSheet(f"border-radius: {radius}px;")
+        big_cover.setFixedHeight(size)
+        big_cover.setStyleSheet(f"border-radius: {radius}px; background-color: transparent; width: 100%;")
+        big_cover.setAlignment(Qt.AlignCenter)
         left_layout.addWidget(big_cover)
 
-        playlist_title = QLabel("most")
-        playlist_title.setFont(QFont("Segoe UI", 26, QFont.Bold))
-        playlist_title.setStyleSheet("margin-top: 8px;")
+        left_layout.addSpacing(18)
+
+
+        playlist_title = QLabel("Liked Music")
+        playlist_title.setFont(QFont("Segoe UI", 18, QFont.Bold))
+        playlist_title.setStyleSheet("background-color: transparent;")
+        playlist_title.setAlignment(Qt.AlignCenter)
         left_layout.addWidget(playlist_title)
 
-        meta = QLabel("Aditya Mukhiya\nPlaylist • Public • 2025\n123 views • 13 tracks • 55 minutes")
-        meta.setStyleSheet("color: #bdbdbd; margin-top: 6px;")
+        left_layout.addSpacing(2)
+
+
+        playlist_desc = QLabel("📌 Auto playlist")
+        playlist_desc.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        playlist_desc.setStyleSheet("color: #b3b3b3; background-color: transparent;")
+
+        playlist_desc.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(playlist_desc)
+
+        left_layout.addSpacing(20)
+
+        meta = QLabel("Playlist • Private • 2025\n123 views • 13 tracks • 55 minutes")
+        meta.setStyleSheet("color: #cdcdcd; font-size: 20px; font-weight: 450;")
+        meta.setAlignment(Qt.AlignCenter)
+
         left_layout.addWidget(meta)
+
+        left_layout.addSpacing(40)
 
         # control buttons row
         ctrl = QHBoxLayout()
-        play_btn_big = QPushButton("▶")
-        play_btn_big.setFixedSize(72, 72)
+        ctrl.addStretch()
+
+
+        edit_btn = QPushButton()
+        edit_btn.setFixedSize(54, 54)
+        edit_btn.setIcon(QIcon("res/edit.png"))  
+        edit_btn.setIconSize(QSize(32, 32))
+        edit_btn.setCursor(Qt.PointingHandCursor)
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1a1a1a;
+                border-radius: 27px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #2a2a2a;
+            }
+            QPushButton:pressed {
+                background-color: #141414;
+            }
+        """)
+        ctrl.addWidget(edit_btn)
+        ctrl.addSpacing(40)
+
+
+        play_btn_big = QPushButton()
+        play_btn_big.setFixedSize(84, 84)
+        play_btn_big.setIcon(QIcon("res/play.png"))  
+        play_btn_big.setIconSize(QSize(50, 50))
+        play_btn_big.setCursor(Qt.PointingHandCursor)
         play_btn_big.setStyleSheet("""
             QPushButton {
-                background: white; color: black; border-radius: 36px; font-size: 26px;
+                background: white; color: black; border-radius: 42px; padding-left: 8px;
             }
             QPushButton:hover { background: #efefef; }
         """)
         ctrl.addWidget(play_btn_big)
+        ctrl.addSpacing(40)
 
-        edit_btn = QPushButton("✎")
-        edit_btn.setFixedSize(42, 42)
-        edit_btn.setStyleSheet("color: #ddd; border: none; font-size: 18px;")
-        ctrl.addWidget(edit_btn)
 
-        more_btn = QPushButton("⋯")
-        more_btn.setFixedSize(42, 42)
-        more_btn.setStyleSheet("color: #ddd; border: none; font-size: 20px;")
+        more_btn = QPushButton()
+        more_btn.setFixedSize(54, 54)
+        more_btn.setIcon(QIcon("res/three-dot-menu.png"))  
+        more_btn.setIconSize(QSize(26, 26))
+        more_btn.setCursor(Qt.PointingHandCursor)
+
+        more_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1a1a1a;
+                border-radius: 27px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #2a2a2a;
+            }
+            QPushButton:pressed {
+                background-color: #141414;
+            }
+        """)
+
         ctrl.addWidget(more_btn)
-
         ctrl.addStretch()
+
+
         left_layout.addLayout(ctrl)
         left_layout.addStretch()
 
-        main.addLayout(left_layout, 1)
+        main.addWidget(left_panel, 1)
 
         # RIGHT: song list
         right_layout = QVBoxLayout()
