@@ -1,142 +1,373 @@
 import sys
-from PyQt5.QtCore import Qt, QSize, QEvent, QPoint
+from PyQt5.QtCore import Qt, QSize, QEvent, QPoint, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QPixmap, QFont, QCursor, QIcon
 
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QListWidget, QListWidgetItem,
-    QHBoxLayout, QVBoxLayout, QFrame, QStackedLayout
+    QHBoxLayout, QVBoxLayout, QFrame, QStackedLayout,
+    QMenu, QGraphicsOpacityEffect
 )
 from helper import round_pix_form_path
 
-class SongRow(QWidget):
-    """
-    Reusable single row widget for a song.
-    -> cover image with overlay play button
-    -> title + artist
-    -> duration right aligned
-    Methods:
-      set_active(bool)
-      show_play_overlay(bool)
-    """
-    def __init__(self, title, artist, duration, index):
-        super().__init__()
-        self.index = index
-        self.active = False
+from helper import CircularProgress, LoadingSpinner, ConvertingSpinner
+from helper import get_pixmap, round_pix
+from common import ScrollArea
+from typing import List, Dict
+from util import trim_text
+from common import ScrollArea
 
-        self.setFixedHeight(72)
-        self.setStyleSheet("""
-            QWidget { background: transparent; }
-            QWidget:hover { background-color: rgba(255,255,255,0.02); }
-        """)
 
-        main = QHBoxLayout(self)
-        main.setContentsMargins(10, 6, 10, 6)
-        main.setSpacing(12)
+class HoverThumb(QWidget):
+    downloadRequested = pyqtSignal(str)
+    playRequested = pyqtSignal(str)
+    playToggleRequested = pyqtSignal()
 
-        # cover container with stacked layout for overlay button
-        self.cover_container = QWidget()
-        self.cover_container.setFixedSize(56, 56)
-        self.cover_container.setStyleSheet("border-radius: 6px;")
-        stacked = QStackedLayout(self.cover_container)
-        stacked.setStackingMode(QStackedLayout.StackAll)
 
-        self.cover = QLabel()
-        try:
-            pix = QPixmap("./res/cover2.jpg").scaled(
-                56, 56, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
-            )
-        except Exception:
-            pix = QPixmap().scaled(56, 56)
-        
-        size = 56
-        radius = 4
+    def __init__(self, pix: QPixmap, parent=None):
+        super().__init__(parent)
 
-        self.cover.setPixmap(round_pix_form_path(
-            path="./res/cover2.jpg",
-            width=size,
-            height=size,
-            radius=radius
-        ))
-        self.cover.setFixedSize(size, size)
-        self.cover.setStyleSheet(f"border-radius: {radius}px;")
-        stacked.addWidget(self.cover)
+        size = 86
+        self.setFixedSize(size, size)
 
-        # overlay play button (initially hidden)
-        self.play_btn = QPushButton()
-        self.play_btn.setCursor(Qt.PointingHandCursor)
-        self.play_btn.setFixedSize(56, 56)
-        # style as translucent circle with triangle
-        self.play_btn.setStyleSheet("""
-            QPushButton {
-                background-color: rgba(0,0,0,120);
-                color: white;
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setPixmap(round_pix(pix, size, size, 6))
+
+        self.image_label.setStyleSheet(f"""
+            QLabel {{
                 border: none;
-                border-radius: 6px;
-                font-size: 18px;
-            }
-            QPushButton:hover {
-                background-color: rgba(0,0,0,170);
+                padding: 0;
+                border-radius: 14px;
+            }}
+        """)
+
+        main_layout.addWidget(self.image_label)
+
+        # ----- Overlay -----
+        self.overlay = QWidget(self)
+        self.overlay.setAttribute(Qt.WA_StyledBackground, True)
+        self.overlay.setStyleSheet("""
+            QWidget {
+                background: rgba(0, 0, 0, 110);
+                border-radius: 4px;
             }
         """)
-        self.play_btn.setText("▶")
-        stacked.addWidget(self.play_btn)
+        self.overlay.setGeometry(self.rect())
+        self.overlay.hide()
 
-        main.addWidget(self.cover_container)
+        ov_layout = QHBoxLayout(self.overlay)
+        ov_layout.setContentsMargins(0, 0, 0, 0)
+        ov_layout.setAlignment(Qt.AlignCenter)
 
-        # text area
-        text = QVBoxLayout()
-        text.setContentsMargins(0, 0, 0, 0)
-        text.setSpacing(3)
-        self.title_lbl = QLabel(title)
-        self.title_lbl.setFont(QFont("Segoe UI", 11, QFont.Bold))
-        self.title_lbl.setStyleSheet("color: white;")
-        self.artist_lbl = QLabel(artist)
-        self.artist_lbl.setStyleSheet("color: #bdbdbd; font-size: 11px;")
-        text.addWidget(self.title_lbl)
-        text.addWidget(self.artist_lbl)
-        main.addLayout(text)
 
-        main.addStretch()
+        # play button---
+        self.play_icon = QIcon("res/play-card.png")
+        self.pause_icon = QIcon("res/pause.png")
 
-        self.duration_lbl = QLabel(duration)
-        self.duration_lbl.setStyleSheet("color: #bdbdbd;")
-        self.duration_lbl.setFixedWidth(60)
-        self.duration_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        main.addWidget(self.duration_lbl)
 
-        # default state
-        self.play_btn.hide()
+        # download button
+        self.play_btn = QPushButton(self.overlay)
+        self.play_btn.setFixedSize(size, size)
+        self.play_btn.setIcon(self.play_icon)  # or use your icon
+        self.play_btn.setIconSize(QSize(30, 30))
+        self.play_btn.setCursor(Qt.PointingHandCursor)
+        self.play_btn.clicked.connect(self._play_requested)
+        self.play_btn.setStyleSheet("color: white;")
+        ov_layout.addWidget(self.play_btn)
 
-        # connect play click
-        self.play_btn.clicked.connect(self._on_play_clicked)
 
-    def _on_play_clicked(self):
-        # emit via parent later; here we call parent's handler if available
-        parent = self.parent()
-        # find PlaylistPlayerWindow by climbing up to top-level widget
-        w = self.window()
-        if hasattr(w, "on_song_play_requested"):
-            w.on_song_play_requested(self.index)
+        # internal mode
+        self.mode = "idle"
 
-    def set_active(self, active: bool):
-        """Mark this row as active (currently playing)."""
-        self.active = active
-        if active:
-            # green title color like spotify
-            self.title_lbl.setStyleSheet("color: #1db954;")
+
+    def _play_requested(self):
+        print("...PlaySignalOriginated... Play")
+        self.playRequested.emit("play")
+
+
+    def set_mode(self, mode: str):
+        self.mode = mode
+
+        if mode == "idle":
+            self.overlay.hide()
+            try:
+                self.play_btn.clicked.disconnect(self._play_toggle_request)
+            except:
+                pass
+
+            self.play_btn.clicked.connect(self._play_requested)
+            self.play_btn.setIcon(self.play_icon)
+
+
+        if mode == "active":
+            self.overlay.show()
             self.play_btn.show()
-        else:
-            self.title_lbl.setStyleSheet("color: white;")
-            self.play_btn.hide()
+            try:
+                self.play_btn.clicked.disconnect(self._play_requested)
+            except:
+                pass
 
-    def show_play_overlay(self, show: bool):
-        """Show/hide the overlay play button (used for hover)."""
-        if show:
-            self.play_btn.show()
+            self.play_btn.clicked.connect(self._play_toggle_request)
+            print(f"SettingValue[Ative] for => {self}")
+
+
+
+    def set_active(self, value):
+        # setactive staus if this song is playing
+        if value:
+            self.set_mode("active")
+
         else:
-            if not self.active:
-                self.play_btn.hide()
+            self.set_mode("idle")
+
+
+    def _play_toggle_request(self):
+        self.playToggleRequested.emit()
+
+    def set_play(self, value):
+        if value:
+            self.play_btn.setIcon(self.pause_icon)
+
+        else:
+            self.play_btn.setIcon(self.play_icon)
+
+    # keep overlay resized
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.overlay.setGeometry(self.rect())
+
+    # show overlay only on hover if in loading/downloading/done modes
+    def enterEvent(self, event):
+        if self.mode  == "idle":
+            self.overlay.show()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        # if still loading/downloading, we can leave overlay visible
+        # or hide it – your choice.
+        if self.mode  == "idle":
+            self.overlay.hide()
+        super().leaveEvent(event)
+
+    
+class SongRow(QWidget):
+    downloadRequested = pyqtSignal(str, str, list, str, int)
+    playRequested = pyqtSignal(int)
+    playToggleRequested = pyqtSignal()
+
+
+    def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
+        super().__init__(parent)
+        self.title_txt = title
+        self.subtitle_txt = subtitle
+        self.artists = artists
+        self.vid = vid
+        self.track_id = track_id
+        self.song_id = None
+
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setFixedHeight(108)
+        # self.setCursor(Qt.PointingHandCursor)
+
+        main = QHBoxLayout()
+        main.setContentsMargins(10, 8, 24, 8)  # left/right padding
+        main.setSpacing(16)
+
+        # cover
+        self.thumb = HoverThumb(pix=pix, parent=self)
+        self.thumb.downloadRequested.connect(self._download_requested)
+        self.thumb.playRequested.connect(self._play_requested)
+        self.thumb.playToggleRequested.connect(self.playToggleRequested.emit)
+        main.addWidget(self.thumb)
+
+        # text block
+        text_col = QVBoxLayout()
+        text_col.setContentsMargins(5, 6, 0, 20)
+        text_col.setSpacing(1)
+        
+
+        self.title_lbl = QLabel(trim_text(self.title_txt, 62))
+        self.title_lbl.setFont(QFont("Segoe UI", 14))
+        self.title_lbl.setStyleSheet("""
+            QLabel {
+                background: transparent;
+                border: none;
+                color: white;
+                font-weight: 550;
+            }
+                                    
+            QLabel:hover {
+                background-color: transparent;
+            }
+        """)
+        self.title_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+
+        self.subtitle_lbl = QLabel(trim_text(self.subtitle_txt, 80))
+        self.subtitle_lbl.setFont(QFont("Segoe UI", 11))
+        self.subtitle_lbl.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        self.subtitle_lbl.setStyleSheet("""
+            QLabel {
+                background: transparent;
+                border: none;
+                color: #b3b3b3;
+                font-weight: 550;
+            }
+                                    
+            QLabel:hover {
+                background-color: transparent;
+            }
+        """)
+
+        text_col.addWidget(self.title_lbl)
+        text_col.addWidget(self.subtitle_lbl)
+
+        main.addLayout(text_col, 1)
+
+
+        # spacer + menu button
+        self.menu_btn = QPushButton(self)
+        # self.menu_btn.setCursor(Qt.PointingHandCursor)
+        self.menu_btn.setIcon(QIcon("res/three-dot-menu.png"))
+        self.menu_btn.setFixedSize(48, 48)
+        self.menu_btn.setIconSize(QSize(22, 22)) 
+        self.menu_btn.setCursor(Qt.PointingHandCursor)
+
+        self.menu_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                border: none;
+                border-radius: 24px;
+            }
+                                    
+            QPushButton:hover {
+                background-color:  rgba(255, 255, 255, 0.08);
+            }
+            QPushButton:pressed {
+                background-color:  rgba(255, 255, 255, 0.1);
+            }
+        """)
+        main.addWidget(self.menu_btn, 0, Qt.AlignRight | Qt.AlignVCenter)
+
+        # self.menu_btn.hide()
+
+        # underline separator like YT Music
+        bottom_line = QFrame(self)
+        bottom_line.setStyleSheet("background-color: #262626; margin: 2px")
+        bottom_line.setFixedHeight(1)
+
+        bottom_layout = QVBoxLayout(self)
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_layout.setSpacing(0)
+        bottom_layout.addLayout(main)
+        bottom_layout.addWidget(bottom_line)
+
+        self.setLayout(bottom_layout)
+
+        # simple menu
+        self.menu = QMenu(self)
+        self.menu.setObjectName("SearchMenu")
+        self.menu.addAction("Play next")
+        self.menu.addAction("Add to queue")
+        self.menu.addSeparator()
+        self.menu.addAction("Go to album")
+        self.menu.setStyleSheet("""
+            QMenu#SearchMenu {
+                background-color: transparent; 
+                border: 1px solid #3a3b3d;
+                border-radius: 10px;
+                padding: 6px 0px;
+                color: white;
+                font-size: 22px;
+                font-family: 'Segoe UI';
+            }
+
+            QMenu#SearchMenu::item {
+                padding: 10px 16px;
+                border-radius: 6px;
+                margin: 2px 8px;
+            }
+
+            QMenu#SearchMenu::item:selected {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+
+            QMenu#SearchMenu::item:pressed {
+                background-color: rgba(255, 255, 255, 0.16);
+            }
+
+            QMenu#SearchMenu::separator {
+                height: 1px;
+                margin: 6px 14px;
+                background-color: #3a3b3d;
+            }
+        """)
+
+        self.menu_btn.clicked.connect(self.show_menu)
+
+        # normal + hover style for row background
+        self._base_style = """
+            QWidget {
+                background-color: transparent;
+            }
+        """
+        self._hover_style = """
+            QWidget {
+                background-color: rgba(255, 255, 255, 0.02);
+            }
+        """
+        self.setStyleSheet(self._base_style)
+
+
+    def set_broadcast(self, type: str, value: bool):
+        print(f"[atTrackRow] [broadcast] => type : {type}, value : {value}")
+
+        if type == "active":
+            self.thumb.set_active(value)
+
+        elif type == "playing":
+            self.thumb.set_play(value)
+
+        else:
+            print(f"[yt-screen][trackrow][broadcast] => not implemented for type : {type}")
+
+
+    def set_mode(self, mode: str):
+        print(f"Setting State : {mode}")
+        self.thumb.set_mode(mode)
+
+    def get_mode(self):
+        return self.thumb.mode
+    
+    def set_song_id(self, song_id: int):
+        print(f"set_song_id ==> {song_id}")
+        self.song_id = song_id
+
+    def setProgress(self, value: int):
+        self.thumb.setProgress(value)
+
+    def _download_requested(self, txt):
+        print(f"Recieved [TrackRow] : {txt}")
+        self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.artists, self.vid, self.track_id)
+
+    def _play_requested(self, txt):
+        print(f"Play Requested : {txt}")
+        self.playRequested.emit(self.song_id)
+
+
+    def show_menu(self):
+        self.menu.exec_(self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight()))
+
+    def enterEvent(self, event):
+        self.setStyleSheet(self._hover_style)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.setStyleSheet(self._base_style)
+        super().leaveEvent(event)
 
 
 class PlaylistPlayerWindow(QWidget):
@@ -155,7 +386,7 @@ class PlaylistPlayerWindow(QWidget):
         self.last_hovered_idx = None
 
         main = QHBoxLayout(self)
-        main.setContentsMargins(76, 50, 60, 24)
+        main.setContentsMargins(76, 50, 0, 24)
         main.setSpacing(65)
 
         # LEFT: playlist big artwork + meta + buttons
@@ -284,15 +515,23 @@ class PlaylistPlayerWindow(QWidget):
         right_layout = QVBoxLayout()
         right_layout.setSpacing(8)
 
+
+        # Scroll area (only vertical)
+        scroll = ScrollArea()
+        right_layout.addWidget(scroll, 2)
+
         self.list = QListWidget()
-        self.list.setSpacing(4)
+        self.list.setSpacing(0)
         self.list.setFrameShape(QFrame.NoFrame)
         self.list.setStyleSheet("""
             QListWidget { background: transparent; }
             QListWidget::item:selected { background: rgba(255,255,255,0.03); }
         """)
-        right_layout.addWidget(self.list)
+        # right_layout.addWidget(self.list)
+        scroll.setWidget(self.list)
+
         main.addLayout(right_layout, 2)
+
 
         # sample songs
         songs = [
@@ -305,10 +544,14 @@ class PlaylistPlayerWindow(QWidget):
             ("Bad Liar", "Imagine Dragons", "4:21"),
         ]
 
+        pix = QPixmap("./res/cover2.jpg")
+
         for idx, (t, a, d) in enumerate(songs):
             item = QListWidgetItem()
-            item.setSizeHint(QSize(0, 72))
-            row = SongRow(t, a, d, idx)
+            # row = SongRow(t, a, d, idx)
+            row = SongRow(t, a, [], "", pix, idx, self)
+            item.setSizeHint(row.size())
+
             self.song_widgets.append(row)
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
@@ -323,7 +566,7 @@ class PlaylistPlayerWindow(QWidget):
         # clicking the big play should start first song (example)
         play_btn_big.clicked.connect(lambda: self.play_song(0))
 
-    def eventFilter(self, obj, event):
+    def eventFilter2(self, obj, event):
         # viewport mouse move -> manage hover overlay
         if obj is self.list.viewport():
             if event.type() == QEvent.MouseMove:
