@@ -99,6 +99,8 @@ class PlaylistItem(QWidget):
         self.title_text = title
         self.playlist_id = playlist_id
         self.is_active = True
+        self.is_toogle_connected = False # toogle or play connected..
+
         self.setCursor(Qt.PointingHandCursor)
 
         self.setFixedHeight(70)
@@ -185,10 +187,30 @@ class PlaylistItem(QWidget):
             self.setStyleSheet(self.active_style)
 
         else:
-            self.is_active = True
+            self.is_active = False
+            self.is_toogle_connected = False
             self.setStyleSheet(self.normal_style)
 
+            try: # disconect toogle request
+                self.play_btn.clicked.disconnect(self._request_toogle)
+            except:
+                pass
+            # connected request play
+            self.play_btn.clicked.connect(self._on_play_clicked)
+
+
     def set_playing(self, value):
+        # if toogle emit if not connected with 
+        if not self.is_toogle_connected:
+            self.is_toogle_connected = True
+
+            try: # disconect request play.. as already playing
+                self.play_btn.clicked.disconnect(self._on_play_clicked)
+            except:
+                pass
+            # connected toogle request
+            self.play_btn.clicked.connect(self._request_toogle)
+
         if value:
             self.play_btn.setIcon(self.pause_icon)
             self.play_btn.setStyleSheet("""
@@ -223,6 +245,8 @@ class PlaylistItem(QWidget):
                         }
             """)
 
+    def _request_toogle(self):
+        self.playToggleRequested.emit()
 
     # ---------- interactions ----------
     def mousePressEvent(self, event):
@@ -237,6 +261,12 @@ class PlaylistItem(QWidget):
         super().mousePressEvent(event)
 
     def _on_play_clicked(self):
+        # if not active.. 
+        # then activate it.. open the playlist window..
+        if self.is_active:
+            self.openRequested.emit(self.playlist_id)
+        
+        # send the play song request
         self.playRequested.emit(self.playlist_id)
         print(f"[UI] play playlist: {self.title_text}")
 
@@ -333,6 +363,9 @@ class NavButton(QPushButton):
 class Sidebar(QFrame):
     requestCreatePlaylist = pyqtSignal(str, str, str)
     navCall = pyqtSignal(str)
+    openPlaylistRequested = pyqtSignal(int)
+    playPlaylistRequested = pyqtSignal(int)
+    playToggleRequested = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
