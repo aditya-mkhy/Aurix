@@ -22,10 +22,10 @@ class HoverThumb(QWidget):
     playToggleRequested = pyqtSignal()
 
 
-    def __init__(self, pix: QPixmap, parent=None):
+    def __init__(self, cover_path: str, parent=None):
         super().__init__(parent)
 
-        size = 86
+        size = 78
         self.setFixedSize(size, size)
 
         main_layout = QVBoxLayout(self)
@@ -33,7 +33,7 @@ class HoverThumb(QWidget):
 
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setPixmap(round_pix(pix, size, size, 6))
+        self.image_label.setPixmap(round_pix_form_path(cover_path, size, size, 5))
 
         self.image_label.setStyleSheet(f"""
             QLabel {{
@@ -155,36 +155,38 @@ class SongRow(QWidget):
     playToggleRequested = pyqtSignal()
 
 
-    def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, song_id: int, parent=None):
+    def __init__(
+            self, song_id: int, title: str, subtitle: str, 
+            duration: str, cover_path: str, parent=None
+        ):
         super().__init__(parent)
         self.title_txt = title
         self.subtitle_txt = subtitle
-        self.artists = artists
-        self.vid = vid
         self.song_id = song_id
+        self.duration = duration
 
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedHeight(108)
+        self.setFixedHeight(98)
         # self.setCursor(Qt.PointingHandCursor)
 
         main = QHBoxLayout()
-        main.setContentsMargins(10, 8, 24, 8)  # left/right padding
+        main.setContentsMargins(10, 6, 24, 4)  # left/right padding
         main.setSpacing(16)
 
         # cover
-        self.thumb = HoverThumb(pix=pix, parent=self)
+        self.thumb = HoverThumb(cover_path, parent=self)
         self.thumb.playRequested.connect(self._play_requested)
         self.thumb.playToggleRequested.connect(self.playToggleRequested.emit)
         main.addWidget(self.thumb)
 
         # text block
         text_col = QVBoxLayout()
-        text_col.setContentsMargins(5, 6, 0, 20)
+        text_col.setContentsMargins(5, 10, 0, 15)
         text_col.setSpacing(1)
         
 
         self.title_lbl = QLabel(trim_text(self.title_txt, 62))
-        self.title_lbl.setFont(QFont("Segoe UI", 14))
+        self.title_lbl.setFont(QFont("Segoe UI", 13))
         self.title_lbl.setStyleSheet("""
             QLabel {
                 background: transparent;
@@ -207,7 +209,7 @@ class SongRow(QWidget):
                 background: transparent;
                 border: none;
                 color: #b3b3b3;
-                font-weight: 550;
+                font-weight: 500;
             }
                                     
             QLabel:hover {
@@ -526,12 +528,12 @@ class PlaylistPlayerWindow(QWidget):
             ("Bad Liar", "Imagine Dragons", "4:21"),
         ]
 
-        pix = QPixmap("./res/cover2.jpg")
+        cover_path = "./res/cover2.jpg"
 
         for idx, (t, a, d) in enumerate(songs):
             item = QListWidgetItem()
             # row = SongRow(t, a, d, idx)
-            row = SongRow(t, a, [], "", pix, idx, self)
+            row = SongRow(idx, t, a, d, cover_path, self)
             item.setSizeHint(row.size())
 
             # connects
