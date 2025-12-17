@@ -384,44 +384,42 @@ class PlaylistPlayerWindow(QWidget):
         left_layout.addSpacing(20)
 
         # collage / big cover
-        big_cover = QLabel()
+        self.big_cover = QLabel()
 
-        size = 340
-        radius=18
+        self.cover_size = 340
+        self.cover_radius = 18
 
-        big_pix = round_pix_form_path(path="./res/cover1.jpg", width=size, height=size, radius=radius)
-        big_cover.setPixmap(big_pix)
-        big_cover.setFixedHeight(size)
-        big_cover.setStyleSheet(f"border-radius: {radius}px; background-color: transparent; width: 100%;")
-        big_cover.setAlignment(Qt.AlignCenter)
-        left_layout.addWidget(big_cover)
+        self.big_cover.setFixedHeight(self.cover_size)
+        self.big_cover.setStyleSheet(f"border-radius: {self.cover_radius}px; background-color: transparent; width: 100%;")
+        self.big_cover.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(self.big_cover)
 
         left_layout.addSpacing(18)
 
 
-        playlist_title = QLabel("Liked Music")
-        playlist_title.setFont(QFont("Segoe UI", 18, QFont.Bold))
-        playlist_title.setStyleSheet("background-color: transparent;")
-        playlist_title.setAlignment(Qt.AlignCenter)
-        left_layout.addWidget(playlist_title)
+        self.playlist_title = QLabel()
+        self.playlist_title.setFont(QFont("Segoe UI", 18, QFont.Bold))
+        self.playlist_title.setStyleSheet("background-color: transparent;")
+        self.playlist_title.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(self.playlist_title)
 
         left_layout.addSpacing(2)
 
 
-        playlist_desc = QLabel("📌 Auto playlist")
-        playlist_desc.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
-        playlist_desc.setStyleSheet("color: #b3b3b3; background-color: transparent;")
+        self.playlist_desc = QLabel()
+        self.playlist_desc.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        self.playlist_desc.setStyleSheet("color: #b3b3b3; background-color: transparent;")
 
-        playlist_desc.setAlignment(Qt.AlignCenter)
-        left_layout.addWidget(playlist_desc)
+        self.playlist_desc.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(self.playlist_desc)
 
         left_layout.addSpacing(20)
 
-        meta = QLabel("Playlist • Private • 2025\n123 views • 13 tracks • 55 minutes")
-        meta.setStyleSheet("color: #cdcdcd; font-size: 20px; font-weight: 450;")
-        meta.setAlignment(Qt.AlignCenter)
+        self.meta = QLabel()
+        self.meta.setStyleSheet("color: #cdcdcd; font-size: 20px; font-weight: 450;")
+        self.meta.setAlignment(Qt.AlignCenter)
 
-        left_layout.addWidget(meta)
+        left_layout.addWidget(self.meta)
 
         left_layout.addSpacing(40)
 
@@ -552,57 +550,58 @@ class PlaylistPlayerWindow(QWidget):
 
         main.addLayout(right_layout, 2)
 
+        play_btn_big.clicked.connect(lambda: self.play_song(0))
+
+        self.is_playing = True
+        self.song_id = None
+
+    def init_playlist(self, playlist_id: int, title: str, desc: str, meta: str, cover_path: str):
+        self.playlist_id = playlist_id
+        
+        self.playlist_title.setText(title)
+        self.playlist_desc.setText(desc)
+        self.meta.setText(meta)
+
+        # set playlist cover img
+        big_pix = round_pix_form_path(
+            path=cover_path, 
+            width=self.cover_size, 
+            height=self.cover_size, 
+            radius=self.cover_radius
+        )
+
+        self.big_cover.setPixmap(big_pix)
+
+        # clear_list
+        self.clear_list()
+
+        # add space at top
         top_spacer = QListWidgetItem()
         top_spacer.setSizeHint(QSize(0, 50))
         top_spacer.setFlags(Qt.NoItemFlags)
         self.list.addItem(top_spacer)
 
+    def add_song(self, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
+        item = QListWidgetItem()
+        row = SongRow(song_id, title,subtitle,  duration, cover_path, self)
+        item.setSizeHint(row.size())
+        # connects
+        row.playRequested.connect(self.request_play)
+        row.playToggleRequested.connect(self.play_toogle)
 
-        # sample songs
-        songs = [
-            ("Meri Banogi Kya", "Rito Riba & Rajat Nagpal • Meri Banogi Kya", "3:36"),
-            ("SAWARE", "ARJIT SINGH, PRITAM & AMITABH BHATTACHARYA • PHANTOM", "5:22"),
-            ("Tera Fitoor", "Arijit Singh • Genius (Original Motion Picture Soundtrack)", "5:10"),
-            ("Saiyaara (Movie: Saiyaara)", "Faheem Abdullah, Arslan Nizami & Irshad Kamil • SAIYAARA", "6:11"),
-            ("Iktara", "Amit Trivedi, Kavita Seth & Amit • Wake Up Sid", "4:14"),
-            ("Halka Halka", "Rahat Fateh Ali Khan • Halka Halka", "4:34"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-            ("Bad Liar", "Imagine Dragons", "4:21"),
-        ]
-
-        cover_path = "./res/cover2.jpg"
-
-        for idx, (t, a, d) in enumerate(songs):
-            item = QListWidgetItem()
-            # row = SongRow(t, a, d, idx)
-            row = SongRow(idx, t, a, d, cover_path, self)
-            item.setSizeHint(row.size())
-
-            # connects
-            row.playRequested.connect(self.request_play)
-            row.playToggleRequested.connect(self.play_toogle)
-
-            self.song_widgets.append(row)
-            self.list.addItem(item)
-            self.list.setItemWidget(item, row)
+        self.song_widgets.append(row)
+        self.list.addItem(item)
+        self.list.setItemWidget(item, row)
 
 
-        # enable mouse tracking so viewport sends MouseMove events
-        # self.list.setMouseTracking(True)
-        # self.list.viewport().setMouseTracking(True)
+    def clear_list(self):
+        while self.list.count():
+            item = self.list.takeItem(0)
+            widget = self.list.itemWidget(item)
+            if widget:
+                widget.deleteLater()
+            del item
 
-        # install event filter on viewport to watch mouse movement & clicks
-        # self.list.viewport().installEventFilter(self)
-
-        # clicking the big play should start first song (example)
-        play_btn_big.clicked.connect(lambda: self.play_song(0))
-
-        self.is_playing = True
-        self.song_id = None
 
     def request_play(self, song_id: int):
         print(f"Playing song with id : {song_id}")
@@ -627,76 +626,10 @@ class PlaylistPlayerWindow(QWidget):
         row_obj.set_broadcast("playing", value=self.is_playing)
 
 
-    def eventFilter2(self, obj, event):
-        # viewport mouse move -> manage hover overlay
-        if obj is self.list.viewport():
-            if event.type() == QEvent.MouseMove:
-                pos = event.pos()
-                item = self.list.itemAt(pos)
-                if item:
-                    idx = self.list.row(item)
-                    if idx != self.last_hovered_idx:
-                        self._set_hovered_index(idx)
-                else:
-                    # moved outside any item
-                    self._set_hovered_index(None)
-            elif event.type() == QEvent.MouseButtonPress:
-                # if clicked inside list, convert to item click
-                mouse_pos = event.pos()
-                item = self.list.itemAt(mouse_pos)
-                if item:
-                    idx = self.list.row(item)
-                    # If user clicked on item area (not play button), treat as play
-                    # but we let the play button handle its own clicks
-                    # Here map global position to widget coords to inspect if clicked inside play_btn,
-                    # if not, we treat row click as play
-                    widget = self.list.itemWidget(item)
-                    if widget:
-                        # map pos to the widget local coords
-                        global_point = self.list.viewport().mapToGlobal(mouse_pos)
-                        local_point = widget.mapFromGlobal(global_point)
-                        # if click not inside play button rect -> play the song
-                        if not widget.play_btn.geometry().contains(local_point):
-                            # play the clicked song
-                            self.play_song(idx)
-                            return True
-            elif event.type() == QEvent.Leave:
-                # mouse left the viewport entirely
-                self._set_hovered_index(None)
-        return super().eventFilter(obj, event)
-
-    def _set_hovered_index(self, idx):
-        # hide previous hovered unless it's active
-        if self.last_hovered_idx is not None and 0 <= self.last_hovered_idx < len(self.song_widgets):
-            prev = self.song_widgets[self.last_hovered_idx]
-            if not prev.active:
-                prev.show_play_overlay(False)
-
-        self.last_hovered_idx = idx
-
-        if idx is None:
-            return
-
-        w = self.song_widgets[idx]
-        w.show_play_overlay(True)
-
     def play_song(self, index: int):
         print("Request play song:", index)
         self.on_song_play_requested(index)
 
-    def on_song_play_requested(self, index: int):
-        # update UI: mark selected active and unmark previous
-        if self.current_index is not None and 0 <= self.current_index < len(self.song_widgets):
-            self.song_widgets[self.current_index].set_active(False)
-
-        self.current_index = index
-        if 0 <= index < len(self.song_widgets):
-            self.song_widgets[index].set_active(True)
-            # ensure the active song is visible and scrolled to center-ish
-            item = self.list.item(index)
-            self.list.scrollToItem(item, hint=QListWidget.PositionAtCenter)
-
-        # connect actual playback engine here
 
     # cleanup
     def closeEvent(self, event):
@@ -707,8 +640,38 @@ class PlaylistPlayerWindow(QWidget):
         super().closeEvent(event)
 
 
+songs = [
+    ("Meri Banogi Kya", "Rito Riba & Rajat Nagpal • Meri Banogi Kya", "3:36"),
+    ("SAWARE", "ARJIT SINGH, PRITAM & AMITABH BHATTACHARYA • PHANTOM", "5:22"),
+    ("Tera Fitoor", "Arijit Singh • Genius (Original Motion Picture Soundtrack)", "5:10"),
+    ("Saiyaara (Movie: Saiyaara)", "Faheem Abdullah, Arslan Nizami & Irshad Kamil • SAIYAARA", "6:11"),
+    ("Iktara", "Amit Trivedi, Kavita Seth & Amit • Wake Up Sid", "4:14"),
+    ("Halka Halka", "Rahat Fateh Ali Khan • Halka Halka", "4:34"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+    ("Bad Liar", "Imagine Dragons", "4:21"),
+]
+
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = PlaylistPlayerWindow()
+
+    playlist_id = 1
+    title = "Bath Song"
+    desc = "uset to listen while bating"
+    meta = "Playlist • Private • 2025\n123 views • 13 tracks • 55 minutes"
+    cover_path = "./res/cover1.jpg"
+    w.init_playlist(playlist_id, title, desc, meta, cover_path)
+    
+    cover_path = "./res/cover2.jpg"
+
+    for index, (title, subtitle, duration) in enumerate(songs):
+        w.add_song(index, title, subtitle, duration, cover_path)
+
     w.show()
     sys.exit(app.exec_())

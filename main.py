@@ -13,7 +13,7 @@ from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
 from typing import List
-
+from playlist_player_window import PlaylistPlayerWindow
 
 class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
