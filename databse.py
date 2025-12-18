@@ -1,7 +1,7 @@
 import sqlite3
 from typing import List, Dict
 from util import DATABASE_PATH, dict_format
-
+import os
 
 class DataBase():
     def __init__(self):
@@ -257,11 +257,9 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
+
+    print(dict_format(db.get_song(1)))
     # db.delete_song(song_id=40)
-    print(dict_format(db.get_playlist(playlist_id=1)))
+    # print(dict_format(db.get_playlist(playlist_id=1)))
 
     # print(db.get_songid_by_vid(vid="hgQInx5xH5E"))
-
-    # for song in dict_format(db.get_song()):
-    #     print(song)
-    #     print()

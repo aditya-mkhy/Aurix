@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5.QtCore import Qt, QSize, QEvent, pyqtSignal, QTimer
 from PyQt5.QtGui import QPixmap, QFont, QIcon
 
@@ -357,8 +358,6 @@ class SongRow(QWidget):
 class PlaylistPlayerWindow(QWidget):
     def __init__(self, parent = None):
         super().__init__(parent=parent)
-        self.setWindowTitle("Aurix – Playlist Player")
-        self.resize(1200, 700)
 
         self.setStyleSheet("""
             QWidget { background: #000000; color: white; }
@@ -371,7 +370,7 @@ class PlaylistPlayerWindow(QWidget):
 
         main = QHBoxLayout(self)
         main.setContentsMargins(0, 10, 0, 10)
-        main.setSpacing(65)
+        main.setSpacing(55)
 
         # LEFT: playlist big artwork + meta + buttons
 
@@ -387,7 +386,7 @@ class PlaylistPlayerWindow(QWidget):
         self.big_cover = QLabel()
 
         # default cover image.. 
-        self.cover_size = 340
+        self.cover_size = 290
         self.cover_radius = 18
 
         self.default_playlist_cover = round_pix_form_path(
@@ -572,15 +571,20 @@ class PlaylistPlayerWindow(QWidget):
         self.playlist_desc.setText(desc)
         self.meta.setText(meta)
 
-        # set playlist cover img
-        big_pix = round_pix_form_path(
-            path=cover_path, 
-            width=self.cover_size, 
-            height=self.cover_size, 
-            radius=self.cover_radius
-        )
+        if cover_path != "":
+            # set playlist cover img
+            big_pix = round_pix_form_path(
+                path=cover_path, 
+                width=self.cover_size, 
+                height=self.cover_size, 
+                radius=self.cover_radius
+            )
 
-        self.big_cover.setPixmap(big_pix)
+            self.big_cover.setPixmap(big_pix)
+        
+        else:
+            # not cover image.. use default
+            self.big_cover.setPixmap(self.default_playlist_cover)
 
         # clear_list
         self.clear_list()

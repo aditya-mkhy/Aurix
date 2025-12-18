@@ -8,7 +8,7 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, is_mp3
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
@@ -115,6 +115,7 @@ class MusicMainWindow(QMainWindow):
         self.sidebar = Sidebar(parent=self)
         self.sidebar.requestCreatePlaylist.connect(self.save_playlist)
         self.sidebar.navCall.connect(self._nav_call)
+        self.sidebar.openPlaylistRequested.connect(self.open_playlist)
         middle_layout.addWidget(self.sidebar)
 
 
@@ -202,12 +203,15 @@ class MusicMainWindow(QMainWindow):
         # for song in songs[:10]:
         #     self.playlistPlayerWin.add_song(song['id'], song['title'], song['subtitle'], song['duration'], song['cover_path'])
 
-    def requested_show_playlist(self, playlist_id: int):
+    def open_playlist(self, playlist_id: int):
         print(f"Confuring PlayList with ID : {playlist_id}")
 
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
 
-        meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {info['duration']} minutes"
+        meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
+
+        # init the playlist
+        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, info['cover_path'])
 
 
         

@@ -532,7 +532,7 @@ class Sidebar(QFrame):
         self.navCall.emit("playlist")
 
         # request to add songs...
-        self.requestCreatePlaylist.emit(playlist_id)
+        self.openPlaylistRequested.emit(playlist_id)
 
 
     def de_activate_playlist(self, except_playlist: int = None):
