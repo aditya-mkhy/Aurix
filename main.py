@@ -140,6 +140,8 @@ class MusicMainWindow(QMainWindow):
 
         # playlist player window...
         self.playlistPlayerWin = PlaylistPlayerWindow(parent=self)
+        self.playlistPlayerWin.playRequested.connect(self._play_requested)
+        self.playlistPlayerWin.playToggleRequested.connect(self.playerEngine.play_toggled)
 
         outer.addWidget(middle_frame, 1)
 
@@ -413,6 +415,7 @@ class MusicMainWindow(QMainWindow):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")
         self.yt_screen.set_broadcast(type, song_id, value)
         self.home_screen.set_broadcast(type, song_id, value)
+        self.playlistPlayerWin.set_broadcast(type, song_id, value)
 
         if type == "active" and value == True and not self.is_setting:
             # saving the current playing song path

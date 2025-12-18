@@ -356,6 +356,9 @@ class SongRow(QWidget):
 
 
 class PlaylistPlayerWindow(QWidget):
+    playRequested = pyqtSignal(int)
+    playToggleRequested = pyqtSignal()
+
     def __init__(self, parent = None):
         super().__init__(parent=parent)
 
@@ -559,12 +562,18 @@ class PlaylistPlayerWindow(QWidget):
 
         main.addLayout(right_layout, 2)
 
-        play_btn_big.clicked.connect(lambda: self.play_song(0))
+        self.is_playing = True # playing status
+        self.song_id = None # current song_id
+        self.batch_size = 5 # number of songs added to playlist in one shot
 
-        self.is_playing = True
-        self.song_id = None
+    def set_broadcast(self, type: str, item_id: int, value: bool):
+        item_obj = self.song_widgets.get(item_id)
 
-        self.batch_size = 5
+        if item_obj is None:
+            return
+        # transfer to that song...
+        item_obj.set_broadcast(type, value)
+
 
     def init_playlist(self, playlist_id: int, title: str, desc: str, meta: str, cover_path: str):
         self.playlist_id = playlist_id
@@ -638,7 +647,7 @@ class PlaylistPlayerWindow(QWidget):
         item.setSizeHint(row.size())
         # connects
         row.playRequested.connect(self.request_play)
-        row.playToggleRequested.connect(self.play_toogle)
+        row.playToggleRequested.connect(self.playToggleRequested.emit)
 
         self.song_widgets[song_id] = row
         self.list.addItem(item)
@@ -658,31 +667,29 @@ class PlaylistPlayerWindow(QWidget):
 
 
     def request_play(self, song_id: int):
-        print(f"Playing song with id : {song_id}")
+        print(f"Play requested song with id : {song_id}")
+        self.playRequested.emit(song_id)
 
-        if self.song_id is not None: # previus id
-            prev_row_obj = self.song_widgets[self.song_id]
-            prev_row_obj.set_broadcast("active", value=False) 
+        # if self.song_id is not None: # previus id
+        #     prev_row_obj = self.song_widgets[self.song_id]
+        #     prev_row_obj.set_broadcast("active", value=False) 
 
-        row_obj = self.song_widgets[song_id]
-        row_obj.set_broadcast("active", value=True)
-        self.song_id = song_id
+        # row_obj = self.song_widgets[song_id]
+        # row_obj.set_broadcast("active", value=True)
+        # self.song_id = song_id
         
-        # on pause state...
-        QTimer.singleShot(200, lambda row = row_obj : row.set_broadcast("playing", value=True))
+        # # on pause state...
+        # QTimer.singleShot(200, lambda row = row_obj : row.set_broadcast("playing", value=True))
 
     def play_toogle(self):
-        if self.song_id is None:
-            return
+        self.playToggleRequested.emit()
+
+        # if self.song_id is None:
+        #     return
         
-        self.is_playing = not self.is_playing
-        row_obj = self.song_widgets[self.song_id]
-        row_obj.set_broadcast("playing", value=self.is_playing)
-
-
-    def play_song(self, index: int):
-        print("Request play song:", index)
-        self.on_song_play_requested(index)
+        # self.is_playing = not self.is_playing
+        # row_obj = self.song_widgets[self.song_id]
+        # row_obj.set_broadcast("playing", value=self.is_playing)
 
 
     # cleanup
