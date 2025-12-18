@@ -194,9 +194,34 @@ def format_views(count: int) -> str:
         return f"{count / 1_000:.1f}K"
     else:
         return str(count)
+    
+def unit(word: str, value: int) -> str:
+    return f"{word}" if value == 1 else f"{word}s"
+
+
+def format_duration(seconds: int) -> str:
+    if seconds < 60:
+        return f"{seconds} {unit('second', seconds)}"
+
+    minutes = seconds // 60
+    seconds = seconds % 60
+
+    if minutes < 60:
+        sec_part = f", {seconds} {unit('second', seconds)}" if seconds else ""
+        return f"{minutes} {unit('minute', minutes)}{sec_part}"
+
+    hours = minutes // 60
+    minutes = minutes % 60
+
+    if hours > 6:
+        return f"{hours}+ hours"
+
+    min_part = f", {minutes} {unit('minute', minutes)}" if minutes else ""
+    return f"{hours} {unit('hour', hours)}{min_part}"
 
 
 if __name__ == "__main__":
     # print(format_views(477126150))
 
-    print(gen_unique_id(20))
+    duration = format_duration((60 * 60 * 3) + 60 * 5)
+    print(duration)

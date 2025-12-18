@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, Q
 from PyQt5.QtGui import QIcon, QFont
 from playlist import CreatePlaylistPopup
 from typing import Dict
+from util import trim_text
 
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
@@ -98,12 +99,13 @@ class PlaylistItem(QWidget):
         super().__init__(parent)
         self.title_text = title
         self.playlist_id = playlist_id
-        self.is_active = True
+        self.is_active = False
         self.is_toogle_connected = False # toogle or play connected..
 
         self.setCursor(Qt.PointingHandCursor)
 
         self.setFixedHeight(70)
+        self.setFixedWidth(292)
         self.setAttribute(Qt.WA_StyledBackground, True)  # so bg color works
 
         main = QHBoxLayout(self)
@@ -183,12 +185,22 @@ class PlaylistItem(QWidget):
 
     def set_active(self, value):
         if value:
+            if self.is_active:
+                # already active..
+                return
+            
             self.is_active = True
+            self.play_btn.show()
             self.setStyleSheet(self.active_style)
 
         else:
+            if not self.is_active:
+                # already de-active
+                return
+
             self.is_active = False
             self.is_toogle_connected = False
+            self.play_btn.hide()
             self.setStyleSheet(self.normal_style)
 
             try: # disconect toogle request
@@ -197,6 +209,7 @@ class PlaylistItem(QWidget):
                 pass
             # connected request play
             self.play_btn.clicked.connect(self._on_play_clicked)
+        
 
 
     def set_playing(self, value):
@@ -255,15 +268,18 @@ class PlaylistItem(QWidget):
             # if click NOT inside play button
             if not self.play_btn.geometry().contains(event.pos()):
                 # emit playlist id...
-                self.openRequested.emit(self.playlist_id)
-                print(f"[UI] open playlist: {self.title_text}")
+                if not self.is_active:
+                    self.openRequested.emit(self.playlist_id)
+                    print(f"[UI] open playlist: {self.title_text}")
+                else:
+                    print(f"Already opend : {self.title_text}")
 
         super().mousePressEvent(event)
 
     def _on_play_clicked(self):
         # if not active.. 
         # then activate it.. open the playlist window..
-        if self.is_active:
+        if not self.is_active:
             self.openRequested.emit(self.playlist_id)
         
         # send the play song request
@@ -452,6 +468,8 @@ class Sidebar(QFrame):
         playlist_item = PlaylistItem(playlist_id, title, subtitle)
         self.playlist_scroll.add_playlist(playlist_item)
 
+        playlist_item.openRequested.connect(self.show_paylist)
+
         # add object with id
         self.playlists_by_id[playlist_id] = playlist_item
 
@@ -472,9 +490,8 @@ class Sidebar(QFrame):
         createPlaylist.show()
 
 
-
-
     def show_home(self):
+        self.de_activate_playlist()
         self.explore_nav_btn.de_activate()
         self.library_nav_btn.de_activate()
         self.home_nav_btn.activate()
@@ -482,6 +499,7 @@ class Sidebar(QFrame):
         
 
     def show_library(self):
+        self.de_activate_playlist()
         self.explore_nav_btn.de_activate()
         self.home_nav_btn.de_activate()
         self.library_nav_btn.activate()
@@ -489,11 +507,39 @@ class Sidebar(QFrame):
 
 
     def show_explore(self):
+        self.de_activate_playlist()
         self.home_nav_btn.de_activate()
         self.library_nav_btn.de_activate()
         self.explore_nav_btn.activate()
         self.navCall.emit("yt")
 
 
-    
+    def show_paylist(self, playlist_id: int):
+        print(f"ShowPlaylistRequest with id : {playlist_id}")
+
+        playlist_obj: PlaylistItem = self.playlists_by_id.get(playlist_id)
+        if playlist_obj is None:
+            print(f"Error ==> No playlist exists with id : {playlist_id}")
+            return
         
+        # de_activate other nav buttons...
+        self.home_nav_btn.de_activate()
+        self.library_nav_btn.de_activate()
+        self.explore_nav_btn.de_activate()
+
+        self.de_activate_playlist(except_playlist=playlist_id)
+        playlist_obj.set_active(True)
+        self.navCall.emit("playlist")
+
+        # request to add songs...
+        self.requestCreatePlaylist.emit(playlist_id)
+
+
+    def de_activate_playlist(self, except_playlist: int = None):
+        for playlist_id, playlist_obj in self.playlists_by_id.items():
+
+            # don't de-activate the except_playlist
+            if playlist_id == except_playlist:
+                continue
+            # de-active the playlist button...
+            playlist_obj.set_active(False)

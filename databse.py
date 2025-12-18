@@ -258,7 +258,7 @@ class DataBase():
 if __name__ == "__main__":
     db = DataBase()
     # db.delete_song(song_id=40)
-    print(dict_format(db.get_playlist()))
+    print(dict_format(db.get_playlist(playlist_id=1)))
 
     # print(db.get_songid_by_vid(vid="hgQInx5xH5E"))
 

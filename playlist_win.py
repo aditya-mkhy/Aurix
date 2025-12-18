@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QFrame,
     QMenu
 )
-from helper import round_pix_form_path
+from helper import round_pix_form_path, round_pix
 
 from helper import round_pix
 from common import ScrollArea
@@ -386,10 +386,20 @@ class PlaylistPlayerWindow(QWidget):
         # collage / big cover
         self.big_cover = QLabel()
 
+        # default cover image.. 
         self.cover_size = 340
         self.cover_radius = 18
 
+        self.default_playlist_cover = round_pix_form_path(
+            path= "./res/playlist.png",
+            width=self.cover_size, 
+            height=self.cover_size, 
+            radius=self.cover_radius
+        )
+
+
         self.big_cover.setFixedHeight(self.cover_size)
+        self.big_cover.setPixmap(self.default_playlist_cover)
         self.big_cover.setStyleSheet(f"border-radius: {self.cover_radius}px; background-color: transparent; width: 100%;")
         self.big_cover.setAlignment(Qt.AlignCenter)
         left_layout.addWidget(self.big_cover)

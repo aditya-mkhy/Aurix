@@ -52,11 +52,11 @@ class LoadFiles(QObject):
 
             self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], song['cover_path'])
 
-        if end_index < len(self.all_songs):
-            QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
+        # if end_index < len(self.all_songs):
+        #     QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
 
-        else:
-            self.finished.emit(True)
+        # else:
+        self.finished.emit(True)
 
 
     def run(self):
@@ -113,7 +113,7 @@ class MusicMainWindow(QMainWindow):
 
         # sidebar
         self.sidebar = Sidebar(parent=self)
-        self.sidebar.requestCreatePlaylist.connect(self.req_create_playlist)
+        self.sidebar.requestCreatePlaylist.connect(self.save_playlist)
         self.sidebar.navCall.connect(self._nav_call)
         middle_layout.addWidget(self.sidebar)
 
@@ -202,7 +202,16 @@ class MusicMainWindow(QMainWindow):
         # for song in songs[:10]:
         #     self.playlistPlayerWin.add_song(song['id'], song['title'], song['subtitle'], song['duration'], song['cover_path'])
 
-    def req_create_playlist(self, title: str, desc: str, privacy: str):
+    def requested_show_playlist(self, playlist_id: int):
+        print(f"Confuring PlayList with ID : {playlist_id}")
+
+        info = self.dataBase.get_playlist(playlist_id=playlist_id)
+
+        meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {info['duration']} minutes"
+
+
+        
+    def save_playlist(self, title: str, desc: str, privacy: str):
         print(f"Title   : {title}")
         print(f"Desc    : {desc}")
         print(f"Privacy : {privacy}")
