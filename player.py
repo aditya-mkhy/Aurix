@@ -2,7 +2,7 @@ import os
 from PyQt5.QtCore import QTimer, pyqtSignal, QObject
 from PyQt5.QtGui import QPixmap
 from helper import get_mp3_metadata
-from util import is_mp3, MUSIC_DIR_PATH, dict_format
+from util import is_mp3, MUSIC_DIR_PATH, COVER_DIR_PATH
 
 MIXER = None #
 
@@ -128,7 +128,8 @@ class PlayerEngine(QObject):
         title = song_info["title"] 
         subtitle = song_info["subtitle"]
         liked = song_info["liked"]
-        cover_path = song_info["cover_path"]
+
+        cover_path = os.path.join(COVER_DIR_PATH, song_info["cover_path"])
 
         # init mixer according to the file
         if out_dev is None:

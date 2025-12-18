@@ -14,7 +14,7 @@ from helper import round_pix_form_path, round_pix
 from helper import round_pix
 from common import ScrollArea
 from typing import List
-from util import trim_text
+from util import trim_text, COVER_DIR_PATH, dict_format
 from common import ScrollArea
 
 
@@ -564,6 +564,8 @@ class PlaylistPlayerWindow(QWidget):
         self.is_playing = True
         self.song_id = None
 
+        self.batch_size = 5
+
     def init_playlist(self, playlist_id: int, title: str, desc: str, meta: str, cover_path: str):
         self.playlist_id = playlist_id
         
@@ -594,6 +596,40 @@ class PlaylistPlayerWindow(QWidget):
         top_spacer.setSizeHint(QSize(0, 50))
         top_spacer.setFlags(Qt.NoItemFlags)
         self.list.addItem(top_spacer)
+
+    def add_in_batch(self, song_list: list, playlist_id: int, batch_size: int = None):
+        if playlist_id != self.playlist_id:
+            print("another playlist is switched..")
+            return
+
+        if batch_size is None:
+            # if not... the use default size
+            batch_size = self.batch_size
+
+        for song in song_list[ :batch_size]:
+            if not os.path.exists(song['path']):
+                print(f"PathNotFound => {song['path']}")
+                # add to delete later
+                # self._to_delete.append(song['id'])
+                continue
+
+
+            cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
+            if not os.path.exists(cover_path):
+                # if cover path not found... 
+                # add logic later
+                pass
+
+            self.add_song(song['id'], song['title'], song['subtitle'], song['duration'], cover_path)
+
+
+        if len(song_list[batch_size: ]) != 0:
+            QTimer.singleShot(300, 
+                lambda song=song_list[batch_size :], pl_id = playlist_id : self.add_in_batch(song, pl_id)
+            )
+        else:
+            print("Done Adding into playlist...")
+
 
     def add_song(self, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
         item = QListWidgetItem()

@@ -54,11 +54,11 @@ class LoadFiles(QObject):
 
             self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], cover_path)
 
-        # if end_index < len(self.all_songs):
-        #     QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
+        if end_index < len(self.all_songs):
+            QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
 
-        # else:
-        self.finished.emit(True)
+        else:
+            self.finished.emit(True)
 
 
     def run(self):
@@ -219,6 +219,9 @@ class MusicMainWindow(QMainWindow):
 
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
 
+        # add songs in the playlist UI
+        song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)
+        self.playlistPlayerWin.add_in_batch(song_list, playlist_id, 4)
 
         
     def save_playlist(self, title: str, desc: str, privacy: str):

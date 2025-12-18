@@ -115,9 +115,11 @@ class DataBase():
         self._update_column("playlist", playlist_id, **update)
 
     def add_playlist_song(self, playlist_id: int, song_id: int, commit = True):
+        position = self._get_next_playlist_song_position(playlist_id=playlist_id)
+        
         try:
             self.cursor.execute(
-                    "INSERT INTO playlist_song (p_id, s_id) VALUES (?, ?)", (playlist_id, song_id)
+                    "INSERT INTO playlist_song (p_id, s_id, position) VALUES (?, ?, ?)", (playlist_id, song_id, position)
                     )
         
         except sqlite3.IntegrityError:
@@ -130,13 +132,28 @@ class DataBase():
 
         return True
     
+    def _get_next_playlist_song_position(self, playlist_id: int) -> int:
+        self.cursor.execute("""
+            SELECT COALESCE(MAX(position), -1) + 1
+            FROM playlist_song
+            WHERE p_id = ?
+        """, (playlist_id,))
+        return self.cursor.fetchone()[0]
 
-    def get_playlist_song(self, playlist_id: int):
-        if playlist_id is not None:
-              self.cursor.execute("SELECT s_id FROM playlist_song WHERE p_id=?", (playlist_id,))
-              return self.cursor.fetchall()
+    
+
+    def get_playlist_song(self, playlist_id: int, detailed = False):
+        if not detailed:
+              self.cursor.execute("SELECT s_id FROM playlist_song WHERE p_id=? ORDER BY position ASC", (playlist_id,))
+              return [song['s_id'] for song in self.cursor.fetchall()]
         
-        self.cursor.execute("SELECT * FROM playlist_song")
+        self.cursor.execute("""
+            SELECT s.*
+            FROM songs s
+            JOIN playlist_song ps ON ps.s_id = s.id
+            WHERE ps.p_id = ?
+            ORDER BY ps.position;
+            """, (playlist_id,))
         return self.cursor.fetchall()
     
 
@@ -182,6 +199,7 @@ class DataBase():
             CREATE TABLE IF NOT EXISTS playlist_song (
                 p_id INTEGER,
                 s_id INTEGER,
+                position INTEGER,
                 FOREIGN KEY(p_id) REFERENCES playlist(id),
                 FOREIGN KEY(s_id) REFERENCES songs(id),
                 UNIQUE(p_id, s_id)
@@ -237,6 +255,11 @@ class DataBase():
         all_song_id = [song['id'] for song in self.cursor.fetchall()]
         return all_song_id
     
+    def get_liked_song_id(self):
+        self.cursor.execute("SELECT id FROM songs WHERE liked = 1 ORDER BY id ASC")
+        all_song_id = [song['id'] for song in self.cursor.fetchall()]
+        return all_song_id
+    
     def get_songid_by_vid(self, vid: str):
         self.cursor.execute("SELECT id FROM songs WHERE vid=?", (vid,))
         data = self.cursor.fetchone()
@@ -258,7 +281,6 @@ class DataBase():
             print(f"[From DB] Song deleted with id : {song_id}")
 
 
-
     def _update_column(self, table: str, column_id: int, **kwargs):
         query = f'UPDATE {table} SET {", ".join(f"{key} = ?" for key in kwargs.keys())} WHERE id = ?'
 
@@ -272,3 +294,22 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
+    # db.cursor.execute("DELETE FROM playlist_song WHERE p_id = 0;")
+    # db.conn.commit()
+
+    print(dict_format(db.get_playlist()))
+
+
+    # nex_pos = db._get_next_playlist_song_position(0)
+    # print(f"Next_pos => {nex_pos}")
+
+    # liked_song = db.get_playlist_song(1, detailed=True)
+    # print(f"DictFormat ==>  {dict_format(liked_song)}")
+
+    # liked_song_list = db.get_liked_song_id()
+    # print(liked_song_list)
+
+    # for song_id in liked_song_list:
+    #     db.add_playlist_song(1, song_id)
+
+
