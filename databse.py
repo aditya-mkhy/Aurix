@@ -114,6 +114,19 @@ class DataBase():
     def update_playlist(self, playlist_id: int, **update):
         self._update_column("playlist", playlist_id, **update)
 
+    def remove_playlist_song(self, playlist_id: int, song_id: int, commit = True):
+        self.cursor.execute("DELETE FROM playlist_song WHERE p_id = ? AND s_id = ?", (playlist_id, song_id))
+        self.conn.commit()
+
+        if self.cursor.rowcount == 0:
+            print(f"[From DB] No song in playlist : {playlist_id} with this id : {song_id}")
+            return False
+        
+        else:
+            print(f"[From DB] Song deleted from playlist : {playlist_id} with id : {song_id}")
+            return True
+
+
     def add_playlist_song(self, playlist_id: int, song_id: int, commit = True):
         position = self._get_next_playlist_song_position(playlist_id=playlist_id)
         

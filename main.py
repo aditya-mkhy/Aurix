@@ -262,6 +262,16 @@ class MusicMainWindow(QMainWindow):
         print(f"song_id => {song_id} value => {value}")
         self.dataBase.update_song(song_id, liked = value)
 
+        if value == 1:
+            # add into liked playlist
+            # liked_playlist id = 1
+            self.dataBase.add_playlist_song(1, song_id)
+
+        else:
+            # remove song from liked playlist
+            self.dataBase.remove_playlist_song(1, song_id)
+    
+
         if value == 2:
             # this means user dislike the song.. 
             # so skip this one and play next from all_song_list

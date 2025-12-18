@@ -13,7 +13,7 @@ from helper import round_pix_form_path, round_pix
 
 from helper import round_pix
 from common import ScrollArea
-from typing import List
+from typing import List, Dict
 from util import trim_text, COVER_DIR_PATH, dict_format
 from common import ScrollArea
 
@@ -365,7 +365,7 @@ class PlaylistPlayerWindow(QWidget):
         """)
 
         self.current_index = None
-        self.song_widgets: List[SongRow] = []  # list of SongRow objects
+        self.song_widgets: Dict[int : SongRow] = {} # list of SongRow objects
         self.last_hovered_idx = None
 
         main = QHBoxLayout(self)
@@ -597,6 +597,7 @@ class PlaylistPlayerWindow(QWidget):
         top_spacer.setFlags(Qt.NoItemFlags)
         self.list.addItem(top_spacer)
 
+
     def add_in_batch(self, song_list: list, playlist_id: int, batch_size: int = None):
         if playlist_id != self.playlist_id:
             print("another playlist is switched..")
@@ -633,18 +634,21 @@ class PlaylistPlayerWindow(QWidget):
 
     def add_song(self, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
         item = QListWidgetItem()
-        row = SongRow(song_id, title,subtitle,  duration, cover_path, self)
+        row = SongRow(song_id, title, subtitle,  duration, cover_path, self)
         item.setSizeHint(row.size())
         # connects
         row.playRequested.connect(self.request_play)
         row.playToggleRequested.connect(self.play_toogle)
 
-        self.song_widgets.append(row)
+        self.song_widgets[song_id] = row
         self.list.addItem(item)
         self.list.setItemWidget(item, row)
 
 
     def clear_list(self):
+        # clear previous object
+        self.song_widgets.clear()
+
         while self.list.count():
             item = self.list.takeItem(0)
             widget = self.list.itemWidget(item)
