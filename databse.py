@@ -4,9 +4,11 @@ from util import DATABASE_PATH, dict_format
 import os
 
 class DataBase():
-    def __init__(self):
+    def __init__(self, path:str = None):
+        if path is None:
+            path = DATABASE_PATH
 
-        self.conn = sqlite3.connect(DATABASE_PATH)
+        self.conn = sqlite3.connect(path)
         
         # row_factory to get dict-like rows
         self.conn.row_factory = sqlite3.Row
@@ -16,6 +18,7 @@ class DataBase():
             print(f"Initializing DataBase")
             self._db_init()
             self._init_basic_data()
+            self._init_playlist()
 
     def commit(self):
         self.conn.commit()
@@ -42,8 +45,8 @@ class DataBase():
 
     def _init_basic_data(self):
         data = {
-            "current_song" : "none",
-            "current_playlist" : "none",
+            "current_song" : "",
+            "current_playlist" : "",
             "vol" : "80",
             "repeat" : "0",
             "suffle" : "0",
@@ -55,6 +58,18 @@ class DataBase():
                 ON CONFLICT(key) DO UPDATE SET value = excluded.value;""", (key, value))
             
         self.conn.commit()
+
+    def _init_playlist(self):
+        # add like playlist on start...
+        self.add_playlist(
+            title="Liked Music",
+            subtitle="📌 Auto playlist",
+            author="Self",
+            count=0,
+            duration=0,
+            plays=0,
+            cover_path="like_song_cover.png",
+        )
 
     def add_playlist(
             self, title: str, subtitle: str, author: str, count: int, 
@@ -257,9 +272,3 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
-
-    print(dict_format(db.get_song(1)))
-    # db.delete_song(song_id=40)
-    # print(dict_format(db.get_playlist(playlist_id=1)))
-
-    # print(db.get_songid_by_vid(vid="hgQInx5xH5E"))

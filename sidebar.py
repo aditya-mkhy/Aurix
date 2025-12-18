@@ -460,10 +460,6 @@ class Sidebar(QFrame):
 
         self.playlists_by_id: Dict[int : PlaylistItem] = {}
 
-        # add songs
-        self.create_playlist(0, "Liked Music", "📌 Auto playlist")
-
-
     def create_playlist(self, playlist_id: int, title: str, subtitle: str):
         playlist_item = PlaylistItem(playlist_id, title, subtitle)
         self.playlist_scroll.add_playlist(playlist_item)

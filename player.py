@@ -88,6 +88,10 @@ class PlayerEngine(QObject):
             # everything is same as previous init.. pass
             return
         
+        if not MIXER:
+            # means pygame is not init...
+            self.init()
+
         MIXER.quit() # remove prev init
         self._freq = freq
         self._channels = channels

@@ -8,7 +8,7 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, format_duration
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
@@ -45,12 +45,14 @@ class LoadFiles(QObject):
                 self._to_delete.append(song['id'])
                 continue
 
-            if not os.path.exists(song['cover_path']):
+
+            cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
+            if not os.path.exists(cover_path):
                 # if cover path not found... 
                 # add logic later
                 pass
 
-            self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], song['cover_path'])
+            self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], cover_path)
 
         # if end_index < len(self.all_songs):
         #     QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
@@ -211,7 +213,11 @@ class MusicMainWindow(QMainWindow):
         meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
 
         # init the playlist
-        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, info['cover_path'])
+        cover_path = info['cover_path']
+        if playlist_id == 1:
+            cover_path = os.path.join("./res", cover_path)
+
+        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
 
 
         
