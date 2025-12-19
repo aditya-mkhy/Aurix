@@ -244,10 +244,10 @@ class PlaylistItem(QWidget):
                             color: #000000;
                         }
                         QPushButton:hover {
-                            background-color: #e5e5e5;
+                            background-color: transparent;
                         }
                         QPushButton:pressed {
-                            background-color: #d1d1d1;
+                            background-color: transparent;
                         }
             """)
 
