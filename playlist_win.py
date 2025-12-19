@@ -358,6 +358,7 @@ class SongRow(QWidget):
 class PlaylistPlayerWindow(QWidget):
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
+    navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
 
     def __init__(self, parent = None):
         super().__init__(parent=parent)
@@ -562,6 +563,7 @@ class PlaylistPlayerWindow(QWidget):
 
         main.addLayout(right_layout, 2)
 
+        self.playlist_id = None # current playlist id....
         self.is_playing = True # playing status
         self.song_id = None # current song_id
         self.batch_size = 5 # number of songs added to playlist in one shot
@@ -573,6 +575,9 @@ class PlaylistPlayerWindow(QWidget):
             return
         # transfer to that song...
         item_obj.set_broadcast(type, value)
+
+        # to change status on playlist navbutton...
+        self.navbarPlaylistBroadcast.emit(type, self.playlist_id, value)
 
 
     def init_playlist(self, playlist_id: int, title: str, desc: str, meta: str, cover_path: str):

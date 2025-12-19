@@ -95,6 +95,7 @@ class PlaylistItem(QWidget):
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
 
+
     def __init__(self, playlist_id: int, title: str, subtitle: str, parent=None):
         super().__init__(parent)
         self.title_text = title
@@ -183,6 +184,17 @@ class PlaylistItem(QWidget):
         
         self.setStyleSheet(self.normal_style)
 
+    def set_broadcast(self, type: str, value: bool):
+        if type == "active":
+            self.set_active(value)
+
+        elif type == "playing":
+            self.set_playing(value)
+
+        else:
+            print(f"[PlaylistButtonSection][broadcast] => not implemented for type : {type}")
+
+
     def set_active(self, value):
         if value:
             if self.is_active:
@@ -210,7 +222,6 @@ class PlaylistItem(QWidget):
             # connected request play
             self.play_btn.clicked.connect(self._on_play_clicked)
         
-
 
     def set_playing(self, value):
         # if toogle emit if not connected with 
@@ -459,6 +470,15 @@ class Sidebar(QFrame):
         layout.addWidget(self.playlist_scroll)
 
         self.playlists_by_id: Dict[int : PlaylistItem] = {}
+
+    def set_navbar_playlist_status(self, type: str, playlist_id: int, value: bool):
+        playlist_btn_obj: PlaylistItem = self.playlists_by_id.get(playlist_id)
+        if playlist_btn_obj is None:
+            # if playlist button is not found..
+            return
+        
+        playlist_btn_obj.set_broadcast(type, value)
+
 
     def create_playlist(self, playlist_id: int, title: str, subtitle: str):
         playlist_item = PlaylistItem(playlist_id, title, subtitle)

@@ -142,6 +142,7 @@ class MusicMainWindow(QMainWindow):
         self.playlistPlayerWin = PlaylistPlayerWindow(parent=self)
         self.playlistPlayerWin.playRequested.connect(self._play_requested)
         self.playlistPlayerWin.playToggleRequested.connect(self.playerEngine.play_toggled)
+        self.playlistPlayerWin.navbarPlaylistBroadcast.connect(self.sidebar.set_navbar_playlist_status)
 
         outer.addWidget(middle_frame, 1)
 
