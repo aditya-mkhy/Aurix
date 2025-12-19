@@ -195,6 +195,7 @@ class MusicMainWindow(QMainWindow):
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
 
+
         QTimer.singleShot(10, self.load_basic_settings)
 
     def open_playlist(self, playlist_id: int):
@@ -217,9 +218,6 @@ class MusicMainWindow(QMainWindow):
 
         
     def save_playlist(self, title: str, desc: str, privacy: str):
-        print(f"Title   : {title}")
-        print(f"Desc    : {desc}")
-        print(f"Privacy : {privacy}")
 
         playlist_id = self.dataBase.add_playlist(
             title=title,
@@ -251,7 +249,6 @@ class MusicMainWindow(QMainWindow):
 
 
     def save_like_dislike_song(self, song_id: int, value: int):
-        print(f"song_id => {song_id} value => {value}")
         self.dataBase.update_song(song_id, liked = value)
 
         if value == 1:
@@ -287,9 +284,6 @@ class MusicMainWindow(QMainWindow):
         except:
             index = -1
 
-        print(f"Prev_index ==> {index}")
-
-
         if is_back:
             index -= 1
         else:
@@ -298,19 +292,15 @@ class MusicMainWindow(QMainWindow):
         if index < 0 or index >= len(self.all_song_list):
             index = 0
 
-        print(f"New_index ==> {index}")
-
         return self.all_song_list[index]
 
     def play_next_track(self, song_id: int = None):
         next_song_id = self._get_track(song_id=song_id)
-        print(f"PlatingNextSong : {song_id} --> {next_song_id}")
         self.play_song(song_id=next_song_id) # play next track
 
 
     def play_prevoius_track(self, song_id: int = None):
         prev_song_id = self._get_track(song_id=song_id, is_back=True)
-        print(f"PlatingprevSong : {prev_song_id}")
         self.play_song(song_id=prev_song_id) # play prev track
 
     def on_finish_loader(self, status):
@@ -331,7 +321,6 @@ class MusicMainWindow(QMainWindow):
         self.dataBase.add_song(title, subtitle, artist, vid, duration, 0, 0, 0, path, cover_path)
         # get song_id
         song_id = self.dataBase.get_song_id(path=path)
-        print(f"song_id ==> {song_id}")
 
         # add this to all_song_list at 0
         self.all_song_list.insert(0, song_id)
@@ -342,9 +331,7 @@ class MusicMainWindow(QMainWindow):
             self.yt_screen.songAlreadyexists(track_id, song_id, change_mode=False)
 
         self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=True)
-        print(f"Song : {path} saved with id : {song_id}")
-
-        self.play_song(song_id=song_id)
+        self.play_song(song_id=song_id) # play song
 
 
     def load_basic_settings(self):
@@ -424,19 +411,17 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.play(song_info)
 
     def _play_requested(self, song_id: int):
-        print(f"Playing Song wiht id : {song_id}")
         self.play_song(song_id=song_id)
 
 
     def search_call(self, query: str):
-        print(f"Search Query : {query}")
         self.yt_screen.search_call(query)
 
 
     # call this fun when nav button clicked...
     def _nav_call(self, name: str):
         print(f"Navigation clicked : {name}")
-
+        
         if name == "home":
             self.content_area.setCurrentIndex(0)
 

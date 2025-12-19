@@ -403,9 +403,6 @@ class Sidebar(QFrame):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 8, 8, 8)
         layout.setSpacing(1)
-
-        # ("Explore", False), ("Library", False), ("Upgrade", False)
-
     
         self.home_nav_btn = NavButton(text="Home", icon="./res/home.png")
         layout.addWidget(self.home_nav_btn)

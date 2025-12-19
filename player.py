@@ -167,11 +167,7 @@ class PlayerEngine(QObject):
         self.broadcastMsg.emit("playing", self.song_id, self.is_playing())
 
 
-    def set_seek(self, sec: int):
-        print(f"Sec --> {sec}")
-
-        # mixer.music.play(1, sec)
-        
+    def set_seek(self, sec: int):    
         try:
             MIXER.music.set_pos(sec)
         except:
@@ -183,18 +179,15 @@ class PlayerEngine(QObject):
     def set_repeat_mode(self, value: int):
         if value not in (0, 1, 2):
             return
-        print(f"RepeatModeChanged : {value}")
+
         self._repeat_mode = value
         self.setRepeatMode.emit(self._repeat_mode)
 
 
     def next_track(self):
-        print("Next track is not implemented...")
         self.askForNext.emit(self.song_id)
 
     def prevoius_track(self):
-        print("Prevoius button is clicked...")
-
         if (self.elapsed_sec //1000) >= 5:
             # Restart current track from beginning
             self.setSeekPos.emit(0) # set the seekbar to 0 pos for smothness
