@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
-from PyQt5.QtCore import QTimer, QThread, pyqtSignal, QObject, QTimer
+from PyQt5.QtCore import QTimer, pyqtSignal, QObject
 
 # project import
 from sidebar import Sidebar
@@ -194,19 +194,6 @@ class MusicMainWindow(QMainWindow):
         self.all_song_list = self.dataBase.get_all_song_id()
 
         QTimer.singleShot(10, self.load_basic_settings)
-
-        # playlist_id = 1
-        # title = "Bath Song"
-        # desc = "uset to listen while bating"
-        # meta = "Playlist • Private • 2025\n123 views • 13 tracks • 55 minutes"
-        # cover_path = "./res/cover1.jpg"
-        # self.playlistPlayerWin.init_playlist(playlist_id, title, desc, meta, cover_path)
-        
-        # cover_path = "./res/cover2.jpg"
-
-        # songs = self.dataBase.get_song()
-        # for song in songs[:10]:
-        #     self.playlistPlayerWin.add_song(song['id'], song['title'], song['subtitle'], song['duration'], song['cover_path'])
 
     def open_playlist(self, playlist_id: int):
         print(f"Confuring PlayList with ID : {playlist_id}")

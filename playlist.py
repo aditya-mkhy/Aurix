@@ -1,18 +1,14 @@
-import sys
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QEvent
+from PyQt5.QtCore import Qt, pyqtSignal, QEvent
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QDialog,
-    QLabel, QLineEdit, QTextEdit,
-    QPushButton, QComboBox,
-    QCheckBox, QHBoxLayout, QVBoxLayout
+    QLabel, QLineEdit, QPushButton, QComboBox, 
+    QHBoxLayout, QVBoxLayout
 )
 
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QColor, QPalette
+from PyQt5.QtGui import QFont, QColor, QPalette
 
-# ---------------------------------
-# Create Playlist Context Popup
-# ---------------------------------
+
 class CreatePlaylistPopup(QDialog):
     requestCreatePlaylist = pyqtSignal(str, str, str)
 

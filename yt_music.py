@@ -544,13 +544,7 @@ class YtScreen(QFrame):
 
         self.downloaded_items: Dict[int, TrackRow] = {}
 
-        # icon_path = "C:\\Users\\freya\\Downloads\\song.jpg"
-        # pix  = QPixmap(icon_path)
-        # tite = "Naach Meri Jaan (From \"Tubelight\") Aditya Mukhiya and palak Thakur Lve each other and also fuck Each Other".upper()
-        # sub = "Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi • 123M plays Hellow mahadev ji maaf krdijiye please mahadev ".upper()
-        # url = ""
-        # self.config_one(tite, sub, url, pix)
-        
+ 
     def set_broadcast(self, type: str, item_id: int, value: bool):
         item_obj = self.downloaded_items.get(item_id)
 

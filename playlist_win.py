@@ -1,7 +1,7 @@
 import sys
 import os
-from PyQt5.QtCore import Qt, QSize, QEvent, pyqtSignal, QTimer
-from PyQt5.QtGui import QPixmap, QFont, QIcon
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QTimer
+from PyQt5.QtGui import QFont, QIcon
 
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
@@ -9,12 +9,10 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QFrame,
     QMenu
 )
-from helper import round_pix_form_path, round_pix
-
-from helper import round_pix
+from helper import round_pix_form_path
 from common import ScrollArea
-from typing import List, Dict
-from util import trim_text, COVER_DIR_PATH, dict_format
+from typing import Dict
+from util import trim_text, COVER_DIR_PATH
 from common import ScrollArea
 
 

@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, Q
 from PyQt5.QtGui import QIcon, QFont
 from playlist import CreatePlaylistPopup
 from typing import Dict
-from util import trim_text
 
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
