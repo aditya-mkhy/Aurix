@@ -118,6 +118,8 @@ class MusicMainWindow(QMainWindow):
         self.sidebar.requestCreatePlaylist.connect(self.save_playlist)
         self.sidebar.navCall.connect(self._nav_call)
         self.sidebar.openPlaylistRequested.connect(self.open_playlist)
+        self.sidebar.playToggleRequested.connect(self.playerEngine.play_toggled)
+
         middle_layout.addWidget(self.sidebar)
 
 

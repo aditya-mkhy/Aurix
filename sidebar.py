@@ -252,7 +252,7 @@ class PlaylistItem(QWidget):
             """)
 
         else:
-            self.play_btn.setIcon(self.play_btn)
+            self.play_btn.setIcon(self.play_icon)
             self.play_btn.setStyleSheet("""
                         QPushButton {
                             background-color: #FFFFFF;
@@ -269,6 +269,7 @@ class PlaylistItem(QWidget):
             """)
 
     def _request_toogle(self):
+        print(f"SideBar : toogle emmted...")
         self.playToggleRequested.emit()
 
     # ---------- interactions ----------
@@ -484,6 +485,7 @@ class Sidebar(QFrame):
         self.playlist_scroll.add_playlist(playlist_item)
 
         playlist_item.openRequested.connect(self.show_paylist)
+        playlist_item.playToggleRequested.connect(self.playToggleRequested.emit)
 
         # add object with id
         self.playlists_by_id[playlist_id] = playlist_item
