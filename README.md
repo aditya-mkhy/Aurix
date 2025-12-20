@@ -23,7 +23,16 @@ built using PyQt5 and pygame mixer.
 - Context-style popup dialogs
 - Hover-based interactions (play buttons, overlays)
 - Smooth visual hierarchy (no clutter)
-  
+
+### 📀 Playlist System
+- Create and manage playlists
+- Dedicated **PlaylistPlayerWindow**
+  - Left panel: playlist details & artwork
+  - Right panel: track list with hover play actions
+- Playlist order stored and managed at database level
+- One reusable player window — dynamic data loading
+
+
 
 ## Technologies Used
 
