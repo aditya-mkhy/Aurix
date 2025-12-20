@@ -49,6 +49,19 @@ built using PyQt5 and pygame mixer.
 
 ---
 
+## 🧠 Design Philosophy
+
+- **One window, multiple data states**
+- UI components are **reused**, not recreated
+- Database is the **source of truth**
+- UI only renders data — never owns it
+- No shortcuts, no hacks — only scalable patterns
+
+Aurix is built the way **real desktop apps** are built.
+
+
+
+
 ## Technologies Used
 
 | Feature | Technology |
