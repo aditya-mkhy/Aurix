@@ -12,18 +12,18 @@ built using PyQt5 and pygame mixer.
 <img width="1516" height="921" alt="image" src="https://github.com/user-attachments/assets/8fedc0a8-38f8-4c2c-9200-b4511dce2f9d" />
 &nbsp; &nbsp; &nbsp; 
 
-## Features
 
-- 🎶 Play local music with full metadata support  
-- 🔍 Search songs directly from **YouTube Music**
-- ⬇ Download tracks with **cover art + metadata**
-- 🖼 Automatic cover detection, cleanup & scaling  
-- 🎛 Modern UI: play/pause, skip, repeat, shuffle, like, dislike  
-- 🎚 Smooth animated volume slider  
-- 📁 Playlist support  
-- 🖱 Hover effects + clean interactions (YouTube Music style)
 &nbsp; &nbsp; &nbsp; 
 
+## 🚀 Current Highlights
+
+### 🎨 Modern UI / UX
+- Spotify-inspired **dark theme**
+- Clean layouts with responsive resizing
+- Context-style popup dialogs
+- Hover-based interactions (play buttons, overlays)
+- Smooth visual hierarchy (no clutter)
+  
 
 ## Technologies Used
 
