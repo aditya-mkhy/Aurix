@@ -38,7 +38,16 @@ built using PyQt5 and pygame mixer.
 - Human-readable duration formatting
 - Centralized playback state (UI reacts to data)
 
+### 🗃 Database-Driven Architecture
+- SQLite database
+- Proper relational schema:
+  - `songs`
+  - `playlist`
+  - `playlist_song` (many-to-many with position)
+- Playlist ordering handled via `position`
+- Clean separation between **data**, **logic**, and **UI**
 
+---
 
 ## Technologies Used
 
