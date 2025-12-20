@@ -32,6 +32,12 @@ built using PyQt5 and pygame mixer.
 - Playlist order stored and managed at database level
 - One reusable player window — dynamic data loading
 
+### 🎵 Track Handling
+- Local music playback
+- Per-track metadata (title, artist, duration, cover)
+- Human-readable duration formatting
+- Centralized playback state (UI reacts to data)
+
 
 
 ## Technologies Used
