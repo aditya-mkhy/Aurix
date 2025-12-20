@@ -64,13 +64,16 @@ Aurix is built the way **real desktop apps** are built.
 
 ## Technologies Used
 
-| Feature | Technology |
-|--------|------------|
+| Area | Technology |
+|----|----|
 | UI Framework | PyQt5 |
 | Audio Engine | pygame.mixer |
+| Database | SQLite |
 | Metadata | Mutagen |
-| Web Search & Download | YouTube Music backend |
-| Image Processing | QPixmap + custom trimming |
+| Image Handling | QPixmap |
+| Architecture | MVC-like separation |
+
+---
 &nbsp; &nbsp; &nbsp; 
 
 
