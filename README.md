@@ -76,6 +76,15 @@ Aurix is built the way **real desktop apps** are built.
 ---
 &nbsp; &nbsp; &nbsp; 
 
+## 📌 Project Status
+
+🟡 **Actively evolving**
+
+- UI polish & interactions → ongoing  
+- Playback engine → improving  
+- Playlist logic → stable & expanding  
+- Performance optimizations → planned
+
 
 ## License
 
