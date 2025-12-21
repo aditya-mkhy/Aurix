@@ -17,14 +17,14 @@ built using PyQt5 and pygame mixer.
 
 ## 🚀 Current Highlights
 
-### 🎨 Modern UI / UX
+### Modern UI / UX
 - Spotify-inspired **dark theme**
 - Clean layouts with responsive resizing
 - Context-style popup dialogs
 - Hover-based interactions (play buttons, overlays)
 - Smooth visual hierarchy (no clutter)
 
-### 📀 Playlist System
+### Playlist System
 - Create and manage playlists
 - Dedicated **PlaylistPlayerWindow**
   - Left panel: playlist details & artwork
@@ -32,13 +32,13 @@ built using PyQt5 and pygame mixer.
 - Playlist order stored and managed at database level
 - One reusable player window — dynamic data loading
 
-### 🎵 Track Handling
+### Track Handling
 - Local music playback
 - Per-track metadata (title, artist, duration, cover)
 - Human-readable duration formatting
 - Centralized playback state (UI reacts to data)
 
-### 🗃 Database-Driven Architecture
+### Database-Driven Architecture
 - SQLite database
 - Proper relational schema:
   - `songs`
@@ -47,9 +47,9 @@ built using PyQt5 and pygame mixer.
 - Playlist ordering handled via `position`
 - Clean separation between **data**, **logic**, and **UI**
 
----
+&nbsp; &nbsp; &nbsp; 
 
-## 🧠 Design Philosophy
+## Design Philosophy
 
 - **One window, multiple data states**
 - UI components are **reused**, not recreated
@@ -59,7 +59,7 @@ built using PyQt5 and pygame mixer.
 
 Aurix is built the way **real desktop apps** are built.
 
-
+&nbsp; &nbsp; &nbsp; 
 
 
 ## Technologies Used
@@ -73,10 +73,9 @@ Aurix is built the way **real desktop apps** are built.
 | Image Handling | QPixmap |
 | Architecture | MVC-like separation |
 
----
 &nbsp; &nbsp; &nbsp; 
 
-## 📌 Project Status
+## Project Status
 
 🟡 **Actively evolving**
 
@@ -87,8 +86,7 @@ Aurix is built the way **real desktop apps** are built.
 
 This project grows **feature by feature**, with emphasis on correctness over speed.
 
----
-
+&nbsp; &nbsp; &nbsp; 
 
 ## License
 
