@@ -15,7 +15,7 @@ built using PyQt5 and pygame mixer.
 
 &nbsp; &nbsp; &nbsp; 
 
-## 🚀 Current Highlights
+## Current Highlights
 
 ### Modern UI / UX
 - Spotify-inspired **dark theme**
@@ -77,7 +77,7 @@ Aurix is built the way **real desktop apps** are built.
 
 ## Project Status
 
-🟡 **Actively evolving**
+ **Actively evolving**
 
 - UI polish & interactions → ongoing  
 - Playback engine → improving  
