@@ -85,6 +85,10 @@ Aurix is built the way **real desktop apps** are built.
 - Playlist logic → stable & expanding  
 - Performance optimizations → planned
 
+This project grows **feature by feature**, with emphasis on correctness over speed.
+
+---
+
 
 ## License
 
