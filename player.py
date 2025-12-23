@@ -44,6 +44,7 @@ class PlayerEngine(QObject):
 
     askForNext = pyqtSignal(int)
     askForPreviuos = pyqtSignal(int)
+    infoPlayingStatus = pyqtSignal(int, str)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -258,6 +259,12 @@ class PlayerEngine(QObject):
         
         if not MIXER.music.get_busy():
             self.setSeekPos.emit(self.duration)
+
+            # emit song finish status..
+            # to increase the song play count
+            if self.song_id:
+                print(f"Adding play count for song_id : {self.song_id}")
+                self.infoPlayingStatus.emit(self.song_id, "finished")
             self.stop()
             return
 

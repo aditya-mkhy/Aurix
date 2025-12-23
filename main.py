@@ -177,6 +177,7 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.setSeekPos.connect(self.bottom_bar.set_position)
         self.playerEngine.setRepeatMode.connect(self.set_repeat_mode)
         self.playerEngine.broadcastMsg.connect(self.broadcast_msg)
+        self.playerEngine.infoPlayingStatus.connect(self.commit_song_info_status)
 
         # -> play track signals
         self.playerEngine.askForNext.connect(self.play_next_track)
@@ -197,6 +198,9 @@ class MusicMainWindow(QMainWindow):
 
 
         QTimer.singleShot(10, self.load_basic_settings)
+
+    def commit_song_info_status(self, song_id: str, type: str):
+        print(f"Recv status form player for song : {song_id}  and type : {type}")
 
     def open_playlist(self, playlist_id: int):
         print(f"Confuring PlayList with ID : {playlist_id}")
