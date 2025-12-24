@@ -461,7 +461,6 @@ class Dtube(QThread): # download tube
 
         except Exception as e:
             print("Error [thumbnail_to_mp3] : ", e)
-
         # Finally, write the tags to file
         audio.save()
 
@@ -476,3 +475,6 @@ class Dtube(QThread): # download tube
 if __name__ == "__main__":
     url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
 
+
+
+# this is just for 
