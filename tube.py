@@ -474,12 +474,3 @@ class Dtube(QThread): # download tube
 
 if __name__ == "__main__":
     url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
-
-
-
-# this is just for the GitHub commits..
-
-# i am out if my laptop 💻 
-# and my family kicked 🦵 me out from home...
-
-# just kidding 😂😂😂
