@@ -317,9 +317,4 @@ if __name__ == "__main__":
     # print(f"DictFormat ==>  {dict_format(liked_song)}")
 
     # liked_song_list = db.get_liked_song_id()
-    # print(liked_song_list)
-
-    # for song_id in liked_song_list:
-    #     db.add_playlist_song(1, song_id)
-
 
