@@ -307,8 +307,3 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
-    print(dict_format(db.get_playlist()))
-
-
-    # nex_pos = db._get_next_playlist_song_position(0)
-    # print(f"Next_pos => {nex_pos}")
