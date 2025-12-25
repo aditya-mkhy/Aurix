@@ -307,9 +307,6 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
-    # db.cursor.execute("DELETE FROM playlist_song WHERE p_id = 0;")
-    # db.conn.commit()
-
     print(dict_format(db.get_playlist()))
 
 
