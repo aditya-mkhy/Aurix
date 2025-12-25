@@ -312,9 +312,3 @@ if __name__ == "__main__":
 
     # nex_pos = db._get_next_playlist_song_position(0)
     # print(f"Next_pos => {nex_pos}")
-
-    # liked_song = db.get_playlist_song(1, detailed=True)
-    # print(f"DictFormat ==>  {dict_format(liked_song)}")
-
-    # liked_song_list = db.get_liked_song_id()
-
