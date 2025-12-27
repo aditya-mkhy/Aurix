@@ -239,6 +239,16 @@ class DataBase():
 
         return True
     
+    def increament_play_count(self, song_id: int):
+        song_info = self.get_song(song_id=song_id)
+        if not song_info:
+            print(f"Error[DB] Song not found in the DB")
+            return
+        play_count = song_info["plays"] + 1
+        self.update_song(song_id=song_id, plays = play_count)
+        print(f"PlayCount updated : {play_count}")
+        
+    
     def get_song_id(self, path: str = None, vid: str = None):
         if path is not None:
             self.cursor.execute("SELECT id FROM songs WHERE path=?", (path,))

@@ -202,6 +202,11 @@ class MusicMainWindow(QMainWindow):
     def commit_song_info_status(self, song_id: str, type: str):
         print(f"Recv status form player for song : {song_id}  and type : {type}")
 
+        if type == "finished":
+            # song is finished...
+            # increasing play count.. in db
+            self.dataBase.increament_play_count(song_id=song_id)
+
     def open_playlist(self, playlist_id: int):
         print(f"Confuring PlayList with ID : {playlist_id}")
 
@@ -452,5 +457,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = MusicMainWindow()
     win.show()
-    dark_title_bar(win) # make Windows title bar dark
+    dark_title_bar(win) # make Windows title_bar dark
     sys.exit(app.exec())
