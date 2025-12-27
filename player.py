@@ -60,6 +60,7 @@ class PlayerEngine(QObject):
         self._out_dev = None
         self._volume = 0.8
         self._repeat_mode = 0 # 0=off,1=all,2=one
+        self._is_skip = False # check if song skipped.. to emit finished status
 
         # time
         self._timer = QTimer(self)
@@ -154,6 +155,7 @@ class PlayerEngine(QObject):
         self._timer.start()
 
         self._is_paused = False
+        self._is_skip = False
         self.setPlaying.emit(self.is_playing())
         # to set prevoius Active -> False
 
@@ -175,6 +177,8 @@ class PlayerEngine(QObject):
             MIXER.music.play(1, sec)
 
         self.elapsed_sec = (sec * 1000)
+        # to detect if song is skipped.. 
+        self._is_skip = True
 
 
     def set_repeat_mode(self, value: int):
@@ -263,8 +267,15 @@ class PlayerEngine(QObject):
             # emit song finish status..
             # to increase the song play count
             if self.song_id:
-                print(f"Adding play count for song_id : {self.song_id}")
-                self.infoPlayingStatus.emit(self.song_id, "finished")
+                if not self._is_skip:
+                    # if song is not skipped... 
+                    # only then increase play count
+                    print(f"Adding play count for song_id : {self.song_id}")
+                    self.infoPlayingStatus.emit(self.song_id, "finished")
+
+                else:
+                    print(f"Song is skipped.. so not increasing the play count")
+                    
             self.stop()
             return
 

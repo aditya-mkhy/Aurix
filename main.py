@@ -453,4 +453,4 @@ if __name__ == "__main__":
     win = MusicMainWindow()
     win.show()
     dark_title_bar(win) # make Windows title bar dark
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
