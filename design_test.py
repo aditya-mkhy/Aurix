@@ -99,13 +99,13 @@ class PlaylistPickerMenu(QWidget):
         ##181818
         self.setStyleSheet("""
             QWidget {
-                background: #181818;
+                background: #1a1a1a;
                 border-radius: 18px;
             }
         """)
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(35, 16, 16, 16)
+        root.setContentsMargins(35, 20, 16, 20)
         root.setSpacing(14)
 
         # --- Header ---
