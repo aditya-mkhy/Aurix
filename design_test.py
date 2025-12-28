@@ -30,40 +30,53 @@ class PlaylistItemWidget(QWidget):
         self.playlist_id = playlist_id
         self.setFixedHeight(72)
         self.setCursor(Qt.PointingHandCursor)
+        self.setObjectName("PlaylistItem")
+        self.setAttribute(Qt.WA_Hover, True)
+        self.setMouseTracking(True)
+        self.setAttribute(Qt.WA_StyledBackground, True)
+
 
         self.setStyleSheet("""
-            QWidget {
+            QWidget#PlaylistItem {
                 background: transparent;
+                border-radius: 6px;
             }
-            QWidget:hover {
+
+            QWidget#PlaylistItem:hover {
                 background: #2a2a2a;
-                border-radius: 10px;
             }
         """)
 
+
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(12)
 
         # Cover
         cover_lbl = QLabel()
         cover_lbl.setFixedSize(56, 56)
-        cover_lbl.setStyleSheet("background:#444; border-radius:6px;")
+        cover_lbl.setStyleSheet("background: #444; border-radius: 6px;")
 
         if cover_path:
-            cover_lbl.setPixmap()
+            cover_lbl.setPixmap(round_pix_form_path(cover_path, 56, 56, 6))
 
         # Text
         text_layout = QVBoxLayout()
+        text_layout.addStretch()
+
+        text_layout.setContentsMargins(0, 3, 0, 7)
         name_lbl = QLabel(name)
         name_lbl.setFont(QFont("Segoe UI", 11, QFont.Bold))
-        name_lbl.setStyleSheet("color:white;")
+        name_lbl.setStyleSheet("color: white;  background: transparent;")
+        name_lbl.setFixedHeight(25)
 
         count_lbl = QLabel(f"{count} songs")
-        count_lbl.setStyleSheet("color:#aaaaaa; font-size:10px;")
+        count_lbl.setStyleSheet("color: #aaaaaa; font-size: 14px; font-weight: 450; background: transparent;")
 
         text_layout.addWidget(name_lbl)
         text_layout.addWidget(count_lbl)
+
+
 
         layout.addWidget(cover_lbl)
         layout.addLayout(text_layout)
@@ -81,12 +94,12 @@ class PlaylistPickerMenu(QWidget):
         super().__init__(parent)
 
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedHeight(420)
+        self.setFixedHeight(450)
         self.setFixedWidth(400)
         ##181818
         self.setStyleSheet("""
             QWidget {
-                background: red;
+                background: #181818;
                 border-radius: 18px;
             }
         """)
@@ -241,14 +254,14 @@ class DummyWindow(QWidget):
 
         self.setWindowTitle("Aurix • Playlist Picker Test")
         self.resize(820, 720)
-        self.setStyleSheet("background:#0f0f0f;")
+        self.setStyleSheet("background: #0f0f0f;")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
 
         info = QLabel("Click the button to open Playlist Picker")
-        info.setStyleSheet("color:#aaaaaa;")
+        info.setStyleSheet("color: #aaaaaa;")
         layout.addWidget(info)
 
         layout.addStretch()
@@ -279,11 +292,13 @@ class DummyWindow(QWidget):
         self.picker = PlaylistPickerMenu(self)
         self.picker.move(200, (self.height() - self.picker.height()) - 200)
 
+        cover_path = "C:\\Users\\sungj\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg"
+
         # ---- dummy playlists ----
-        self.picker.add_playlist(PlaylistItemWidget(1, "Liked music", 5))
-        self.picker.add_playlist(PlaylistItemWidget(2, "fav", 2))
-        self.picker.add_playlist(PlaylistItemWidget(3, "Workout", 18))
-        self.picker.add_playlist(PlaylistItemWidget(4, "Chill", 9))
+        self.picker.add_playlist(PlaylistItemWidget(1, "Liked music", 5, cover_path))
+        self.picker.add_playlist(PlaylistItemWidget(2, "fav", 2, cover_path))
+        self.picker.add_playlist(PlaylistItemWidget(3, "Workout", 18, cover_path))
+        self.picker.add_playlist(PlaylistItemWidget(4, "Chill", 9, cover_path))
 
         # ---- signals ----
         self.picker.playlistSelected.connect(self.on_playlist_selected)
