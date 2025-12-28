@@ -16,11 +16,16 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QPixmap, QFont
 
+import os
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
+from PyQt5.QtGui import QIcon, QFont
+from helper import round_pix_form_path
 
 class PlaylistItemWidget(QWidget):
     clicked = pyqtSignal(int)  # playlist_id
 
-    def __init__(self, playlist_id: int, name: str, count: int, cover: QPixmap = None):
+    def __init__(self, playlist_id: int, name: str, count: int, cover_path: str = None):
         super().__init__()
         self.playlist_id = playlist_id
         self.setFixedHeight(72)
@@ -44,8 +49,9 @@ class PlaylistItemWidget(QWidget):
         cover_lbl = QLabel()
         cover_lbl.setFixedSize(56, 56)
         cover_lbl.setStyleSheet("background:#444; border-radius:6px;")
-        if cover:
-            cover_lbl.setPixmap(cover.scaled(56, 56, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
+
+        if cover_path:
+            cover_lbl.setPixmap()
 
         # Text
         text_layout = QVBoxLayout()
@@ -77,35 +83,38 @@ class PlaylistPickerMenu(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(420)
         self.setFixedWidth(400)
-
+        ##181818
         self.setStyleSheet("""
             QWidget {
-                background: #181818;
-                border-top-left-radius: 18px;
-                border-top-right-radius: 18px;
+                background: red;
+                border-radius: 18px;
             }
         """)
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(16, 16, 16, 16)
+        root.setContentsMargins(35, 16, 16, 16)
         root.setSpacing(14)
 
         # --- Header ---
         header = QHBoxLayout()
         title = QLabel("Save to playlist")
-        title.setStyleSheet("color:white; font-size:16px; font-weight:600;")
+        title.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        title.setStyleSheet("color:white;")
 
         close_btn = QPushButton("✕")
-        close_btn.setFixedSize(32, 32)
+        close_btn.setCursor(Qt.PointingHandCursor)
+
+        close_btn.setFixedSize(40, 40)
         close_btn.setStyleSheet("""
             QPushButton {
                 color:white;
                 background: transparent;
-                font-size:16px;
+                font-size: 25px;
+                font-weight: 600;
             }
             QPushButton:hover {
                 background:#2a2a2a;
-                border-radius:16px;
+                border-radius: 20px;
             }
         """)
         close_btn.clicked.connect(self.close)
@@ -191,14 +200,26 @@ class PlaylistPickerMenu(QWidget):
         root.addWidget(scroll)
 
         # --- New Playlist Button ---
-        new_btn = QPushButton("+  New playlist")
+
+        new_btn = QPushButton(" New Playlist")       
         new_btn.setFixedHeight(44)
+
+        new_btn.setFont(QFont("Segoe UI", 12, QFont.Black))
+        new_btn.setCursor(Qt.PointingHandCursor)
+        new_btn.setIcon(QIcon("./res/plus_black.png"))
+        new_btn.setIconSize(QSize(18, 18))
+
+
+        # new_btn = QPushButton("+  New playlist")
+        # new_btn.setFixedHeight(44)
         new_btn.setStyleSheet("""
             QPushButton {
                 background:white;
-                color:black;
-                border-radius:22px;
-                font-weight:600;
+                color: black;
+                border-radius: 22px;
+                font-size: 20px;
+                font-weight: 600;
+                margin-right: 20px;
             }
             QPushButton:hover {
                 background:#e6e6e6;
@@ -256,7 +277,7 @@ class DummyWindow(QWidget):
             self.picker.close()
 
         self.picker = PlaylistPickerMenu(self)
-        self.picker.move(0, self.height() - self.picker.height())
+        self.picker.move(200, (self.height() - self.picker.height()) - 200)
 
         # ---- dummy playlists ----
         self.picker.add_playlist(PlaylistItemWidget(1, "Liked music", 5))
