@@ -247,7 +247,7 @@ class DataBase():
         play_count = song_info["plays"] + 1
         self.update_song(song_id=song_id, plays = play_count)
         print(f"PlayCount updated : {play_count}")
-        
+
     
     def get_song_id(self, path: str = None, vid: str = None):
         if path is not None:
@@ -317,3 +317,22 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
+    info = db.get_playlist(playlist_id=1)
+    print(dict_format(info))
+
+    # update liked playlist
+    # count = 0
+    # duration = 0
+
+    # song_list = db.get_playlist_song(1, detailed=True)
+
+    # for song in song_list:
+    #     count += 1
+    #     duration += song['duration']
+
+    # print(f"Count      :  {count}")
+    # print(f"Duration   :  {duration}")
+
+    # # --->
+
+    # db.update_playlist(playlist_id=1, count = count, duration = duration)
