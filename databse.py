@@ -131,9 +131,29 @@ class DataBase():
         position = self._get_next_playlist_song_position(playlist_id=playlist_id)
         
         try:
+            # add song to the playlist
             self.cursor.execute(
                     "INSERT INTO playlist_song (p_id, s_id, position) VALUES (?, ?, ?)", (playlist_id, song_id, position)
                     )
+            
+
+            # Check if a row was actually inserted
+            if self.cursor.rowcount != 1:
+                # Only update duration if song was newly added
+                return False
+                
+            self.cursor.execute(
+                """
+                UPDATE playlist
+                SET 
+                    duration = duration + (
+                        SELECT duration FROM songs WHERE id = ?
+                    ),
+                    count = count + 1
+                WHERE id = ?
+                """,
+                (song_id, playlist_id)
+            )
         
         except sqlite3.IntegrityError:
             # handle duplicate
