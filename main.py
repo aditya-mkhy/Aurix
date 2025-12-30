@@ -187,7 +187,7 @@ class MusicMainWindow(QMainWindow):
 
         # songCard popup Menu
         self.card_menu = CardMenu(self)
-        self.card_menu.clickedOn.connect(self.show_song_card_menu)
+        self.card_menu.clickedOn.connect(self.card_menu_btn_clicked)
 
 
         self.is_setting = False
