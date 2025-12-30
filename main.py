@@ -127,6 +127,7 @@ class MusicMainWindow(QMainWindow):
         self.home_screen = ContentArea(music_dirs=music_dirs)
         self.home_screen.playRequested.connect(self._play_requested)
         self.home_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
+        self.home_screen.showMenuRequested.connect(self.show_song_card_menu)
 
 
         #LIBRARAY SCREEN
@@ -198,6 +199,9 @@ class MusicMainWindow(QMainWindow):
 
 
         QTimer.singleShot(10, self.load_basic_settings)
+
+    def show_song_card_menu(self, song_id):
+        print(f"Show SongCard menu for song : {song_id}")
 
     def commit_song_info_status(self, song_id: str, type: str):
         print(f"Recv status form player for song : {song_id}  and type : {type}")

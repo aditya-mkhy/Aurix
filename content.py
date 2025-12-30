@@ -162,6 +162,7 @@ class ClickableOverlay(QWidget):
 class SongCard(QWidget):
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
+    showMenuRequested = pyqtSignal(int)
 
     def __init__(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, parent=None):
         super().__init__(parent)
@@ -364,52 +365,9 @@ class SongCard(QWidget):
                 border: none;
             }
         """)
-        
-
-        # menu
-        self.menu = QMenu(self)
-        self.menu.setObjectName("playlistMenu")
-
-        self.menu.addAction("Play next", lambda: print(f"[MENU] Play next: {self.title_text}"))
-        self.menu.addAction("Add to queue", lambda: print(f"[MENU] Add to queue: {self.title_text}"))
-        self.menu.addSeparator()
-        self.menu.addAction("Remove playlist", lambda: print(f"[MENU] Remove: {self.title_text}"))
-        self.menu.setCursor(Qt.PointingHandCursor)
-
-        self.menu.setStyleSheet("""
-            QMenu#playlistMenu {
-                background-color: transparent; 
-                border: 1px solid #3a3b3d;
-                border-radius: 10px;
-                padding: 6px 0px;
-                color: white;
-                font-size: 26px;
-                font-family: 'Segoe UI';
-            }
-
-            QMenu#playlistMenu::item {
-                padding: 10px 16px;
-                border-radius: 6px;
-                margin: 2px 8px;
-            }
-
-            QMenu#playlistMenu::item:selected {
-                background-color: rgba(255, 255, 255, 0.08);
-            }
-
-            QMenu#playlistMenu::item:pressed {
-                background-color: rgba(255, 255, 255, 0.16);
-            }
-
-            QMenu#playlistMenu::separator {
-                height: 1px;
-                margin: 6px 14px;
-                background-color: #3a3b3d;
-            }
-        """)
-
-
-                
+    
+    def _on_menu_clicked(self):
+        self.showMenuRequested.emit(self.song_id)
 
     def set_active(self, active: bool):
         if active:
@@ -451,15 +409,11 @@ class SongCard(QWidget):
     def _on_clicked(self):
         print(f"[UI] open playlist: {self.title_text}")
 
-    def _on_menu_clicked(self):
-        pos = self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight())
-        self.menu.exec_(pos)
-
-
 
 class PlaylistSection(QWidget):
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
+    showMenuRequested = pyqtSignal(int)
 
     def __init__(self, title: str, parent=None):
         super().__init__(parent)
@@ -502,6 +456,8 @@ class PlaylistSection(QWidget):
 
         layout.addWidget(self._list)
 
+    def _on_show_menu_requested(self, song_id):
+        self.showMenuRequested.emit(song_id)
 
     def set_broadcast(self, type: str, song_id: int, value: bool):
         card_obj = self.items.get(song_id)
@@ -531,6 +487,7 @@ class PlaylistSection(QWidget):
         song_card = SongCard(song_id, title, subtitle, path, cover_path)
         song_card.playRequested.connect(self.request_play)
         song_card.playToggleRequested.connect(self.playToggleRequested.emit)
+        song_card.showMenuRequested.connect(self._on_show_menu_requested)
         
         # add song_card object to items dict with path as key..
         self.items[song_id] = song_card
@@ -582,6 +539,7 @@ class PlaylistSection(QWidget):
 class ContentArea(QFrame):
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
+    showMenuRequested = pyqtSignal(int)
 
     def __init__(self, parent = None, music_dirs: list = None):
         super().__init__(parent)
@@ -610,6 +568,7 @@ class ContentArea(QFrame):
         self.section_library = PlaylistSection("From your library")
         self.section_library.playRequested.connect(self.play_requested)
         self.section_library.playToggleRequested.connect(self.playToggleRequested.emit)
+        self.section_library.showMenuRequested.connect(self._on_show_menu_requested)
 
         main_layout.addWidget(self.section_library)
 
@@ -626,6 +585,10 @@ class ContentArea(QFrame):
         # self.local_file_loader.config_one.connect(self.add_item)
         # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
         # self.local_file_loader.start()
+
+    def _on_show_menu_requested(self, song_id):
+        self.showMenuRequested.emit(song_id)
+
 
     def set_broadcast(self, type: str, song_id: int, value: bool):
         # print(f"Boradcast[Content] => {type} | {song_id} | {value}")

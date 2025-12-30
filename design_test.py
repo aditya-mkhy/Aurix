@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, Q
 from PyQt5.QtGui import QIcon, QFont
 from helper import round_pix_form_path
 from menu  import CardMenu
+import random
 
 class PlaylistItemWidget(QWidget):
     clicked = pyqtSignal(int)  # playlist_id
@@ -283,11 +284,17 @@ class DummyWindow(QWidget):
         layout.addWidget(open_btn)
 
         self.picker = None
+        self.menu = CardMenu(self)
+        self.menu.clickedOn.connect(self.menu_btn_clicked)
+
         layout.addStretch()
 
+    def menu_btn_clicked(self, btn: str, song_id: int):
+        print(f"Button : {btn} |  song_id : {song_id}")
+
     def show_menu(self):
-        menu = CardMenu(self)
-        menu.show_at_cursor()
+        song_id = random.randint(1, 300)
+        self.menu.show_at_cursor(song_id)
 
     def show_picker(self):
         if self.picker:

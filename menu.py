@@ -117,5 +117,5 @@ class CardMenu(QWidget):
         self.adjustSize()
 
         pos = QCursor.pos()
-        self.move(pos + QPoint(-self.width() + 12, 12))
+        self.move(pos + QPoint(12, 12))
         self.show()
