@@ -14,6 +14,7 @@ from player import PlayerEngine
 from databse import DataBase
 from typing import List
 from playlist_win import PlaylistPlayerWindow
+from menu import CardMenu
 
 class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
@@ -184,6 +185,11 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine.askForNext.connect(self.play_next_track)
         self.playerEngine.askForPreviuos.connect(self.play_prevoius_track)
 
+        # songCard popup Menu
+        self.card_menu = CardMenu(self)
+        self.card_menu.clickedOn.connect(self.show_song_card_menu)
+
+
         self.is_setting = False
         self.is_suffle = False
 
@@ -202,6 +208,10 @@ class MusicMainWindow(QMainWindow):
 
     def show_song_card_menu(self, song_id):
         print(f"Show SongCard menu for song : {song_id}")
+        self.card_menu.show_at_cursor(song_id)
+
+    def card_menu_btn_clicked(self, btn: str, song_id: int):
+        print(f"Button : {btn} |  song_id : {song_id}")
 
     def commit_song_info_status(self, song_id: str, type: str):
         print(f"Recv status form player for song : {song_id}  and type : {type}")
