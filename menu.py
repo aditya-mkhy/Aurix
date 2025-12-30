@@ -21,9 +21,9 @@ class MenuItem(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 0, 16, 0)
 
-        label = QLabel(text)
-        label.setFont(QFont("Segoe UI", 11))
-        label.setStyleSheet("color: white;")
+        label = QLabel(text) 
+        label.setFont(QFont("Segoe UI", 12))
+        label.setStyleSheet("color: white; background: transparent;")
 
         layout.addWidget(label)
 
@@ -50,7 +50,9 @@ class MenuSeparator(QWidget):
         self.setFixedHeight(1)
         self.setStyleSheet("background: #3a3b3d; margin: 6px 12px;")
 
+
 class CardMenu(QWidget):
+    clickedOn = pyqtSignal(str, int)
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -69,6 +71,11 @@ class CardMenu(QWidget):
         self.play_next = MenuItem("Play next")
         self.add_queue = MenuItem("Add to queue")
         self.remove = MenuItem("Remove playlist")
+
+        # ---- Close on click ----
+        self.play_next.clicked.connect(lambda: self._emit_clicked("next"))
+        self.add_queue.clicked.connect(lambda: self._emit_clicked("queue"))
+        self.remove.clicked.connect(lambda: self._emit_clicked("remove"))
 
         layout.addWidget(self.play_next)
         layout.addWidget(self.add_queue)
@@ -94,8 +101,18 @@ class CardMenu(QWidget):
         self.container.adjustSize()
         self.adjustSize()
 
+        # song_id
+        self.song_id = None
 
-    def show_at_cursor(self):
+    def _emit_clicked(self, btn: str):
+        self.close()
+        if self.song_id:
+            self.clickedOn.emit(btn, self.song_id)
+        self.song_id = None
+
+
+    def show_at_cursor(self, song_id: int):
+        self.song_id = song_id
         self.container.adjustSize()
         self.adjustSize()
 
