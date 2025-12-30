@@ -21,6 +21,7 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
 from PyQt5.QtGui import QIcon, QFont
 from helper import round_pix_form_path
+from menu  import CardMenu
 
 class PlaylistItemWidget(QWidget):
     clicked = pyqtSignal(int)  # playlist_id
@@ -262,9 +263,7 @@ class DummyWindow(QWidget):
 
         info = QLabel("Click the button to open Playlist Picker")
         info.setStyleSheet("color: #aaaaaa;")
-        layout.addWidget(info)
 
-        layout.addStretch()
 
         open_btn = QPushButton("Open Playlist Picker")
         open_btn.setFixedHeight(48)
@@ -280,10 +279,15 @@ class DummyWindow(QWidget):
                 background:#1ed760;
             }
         """)
-        open_btn.clicked.connect(self.show_picker)
+        open_btn.clicked.connect(self.show_menu)
         layout.addWidget(open_btn)
 
         self.picker = None
+        layout.addStretch()
+
+    def show_menu(self):
+        menu = CardMenu(self)
+        menu.show_at_cursor()
 
     def show_picker(self):
         if self.picker:

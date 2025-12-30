@@ -223,7 +223,7 @@ class SongCard(QWidget):
             QLabel {{
                 border: none;
                 padding: 0;
-                border-radius: 14px;
+                border-radius: 8px;
             }}
         """)
 
@@ -362,49 +362,6 @@ class SongCard(QWidget):
                 background-color: transparent;
                 border-radius: 16px;
                 border: none;
-            }
-        """)
-        
-
-        # menu
-        self.menu = QMenu(self)
-        self.menu.setObjectName("playlistMenu")
-
-        self.menu.addAction("Play next", lambda: print(f"[MENU] Play next: {self.title_text}"))
-        self.menu.addAction("Add to queue", lambda: print(f"[MENU] Add to queue: {self.title_text}"))
-        self.menu.addSeparator()
-        self.menu.addAction("Remove playlist", lambda: print(f"[MENU] Remove: {self.title_text}"))
-        self.menu.setCursor(Qt.PointingHandCursor)
-
-        self.menu.setStyleSheet("""
-            QMenu#playlistMenu {
-                background-color: transparent; 
-                border: 1px solid #3a3b3d;
-                border-radius: 10px;
-                padding: 6px 0px;
-                color: white;
-                font-size: 26px;
-                font-family: 'Segoe UI';
-            }
-
-            QMenu#playlistMenu::item {
-                padding: 10px 16px;
-                border-radius: 6px;
-                margin: 2px 8px;
-            }
-
-            QMenu#playlistMenu::item:selected {
-                background-color: rgba(255, 255, 255, 0.08);
-            }
-
-            QMenu#playlistMenu::item:pressed {
-                background-color: rgba(255, 255, 255, 0.16);
-            }
-
-            QMenu#playlistMenu::separator {
-                height: 1px;
-                margin: 6px 14px;
-                background-color: #3a3b3d;
             }
         """)
 
