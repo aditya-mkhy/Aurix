@@ -70,16 +70,18 @@ class CardMenu(QWidget):
 
         self.play_next = MenuItem("Play next")
         self.add_queue = MenuItem("Add to queue")
-        self.remove = MenuItem("Remove playlist")
+        self.add_playlist = MenuItem("Save to playlist")
+        self.remove = MenuItem("Remove song")
 
         # ---- Close on click ----
         self.play_next.clicked.connect(lambda: self._emit_clicked("next"))
         self.add_queue.clicked.connect(lambda: self._emit_clicked("queue"))
+        self.add_playlist.clicked.connect(lambda: self._emit_clicked("playlist"))
         self.remove.clicked.connect(lambda: self._emit_clicked("remove"))
 
         layout.addWidget(self.play_next)
         layout.addWidget(self.add_queue)
-        layout.addWidget(MenuSeparator())
+        layout.addWidget(self.add_playlist)
         layout.addWidget(self.remove)
 
         self.container.setStyleSheet("""

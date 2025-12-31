@@ -235,8 +235,6 @@ class LocalFilesLoader(QThread):
         self.finished.emit(True)
 
 
-        
-
     def _list_music(self, directory: str):
         for file in os.listdir(directory):
             absolute_path = os.path.join(directory, file)

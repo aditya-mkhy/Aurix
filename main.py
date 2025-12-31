@@ -234,6 +234,8 @@ class MusicMainWindow(QMainWindow):
             self.all_song_list.append(song_id)
             print(f"Song {song_id} added to queue")
 
+        elif btn == "playlist":
+            print(f"Opening playlist popup to add song : {song_id}")
 
 
     def commit_song_info_status(self, song_id: str, type: str):
