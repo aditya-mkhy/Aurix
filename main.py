@@ -225,6 +225,15 @@ class MusicMainWindow(QMainWindow):
             # add song_id next to the current playing song
             self.all_song_list.insert(next_index, song_id)
 
+        elif btn == "queue":
+            if song_id in self.all_song_list:
+                print("Song already in queue")
+                # later add ui to confirm that user still want it to add alt last
+                return
+
+            self.all_song_list.append(song_id)
+            print(f"Song {song_id} added to queue")
+
 
 
     def commit_song_info_status(self, song_id: str, type: str):
