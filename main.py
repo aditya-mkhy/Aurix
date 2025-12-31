@@ -189,7 +189,6 @@ class MusicMainWindow(QMainWindow):
         self.card_menu = CardMenu(self)
         self.card_menu.clickedOn.connect(self.card_menu_btn_clicked)
 
-
         self.is_setting = False
         self.is_suffle = False
 
@@ -212,6 +211,21 @@ class MusicMainWindow(QMainWindow):
 
     def card_menu_btn_clicked(self, btn: str, song_id: int):
         print(f"Button : {btn} |  song_id : {song_id}")
+
+        if btn == "next":
+            current_song_id = self.playerEngine.song_id # playing song_id
+            try:
+                index = self.all_song_list.index(current_song_id)
+            except Exception as e:
+                print("UnknownError : Song must be the song list... please check..")
+                print(f"Error --> {e}")
+                return
+            
+            next_index = index + 1
+            # add song_id next to the current playing song
+            self.all_song_list.insert(next_index, song_id)
+
+
 
     def commit_song_info_status(self, song_id: str, type: str):
         print(f"Recv status form player for song : {song_id}  and type : {type}")
