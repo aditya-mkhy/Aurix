@@ -3,28 +3,10 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QPushButton, QLabel
 )
-from PyQt5.QtCore import Qt
 
-from PyQt5.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QScrollArea,
-    QPushButton, QFrame, QHBoxLayout
-)
-from PyQt5.QtCore import Qt, pyqtSignal
-
-
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
-from PyQt5.QtGui import QPixmap, QFont
-
-import os
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QScrollArea
-from PyQt5.QtGui import QIcon, QFont
-from helper import round_pix_form_path
 from menu  import CardMenu
 import random
-
-from playlist import PlaylistPickerMenu
+from menu import PlaylistPickerMenu
 
 class DummyWindow(QWidget):
     def __init__(self):
