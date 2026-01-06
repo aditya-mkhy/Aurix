@@ -498,5 +498,3 @@ if __name__ == "__main__":
     win.show()
     dark_title_bar(win) # make Windows title_bar dark
     sys.exit(app.exec())
-
-    # this is application
