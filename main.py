@@ -14,6 +14,7 @@ from player import PlayerEngine
 from databse import DataBase
 from typing import List
 from playlist_win import PlaylistPlayerWindow
+from playlist import CreatePlaylistPopup
 from menu import CardMenu
 
 class LoadFiles(QObject):
@@ -236,6 +237,7 @@ class MusicMainWindow(QMainWindow):
 
         elif btn == "playlist":
             print(f"Opening playlist popup to add song : {song_id}")
+
 
 
     def commit_song_info_status(self, song_id: str, type: str):

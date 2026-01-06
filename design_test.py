@@ -24,231 +24,7 @@ from helper import round_pix_form_path
 from menu  import CardMenu
 import random
 
-class PlaylistItemWidget(QWidget):
-    clicked = pyqtSignal(int)  # playlist_id
-
-    def __init__(self, playlist_id: int, name: str, count: int, cover_path: str = None):
-        super().__init__()
-        self.playlist_id = playlist_id
-        self.setFixedHeight(72)
-        self.setCursor(Qt.PointingHandCursor)
-        self.setObjectName("PlaylistItem")
-        self.setAttribute(Qt.WA_Hover, True)
-        self.setMouseTracking(True)
-        self.setAttribute(Qt.WA_StyledBackground, True)
-
-
-        self.setStyleSheet("""
-            QWidget#PlaylistItem {
-                background: transparent;
-                border-radius: 6px;
-            }
-
-            QWidget#PlaylistItem:hover {
-                background: #2a2a2a;
-            }
-        """)
-
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(12)
-
-        # Cover
-        cover_lbl = QLabel()
-        cover_lbl.setFixedSize(56, 56)
-        cover_lbl.setStyleSheet("background: #444; border-radius: 6px;")
-
-        if cover_path:
-            cover_lbl.setPixmap(round_pix_form_path(cover_path, 56, 56, 6))
-
-        # Text
-        text_layout = QVBoxLayout()
-        text_layout.addStretch()
-
-        text_layout.setContentsMargins(0, 3, 0, 7)
-        name_lbl = QLabel(name)
-        name_lbl.setFont(QFont("Segoe UI", 11, QFont.Bold))
-        name_lbl.setStyleSheet("color: white;  background: transparent;")
-        name_lbl.setFixedHeight(25)
-
-        count_lbl = QLabel(f"{count} songs")
-        count_lbl.setStyleSheet("color: #aaaaaa; font-size: 14px; font-weight: 450; background: transparent;")
-
-        text_layout.addWidget(name_lbl)
-        text_layout.addWidget(count_lbl)
-
-
-
-        layout.addWidget(cover_lbl)
-        layout.addLayout(text_layout)
-        layout.addStretch()
-
-    def mousePressEvent(self, event):
-        self.clicked.emit(self.playlist_id)
-
-
-class PlaylistPickerMenu(QWidget):
-    playlistSelected = pyqtSignal(int)
-    newPlaylistRequested = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setFixedHeight(450)
-        self.setFixedWidth(400)
-        ##181818
-        self.setStyleSheet("""
-            QWidget {
-                background: #1a1a1a;
-                border-radius: 18px;
-            }
-        """)
-
-        root = QVBoxLayout(self)
-        root.setContentsMargins(35, 20, 16, 20)
-        root.setSpacing(14)
-
-        # --- Header ---
-        header = QHBoxLayout()
-        title = QLabel("Save to playlist")
-        title.setFont(QFont("Segoe UI", 15, QFont.Bold))
-        title.setStyleSheet("color:white;")
-
-        close_btn = QPushButton("✕")
-        close_btn.setCursor(Qt.PointingHandCursor)
-
-        close_btn.setFixedSize(40, 40)
-        close_btn.setStyleSheet("""
-            QPushButton {
-                color:white;
-                background: transparent;
-                font-size: 25px;
-                font-weight: 600;
-            }
-            QPushButton:hover {
-                background:#2a2a2a;
-                border-radius: 20px;
-            }
-        """)
-        close_btn.clicked.connect(self.close)
-
-        header.addWidget(title)
-        header.addStretch()
-        header.addWidget(close_btn)
-        root.addLayout(header)
-
-        # --- Scroll Area ---
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-
-        scroll.setStyleSheet("""
-            QScrollArea {
-                border: none;
-                background: transparent;
-            }
-
-            QScrollArea > QWidget > QWidget {
-                background: transparent;
-                border: none;
-            }
-
-            QScrollBar:vertical {
-                background: #000;
-                width: 10px;
-                border: none;
-                margin: 0;
-                padding: 0;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #b3b3b3;
-                border-radius: 4px;
-                border: none;
-                min-height: 30px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                background: transparent;
-                height: 10px;
-                border: none;
-            }
-
-            QScrollBar::add-page:vertical,
-            QScrollBar::sub-page:vertical {
-                background: #171717;
-                border: none;
-                border-radius: 4px;
-            }
-
-            QScrollBar::up-arrow:vertical {
-                border-bottom: 6px solid #b3b3b3;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                background: transparent;
-            }
-
-            QScrollBar::down-arrow:vertical {
-                border-top: 6px solid #b3b3b3;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                background: transparent;
-            }
-
-            *:focus {
-                outline: none;
-            }
-        """)
-
-
-        content = QWidget()
-        self.list_layout = QVBoxLayout(content)
-        self.list_layout.setSpacing(6)
-        self.list_layout.addStretch()
-
-        scroll.setWidget(content)
-        root.addWidget(scroll)
-
-        # --- New Playlist Button ---
-
-        new_btn = QPushButton(" New Playlist")       
-        new_btn.setFixedHeight(44)
-
-        new_btn.setFont(QFont("Segoe UI", 12, QFont.Black))
-        new_btn.setCursor(Qt.PointingHandCursor)
-        new_btn.setIcon(QIcon("./res/plus_black.png"))
-        new_btn.setIconSize(QSize(18, 18))
-
-
-        # new_btn = QPushButton("+  New playlist")
-        # new_btn.setFixedHeight(44)
-        new_btn.setStyleSheet("""
-            QPushButton {
-                background:white;
-                color: black;
-                border-radius: 22px;
-                font-size: 20px;
-                font-weight: 600;
-                margin-right: 20px;
-            }
-            QPushButton:hover {
-                background:#e6e6e6;
-            }
-        """)
-        new_btn.clicked.connect(self.newPlaylistRequested)
-
-        root.addWidget(new_btn)
-
-    # ---- API to add playlists ----
-    def add_playlist(self, playlist_widget: PlaylistItemWidget):
-        playlist_widget.clicked.connect(self.playlistSelected)
-        self.list_layout.insertWidget(self.list_layout.count() - 1, playlist_widget)
-
+from playlist import PlaylistPickerMenu
 
 class DummyWindow(QWidget):
     def __init__(self):
@@ -280,7 +56,7 @@ class DummyWindow(QWidget):
                 background:#1ed760;
             }
         """)
-        open_btn.clicked.connect(self.show_menu)
+        open_btn.clicked.connect(self.show_picker)
         layout.addWidget(open_btn)
 
         self.picker = None
@@ -306,10 +82,10 @@ class DummyWindow(QWidget):
         cover_path = "C:\\Users\\sungj\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg"
 
         # ---- dummy playlists ----
-        self.picker.add_playlist(PlaylistItemWidget(1, "Liked music", 5, cover_path))
-        self.picker.add_playlist(PlaylistItemWidget(2, "fav", 2, cover_path))
-        self.picker.add_playlist(PlaylistItemWidget(3, "Workout", 18, cover_path))
-        self.picker.add_playlist(PlaylistItemWidget(4, "Chill", 9, cover_path))
+        self.picker.add_playlist(1, "Liked music", 5, cover_path)
+        self.picker.add_playlist(2, "fav", 2, cover_path)
+        self.picker.add_playlist(3, "Workout", 18, cover_path)
+        self.picker.add_playlist(4, "Chill", 9, cover_path)
 
         # ---- signals ----
         self.picker.playlistSelected.connect(self.on_playlist_selected)
