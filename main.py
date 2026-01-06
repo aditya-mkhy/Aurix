@@ -8,14 +8,14 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH, dict_format
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
 from typing import List
 from playlist_win import PlaylistPlayerWindow
 from playlist import CreatePlaylistPopup
-from menu import CardMenu
+from menu import CardMenu, PlaylistPickerMenu
 
 class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
@@ -192,6 +192,7 @@ class MusicMainWindow(QMainWindow):
 
         self.is_setting = False
         self.is_suffle = False
+        self.picker_menu:  PlaylistPickerMenu = None
 
 
         # Thread to add files...
@@ -237,7 +238,33 @@ class MusicMainWindow(QMainWindow):
 
         elif btn == "playlist":
             print(f"Opening playlist popup to add song : {song_id}")
+            self.show_picker_menu()
 
+    def show_picker_menu(self):
+        if self.picker_menu:
+            self.picker_menu.close()
+
+        self.picker_menu = PlaylistPickerMenu(self)
+        self.picker_menu.move(200, (self.height() - self.picker_menu.height()) - 200)
+
+        # fetch the list from db
+        playlists = self.dataBase.get_playlist()
+        for playlist in playlists:
+            self.picker_menu.add_playlist(playlist["id"], playlist["title"], playlist["count"], playlist["cover_path"])
+
+        # ---- signals ----
+        self.picker_menu.playlistSelected.connect(self.on_playlist_selected)
+        self.picker_menu.newPlaylistRequested.connect(self.on_new_playlist)
+
+        self.picker_menu.show()
+
+
+    def on_playlist_selected(self, playlist_id):
+        print(f"[TEST] Playlist selected → ID: {playlist_id}")
+        self.picker_menu.close()
+
+    def on_new_playlist(self):
+        print("[TEST] New playlist requested")
 
 
     def commit_song_info_status(self, song_id: str, type: str):
@@ -421,7 +448,7 @@ class MusicMainWindow(QMainWindow):
         for playlist in playlists:
             self.sidebar.create_playlist(playlist['id'], playlist['title'], playlist['subtitle'])
 
-        # loading data..
+        # loading data.......
         self.loader.run()
 
 
