@@ -245,7 +245,10 @@ class MusicMainWindow(QMainWindow):
             self.picker_menu.close()
 
         self.picker_menu = PlaylistPickerMenu(self)
-        self.picker_menu.move(200, (self.height() - self.picker_menu.height()) - 200)
+        self.picker_menu.move(
+            (self.width() // 2) - (self.picker_menu.width() // 2),
+            (self.height() // 2) - (self.picker_menu.height() // 2)
+        )
 
         # fetch the list from db
         playlists = self.dataBase.get_playlist()
