@@ -500,4 +500,3 @@ if __name__ == "__main__":
     sys.exit(app.exec())
 
     # this is application
-    # this is just a fake commit...
