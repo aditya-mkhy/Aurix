@@ -202,7 +202,12 @@ class MusicMainWindow(QMainWindow):
         # fetch the list from db
         playlists = self.dataBase.get_playlist()
         for playlist in playlists:
-            self.picker_menu.add_playlist(playlist["id"], playlist["title"], playlist["count"], playlist["cover_path"])
+            # init the playlist
+            cover_path = playlist['cover_path']
+            if playlist["id"] == 1:
+                cover_path = os.path.join("./res", cover_path)
+            
+            self.picker_menu.add_playlist(playlist["id"], playlist["title"], playlist["count"], cover_path)
 
         # ---- signals ----
         self.picker_menu.playlistSelected.connect(self.on_playlist_selected)
@@ -214,6 +219,10 @@ class MusicMainWindow(QMainWindow):
     def on_playlist_selected(self, playlist_id: int, song_id: int):
         print(f"[TEST] Playlist selected → ID: {playlist_id} and song_id : {song_id}")
         self.picker_menu.close()
+
+        # add song to playlist in database
+        self.dataBase.add_playlist_song(playlist_id, song_id)        
+
 
     def on_new_playlist(self):
         print("[TEST] New playlist requested")

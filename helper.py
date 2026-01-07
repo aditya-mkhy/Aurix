@@ -10,9 +10,49 @@ from util import is_mp3
 from databse import DataBase
 from typing import List
 from util import gen_thumbnail_path, COVER_DIR_PATH
-
+from PIL import Image
 
 YT_MUSIC = YTMusic()
+
+
+def create_playlist_cover(image_paths, output_path, size=290):
+    """
+    image_paths: list of image file paths (1 to 4)
+    output_path: where to save the playlist cover
+    size: final image size (size x size)
+    """
+
+    images = []
+
+    for path in image_paths[:4]:
+        if os.path.exists(path):
+            img = Image.open(path).convert("RGB")
+            images.append(img)
+
+    if not images:
+        raise ValueError("No valid images provided")
+    
+    if len(images) == 2:
+        images.append(images[1])
+        images.append(images[0])
+
+    # Resize each image to quarter size
+    half = size // 2
+    images = [img.resize((half, half), Image.LANCZOS) for img in images]
+
+    # Create blank canvas
+    collage = Image.new("RGB", (size, size), (0, 0, 0))
+
+    # Paste images (2x2 grid)
+    collage.paste(images[0], (0, 0))
+    collage.paste(images[1], (half, 0))
+    collage.paste(images[2], (0, half))
+    collage.paste(images[3], (half, half))
+
+    collage.save(output_path, "JPEG", quality=100)
+    collage.show()
+    return output_path
+
 
 class LoadFiles(QObject):
     config_one = pyqtSignal(str, str, str, object)
@@ -482,9 +522,14 @@ class LoadingSpinner(QWidget):
 
 
 if __name__ == "__main__":
-    path  = "C:\\Users\\freya\\Music\\Humdum.mp3"
-    info = get_mp3_metadata(path)
-    info["cover"] = None
+    image_list = [
+        "C:\\Users\\pka\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg",
+        "C:\\Users\\pka\\.aurix\\cvr\\0xqss2rnaw6yxoeip2mcfmrmg9cd55.jpg",
+        "C:\\Users\\pka\\.aurix\\cvr\\0rp0887rq1vyg0kmx9m3wtveosz195.jpg",
+        "C:\\Users\\pka\\.aurix\\cvr\\2urof5ipq7tgvfu59j0l0b8ouw3eo8.jpg",
+    ]
 
-    print("")
-    print(info)
+    outpath = "C:\\Users\\pka\\.aurix\\cvr\\playlist_2.jpg"
+
+    path = create_playlist_cover(image_list, outpath, size=712)
+    
