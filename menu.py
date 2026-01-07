@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QScrollArea, QFrame, QPushButton
 from helper import round_pix_form_path
 
+
 class MenuItem(QWidget):
     clicked = pyqtSignal()
 

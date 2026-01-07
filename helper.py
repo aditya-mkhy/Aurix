@@ -16,25 +16,24 @@ YT_MUSIC = YTMusic()
 
 
 def create_playlist_cover(image_paths, output_path, size=290):
-    """
-    image_paths: list of image file paths (1 to 4)
-    output_path: where to save the playlist cover
-    size: final image size (size x size)
-    """
-
+    # only one image in the list
+    if len(image_paths) == 1:
+        img = Image.open(image_paths[0])
+        img.save(output_path,  "JPEG", quality=100)
+        return outpath
+    
     images = []
-
     for path in image_paths[:4]:
         if os.path.exists(path):
             img = Image.open(path).convert("RGB")
             images.append(img)
 
     if not images:
-        raise ValueError("No valid images provided")
+        return
     
-    if len(images) == 2:
-        images.append(images[1])
-        images.append(images[0])
+    if len(images) < 4:
+        images.insert(2, images[1])
+        images.insert(3, images[0])
 
     # Resize each image to quarter size
     half = size // 2
@@ -523,13 +522,13 @@ class LoadingSpinner(QWidget):
 
 if __name__ == "__main__":
     image_list = [
-        "C:\\Users\\pka\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg",
-        "C:\\Users\\pka\\.aurix\\cvr\\0xqss2rnaw6yxoeip2mcfmrmg9cd55.jpg",
-        "C:\\Users\\pka\\.aurix\\cvr\\0rp0887rq1vyg0kmx9m3wtveosz195.jpg",
-        "C:\\Users\\pka\\.aurix\\cvr\\2urof5ipq7tgvfu59j0l0b8ouw3eo8.jpg",
+        "C:\\Users\\bhumi\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg",
+        "C:\\Users\\bhumi\\.aurix\\cvr\\0xqss2rnaw6yxoeip2mcfmrmg9cd55.jpg",
+        "C:\\Users\\bhumi\\.aurix\\cvr\\0rp0887rq1vyg0kmx9m3wtveosz195.jpg",
+        # "C:\\Users\\bhumi\\.aurix\\cvr\\2urof5ipq7tgvfu59j0l0b8ouw3eo8.jpg",
     ]
 
-    outpath = "C:\\Users\\pka\\.aurix\\cvr\\playlist_2.jpg"
+    outpath = "C:\\Users\\bhumi\\.aurix\\cvr\\playlist_2.jpg"
 
     path = create_playlist_cover(image_list, outpath, size=712)
     

@@ -8,14 +8,14 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, format_duration
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
 from playlist_win import PlaylistPlayerWindow
 from playlist import CreatePlaylistPopup
 from menu import CardMenu, PlaylistPickerMenu
-from helper import LoadFiles
+from helper import LoadFiles, create_playlist_cover
 
 
 class MusicMainWindow(QMainWindow):
@@ -221,7 +221,42 @@ class MusicMainWindow(QMainWindow):
         self.picker_menu.close()
 
         # add song to playlist in database
-        self.dataBase.add_playlist_song(playlist_id, song_id)        
+        self.dataBase.add_playlist_song(playlist_id, song_id)
+        self.create_playlist_cover(playlist_id) # create cover
+
+    def create_playlist_cover(self, playlist_id: int):
+        # skip liked playlist.. 
+        if playlist_id == 1:
+            return
+        
+        # create cover for playlist
+        playlist = self.dataBase.get_playlist(playlist_id=playlist_id)
+
+        # song_id of top 4 songs
+        song_id_list =[str(song_id) for song_id in self.dataBase.get_playlist_song(playlist_id)[:4]]
+
+        # expected playlist cover
+        # it gonna change if a song is deleted or song position is changed....
+        excepted_cover_path = "playlist_" + "".join(song_id_list) + ".jpg"
+
+        if playlist['cover_path'] == excepted_cover_path:
+            return # cover already exists acc. to the current song in playlist
+        
+        # get the cover image of the top 4 songs
+        song_cover_list = []
+        for song_id in song_id_list:
+            song_cover_path = self.dataBase.get_song(song_id= int(song_id))["cover_path"]
+            if song_cover_path:
+                song_cover_list.append(os.path.join(COVER_DIR_PATH, song_cover_path))
+
+        # create a new cover
+        playlist_cover_path = create_playlist_cover(song_cover_list, excepted_cover_path, size=712)
+        if not playlist_cover_path:
+            print(f"Error in creating the playlist cover..")
+            return
+        
+        # update playlist cover in db
+        self.dataBase.update_playlist(playlist_id=playlist_id, cover_path = playlist_cover_path)
 
 
     def on_new_playlist(self):
