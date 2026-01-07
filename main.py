@@ -249,6 +249,9 @@ class MusicMainWindow(QMainWindow):
             if song_cover_path:
                 song_cover_list.append(os.path.join(COVER_DIR_PATH, song_cover_path))
 
+        # absolute path
+        excepted_cover_path = os.path.join(COVER_DIR_PATH, excepted_cover_path)
+
         # create a new cover
         playlist_cover_path = create_playlist_cover(song_cover_list, excepted_cover_path, size=712)
         if not playlist_cover_path:

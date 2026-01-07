@@ -20,7 +20,7 @@ def create_playlist_cover(image_paths, output_path, size=290):
     if len(image_paths) == 1:
         img = Image.open(image_paths[0])
         img.save(output_path,  "JPEG", quality=100)
-        return outpath
+        return output_path
     
     images = []
     for path in image_paths[:4]:
@@ -49,7 +49,6 @@ def create_playlist_cover(image_paths, output_path, size=290):
     collage.paste(images[3], (half, half))
 
     collage.save(output_path, "JPEG", quality=100)
-    collage.show()
     return output_path
 
 
