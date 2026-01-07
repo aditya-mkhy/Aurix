@@ -9,7 +9,6 @@ from ytmusicapi import YTMusic
 from util import is_mp3
 from databse import DataBase
 from typing import List
-from helper import extract_cover_save
 from util import gen_thumbnail_path, COVER_DIR_PATH
 
 

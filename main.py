@@ -104,7 +104,7 @@ class MusicMainWindow(QMainWindow):
         self.content_area.addWidget(self.home_screen)      # index 0
         self.content_area.addWidget(self.library_screen)   # index 1
         self.content_area.addWidget(self.yt_screen)   # index 2
-        self.content_area.addWidget(self.playlistPlayerWin) # 3
+        self.content_area.addWidget(self.playlistPlayerWin) # index 3
 
         middle_layout.addWidget(self.content_area, 1)
         self.content_area.setCurrentIndex(0)
