@@ -1,13 +1,11 @@
 import os
-from pathlib import Path
 from datetime import datetime
 import yt_dlp
 from PyQt5.QtCore import pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3
 from requests  import get as get_request
-from util import make_title_path, MUSIC_DIR_PATH, COVER_DIR_PATH
-from util import gen_unique_id
+from util import make_title_path, gen_thumbnail_path, MUSIC_DIR_PATH
 from helper import crop_and_save_img
 
 class NoLogger:
@@ -98,16 +96,6 @@ def get_mp3_tags(file_path: str, *requested_tags):
     }
 
     return all_tags
-
-def gen_thumbnail_path():
-    ''' gen filename for thumbnail'''
-    while True:
-        unique_name = gen_unique_id(30)
-        filename = f"{unique_name}.jpg"
-        path = os.path.join(COVER_DIR_PATH, filename)
-
-        if not os.path.exists(path):
-            return path
 
     
 def gen_path(title: str, vid: str, artists: list = None) -> str | None:

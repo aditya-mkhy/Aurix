@@ -22,8 +22,16 @@ def gen_unique_id(length=12) -> str:
     new_id = ''.join(secrets.choice(chars) for _ in range(length))
     return new_id
     
+def gen_thumbnail_path():
+    ''' gen filename for thumbnail'''
+    while True:
+        unique_name = gen_unique_id(30)
+        filename = f"{unique_name}.jpg"
+        path = os.path.join(COVER_DIR_PATH, filename)
 
-
+        if not os.path.exists(path):
+            return path
+        
 class MSG(ctypes.Structure):
     _fields_ = [
         ("hwnd",     wintypes.HWND),

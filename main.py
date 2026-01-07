@@ -9,6 +9,8 @@ from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
 from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH, dict_format
+from util import gen_thumbnail_path
+from helper import extract_cover_save
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
@@ -50,9 +52,32 @@ class LoadFiles(QObject):
 
             cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
             if not os.path.exists(cover_path):
-                # if cover path not found... 
-                # add logic later
-                pass
+                # if cover path not found...
+                print(f"Cover ===> {song['cover_path']}")
+                if song['cover_path'] == "":
+                    # if cover not in db
+                    # gen new cover_path
+                    cover_path = gen_thumbnail_path()
+                
+                else:
+                    # get filename  from prev path
+                    filename = os.path.basename(song['cover_path'])
+                    cover_path = os.path.join(COVER_DIR_PATH, filename)
+
+                # extract cover from song and save to cover directory
+                cover_path = extract_cover_save(song['path'], cover_path)
+
+                if not cover_path:
+                    # this song doesn't have a cover
+                    # using default cover image
+                    cover_path = "default cover."  # add later
+                    print(f"CoverNotPath not found in the song file... ==> {song['path']}")
+                    print("Plase  check manually......")
+
+                # save new path to db
+                filename = os.path.basename(cover_path)
+                self.dataBase.update_song(song_id=song['id'], cover_path=filename)
+
 
             self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], cover_path)
 

@@ -54,6 +54,13 @@ def crop_and_save_img(img_data: bytes, out_path: str, from_left: int = 0, from_r
 
     return out_path
 
+def extract_cover_save(song_path: str, cover_path: str):
+    tags = ID3(song_path)
+    for frame in tags.values():
+        if isinstance(frame, APIC):
+            with open(cover_path, "wb") as tf:
+                tf.write(frame.data)
+            return cover_path
 
 
 def get_mp3_metadata(path: str) -> dict:

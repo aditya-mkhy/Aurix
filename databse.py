@@ -369,4 +369,6 @@ if __name__ == "__main__":
     # # --->
 
     # db.update_playlist(playlist_id=1, count = count, duration = duration)
-    
+
+    # update song_path
+   
