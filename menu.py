@@ -189,7 +189,7 @@ class PlaylistItemWidget(QWidget):
 
 
 class PlaylistPickerMenu(QWidget):
-    playlistSelected = pyqtSignal(int)
+    playlistSelected = pyqtSignal(int, int)
     newPlaylistRequested = pyqtSignal()
 
     def __init__(self, song_id: int, parent=None):
@@ -348,6 +348,8 @@ class PlaylistPickerMenu(QWidget):
     def add_playlist(self, playlist_id: int, name: str, count: int, cover_path: str = None):
         playlist_widget = PlaylistItemWidget(playlist_id, name, count, cover_path)
 
-        playlist_widget.clicked.connect(self.playlistSelected)
+        playlist_widget.clicked.connect(self.selected_playlist)
         self.list_layout.insertWidget(self.list_layout.count() - 1, playlist_widget)
-        
+
+    def selected_playlist(self, playlist_id: int):
+        self.playlistSelected.emit(playlist_id, self.song_id)

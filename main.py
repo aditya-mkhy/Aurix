@@ -187,13 +187,13 @@ class MusicMainWindow(QMainWindow):
 
         elif btn == "playlist":
             print(f"Opening playlist popup to add song : {song_id}")
-            self.show_picker_menu()
+            self.show_picker_menu(song_id=song_id)
 
     def show_picker_menu(self, song_id: int):
         if self.picker_menu:
             self.picker_menu.close()
 
-        self.picker_menu = PlaylistPickerMenu(self)
+        self.picker_menu = PlaylistPickerMenu(song_id=song_id, parent=self)
         self.picker_menu.move(
             (self.width() // 2) - (self.picker_menu.width() // 2),
             (self.height() // 2) - (self.picker_menu.height() // 2)
@@ -211,8 +211,8 @@ class MusicMainWindow(QMainWindow):
         self.picker_menu.show()
 
 
-    def on_playlist_selected(self, playlist_id):
-        print(f"[TEST] Playlist selected → ID: {playlist_id}")
+    def on_playlist_selected(self, playlist_id: int, song_id: int):
+        print(f"[TEST] Playlist selected → ID: {playlist_id} and song_id : {song_id}")
         self.picker_menu.close()
 
     def on_new_playlist(self):
