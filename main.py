@@ -288,6 +288,8 @@ class MusicMainWindow(QMainWindow):
 
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
 
+        self.all_song_list = self.dataBase.get_playlist_song(playlist_id=playlist_id)
+
         # add songs in the playlist UI
         song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)
         self.playlistPlayerWin.add_in_batch(song_list, playlist_id, 4)
