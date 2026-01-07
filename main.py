@@ -8,90 +8,14 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH, dict_format
-from util import gen_thumbnail_path
-from helper import extract_cover_save
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
-from typing import List
 from playlist_win import PlaylistPlayerWindow
 from playlist import CreatePlaylistPopup
 from menu import CardMenu, PlaylistPickerMenu
-
-class LoadFiles(QObject):
-    config_one = pyqtSignal(str, str, str, object)
-    addOneSong = pyqtSignal(int, str, str, str, str)
-    finished = pyqtSignal(bool)
-
-    def __init__(self, dataBase: DataBase = None, parent = None):
-        super().__init__(parent)
-
-        self.dataBase = dataBase
-
-        # list of id's of the song wich does not exists anymore
-        # so to remove later add here
-        self._to_delete: List[int] = []
-
-        self.sleep_on_count = 10
-        self.count = 0
-        self.batch_size = 10
-
-        self.all_songs = []
-
-    def add_song_batch(self, start_index: int):
-        end_index = start_index + self.batch_size
-
-        for song in self.all_songs[start_index : end_index]:
-            if not os.path.exists(song['path']):
-                print(f"PathNotFound => {song['path']}")
-                # add to delete later
-                self._to_delete.append(song['id'])
-                continue
-
-
-            cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
-            if not os.path.exists(cover_path):
-                # if cover path not found...
-                print(f"Cover ===> {song['cover_path']}")
-                if song['cover_path'] == "":
-                    # if cover not in db
-                    # gen new cover_path
-                    cover_path = gen_thumbnail_path()
-                
-                else:
-                    # get filename  from prev path
-                    filename = os.path.basename(song['cover_path'])
-                    cover_path = os.path.join(COVER_DIR_PATH, filename)
-
-                # extract cover from song and save to cover directory
-                cover_path = extract_cover_save(song['path'], cover_path)
-
-                if not cover_path:
-                    # this song doesn't have a cover
-                    # using default cover image
-                    cover_path = "default cover."  # add later
-                    print(f"CoverNotPath not found in the song file... ==> {song['path']}")
-                    print("Plase  check manually......")
-
-                # save new path to db
-                filename = os.path.basename(cover_path)
-                self.dataBase.update_song(song_id=song['id'], cover_path=filename)
-
-
-            self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], cover_path)
-
-        if end_index < len(self.all_songs):
-            QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))
-
-        else:
-            self.finished.emit(True)
-
-
-    def run(self):
-        self.all_songs = self.dataBase.get_song()
-        self.add_song_batch(0)
-
+from helper import LoadFiles
 
 
 class MusicMainWindow(QMainWindow):
