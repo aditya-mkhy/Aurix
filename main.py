@@ -240,7 +240,7 @@ class MusicMainWindow(QMainWindow):
             print(f"Opening playlist popup to add song : {song_id}")
             self.show_picker_menu()
 
-    def show_picker_menu(self):
+    def show_picker_menu(self, song_id: int):
         if self.picker_menu:
             self.picker_menu.close()
 

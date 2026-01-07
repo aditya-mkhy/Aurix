@@ -7,7 +7,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
 import secrets
 
-MUSIC_DIR_PATH = default_music_path = os.path.join(Path.home(), "Music")
+MUSIC_DIR_PATH = os.path.join(Path.home(), "Music")
 
 AURIX_DIR_PATH = os.path.join(Path.home(), ".aurix")
 COVER_DIR_PATH = os.path.join(AURIX_DIR_PATH, "cvr")

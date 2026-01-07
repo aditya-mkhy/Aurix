@@ -192,9 +192,9 @@ class PlaylistPickerMenu(QWidget):
     playlistSelected = pyqtSignal(int)
     newPlaylistRequested = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, song_id: int, parent=None):
         super().__init__(parent)
-
+        self.song_id = song_id
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(450)
         self.setFixedWidth(400)
@@ -350,3 +350,4 @@ class PlaylistPickerMenu(QWidget):
 
         playlist_widget.clicked.connect(self.playlistSelected)
         self.list_layout.insertWidget(self.list_layout.count() - 1, playlist_widget)
+        

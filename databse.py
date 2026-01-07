@@ -1,6 +1,6 @@
 import sqlite3
 from typing import List, Dict
-from util import DATABASE_PATH, dict_format
+from util import DATABASE_PATH, dict_format, MUSIC_DIR_PATH
 import os
 
 class DataBase():
@@ -350,8 +350,8 @@ class DataBase():
 
 if __name__ == "__main__":
     db = DataBase()
-    info = db.get_playlist(playlist_id=1)
-    print(dict_format(info))
+    # info = db.get_playlist(playlist_id=1)
+    # print(dict_format(info))
 
     # update liked playlist
     # count = 0
@@ -369,3 +369,4 @@ if __name__ == "__main__":
     # # --->
 
     # db.update_playlist(playlist_id=1, count = count, duration = duration)
+    
