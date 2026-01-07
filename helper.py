@@ -522,13 +522,13 @@ class LoadingSpinner(QWidget):
 
 if __name__ == "__main__":
     image_list = [
-        "C:\\Users\\bhumi\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg",
-        "C:\\Users\\bhumi\\.aurix\\cvr\\0xqss2rnaw6yxoeip2mcfmrmg9cd55.jpg",
-        "C:\\Users\\bhumi\\.aurix\\cvr\\0rp0887rq1vyg0kmx9m3wtveosz195.jpg",
-        # "C:\\Users\\bhumi\\.aurix\\cvr\\2urof5ipq7tgvfu59j0l0b8ouw3eo8.jpg",
+        "C:\\Users\\dgg\\.aurix\\cvr\\9xer8vedluesck35zaqjhamwzkvc6k.jpg",
+        "C:\\Users\\dgg\\.aurix\\cvr\\0xqss2rnaw6yxoeip2mcfmrmg9cd55.jpg",
+        "C:\\Users\\dgg\\.aurix\\cvr\\0rp0887rq1vyg0kmx9m3wtveosz195.jpg",
+        # "C:\\Users\\dgg\\.aurix\\cvr\\2urof5ipq7tgvfu59j0l0b8ouw3eo8.jpg",
     ]
 
-    outpath = "C:\\Users\\bhumi\\.aurix\\cvr\\playlist_2.jpg"
+    outpath = "C:\\Users\\dgg\\.aurix\\cvr\\playlist_2.jpg"
 
     path = create_playlist_cover(image_list, outpath, size=712)
     
