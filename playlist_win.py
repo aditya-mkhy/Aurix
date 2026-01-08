@@ -150,17 +150,18 @@ class HoverThumb(QWidget):
 
     
 class SongRow(QWidget):
-    playRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int, int)
     playToggleRequested = pyqtSignal()
 
 
     def __init__(
-            self, song_id: int, title: str, subtitle: str, 
+            self, song_index: int, song_id: int, title: str, subtitle: str, 
             duration: str, cover_path: str, parent=None
         ):
         super().__init__(parent)
         self.title_txt = title
         self.subtitle_txt = subtitle
+        self.song_index = song_index
         self.song_id = song_id
         self.duration = duration
 
@@ -337,8 +338,8 @@ class SongRow(QWidget):
         return self.thumb.mode
 
     def _play_requested(self):
-        print(f"Request Play : {self.song_id}")
-        self.playRequested.emit(self.song_id)
+        print(f"Request Play : {self.song_id} with index : {self.song_index}")
+        self.playRequested.emit(self.song_index, self.song_id)
 
 
     def show_menu(self):
@@ -354,7 +355,7 @@ class SongRow(QWidget):
 
 
 class PlaylistPlayerWindow(QWidget):
-    playRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int, int)
     playToggleRequested = pyqtSignal()
     navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
 
@@ -610,16 +611,14 @@ class PlaylistPlayerWindow(QWidget):
         self.list.addItem(top_spacer)
 
 
-    def add_in_batch(self, song_list: list, playlist_id: int, batch_size: int = None):
+    def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
         if playlist_id != self.playlist_id:
             print("another playlist is switched..")
             return
 
-        if batch_size is None:
-            # if not... the use default size
-            batch_size = self.batch_size
+        for song in song_list[ :self.batch_size]:
+            song_index += 1 # this song song_index
 
-        for song in song_list[ :batch_size]:
             if not os.path.exists(song['path']):
                 print(f"PathNotFound => {song['path']}")
                 # add to delete later
@@ -633,20 +632,20 @@ class PlaylistPlayerWindow(QWidget):
                 # add logic later
                 pass
 
-            self.add_song(song['id'], song['title'], song['subtitle'], song['duration'], cover_path)
+            self.add_song(song_index, song['id'], song['title'], song['subtitle'], song['duration'], cover_path)
 
 
-        if len(song_list[batch_size: ]) != 0:
+        if len(song_list[self.batch_size: ]) != 0:
             QTimer.singleShot(300, 
-                lambda song=song_list[batch_size :], pl_id = playlist_id : self.add_in_batch(song, pl_id)
+                lambda song=song_list[self.batch_size :], pl_id = playlist_id, index = song_index : self.add_in_batch(song, pl_id, index)
             )
         else:
             print("Done Adding into playlist...")
 
 
-    def add_song(self, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
+    def add_song(self, song_index:int, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
         item = QListWidgetItem()
-        row = SongRow(song_id, title, subtitle,  duration, cover_path, self)
+        row = SongRow(song_index, song_id, title, subtitle,  duration, cover_path, self)
         item.setSizeHint(row.size())
         # connects
         row.playRequested.connect(self.request_play)
@@ -669,9 +668,9 @@ class PlaylistPlayerWindow(QWidget):
             del item
 
 
-    def request_play(self, song_id: int):
+    def request_play(self, song_index: int, song_id: int):
         print(f"Play requested song with id : {song_id}")
-        self.playRequested.emit(song_id)
+        self.playRequested.emit(song_index, song_id)
 
         # if self.song_id is not None: # previus id
         #     prev_row_obj = self.song_widgets[self.song_id]

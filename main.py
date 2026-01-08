@@ -289,7 +289,7 @@ class MusicMainWindow(QMainWindow):
 
         # add songs in the playlist UI
         song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)
-        self.playlistPlayerWin.add_in_batch(song_list, playlist_id, 4)
+        self.playlistPlayerWin.add_in_batch(song_list, playlist_id)
 
         
     def save_playlist(self, title: str, desc: str, privacy: str):
