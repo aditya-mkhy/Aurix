@@ -388,8 +388,9 @@ class MusicMainWindow(QMainWindow):
         prev_index = self.current_index - 1
         if prev_index < 0:
             prev_index = 0
-            
-        self.play_song(song_id=self.priority_queue[prev_index]) # play prev track
+
+        self.current_index = prev_index
+        self.play_song(song_id=self.context_queue[prev_index]) # play prev track
 
     def on_finish_loader(self, status):
         if status:
