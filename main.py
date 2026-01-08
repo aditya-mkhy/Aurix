@@ -149,14 +149,15 @@ class MusicMainWindow(QMainWindow):
         self.loader.finished.connect(self.on_finish_loader)
         # self.loader.start()
 
-        # all song_id list for playing song....
-        self.all_song_list = self.dataBase.get_all_song_id()
-
         # Queues --->
         self.context_queue: list = []
         self.priority_queue: list = []
         self.current_song: int = None
         self.current_index: int = -1
+
+        # all song_id list for playing song....
+        self.all_song_list = self.dataBase.get_all_song_id()
+        self.context_queue = self.all_song_list.copy()
         
         QTimer.singleShot(10, self.load_basic_settings)
 
@@ -292,7 +293,7 @@ class MusicMainWindow(QMainWindow):
 
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
 
-        self.all_song_list = self.dataBase.get_playlist_song(playlist_id=playlist_id)
+        self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
 
         # add songs in the playlist UI
         song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)
@@ -371,10 +372,10 @@ class MusicMainWindow(QMainWindow):
         else:
             index += 1
 
-        if index < 0 or index >= len(self.all_song_list):
+        if index < 0 or index >= len(self.context_queue):
             index = 0
 
-        return self.all_song_list[index]
+        return self.context_queue[index]
 
     def play_next_track(self, song_id: int = None):
         # next_song_id = self._get_track(song_id=song_id)
@@ -512,6 +513,7 @@ class MusicMainWindow(QMainWindow):
         
         if name == "home":
             self.content_area.setCurrentIndex(0)
+            self.context_queue = self.all_song_list.copy()
 
         elif name == "library":
             self.content_area.setCurrentIndex(1)
