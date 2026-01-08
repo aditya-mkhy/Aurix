@@ -482,10 +482,14 @@ class Sidebar(QFrame):
         self.playlist_scroll.add_playlist(playlist_item)
 
         playlist_item.openRequested.connect(self.show_paylist)
+        playlist_item.playRequested.connect(self.play_playlist_requested)
         playlist_item.playToggleRequested.connect(self.playToggleRequested.emit)
 
         # add object with id
         self.playlists_by_id[playlist_id] = playlist_item
+
+    def play_playlist_requested(self, playlist_id: int):
+        self.playPlaylistRequested.emit(playlist_id)
 
 
     def open_playlist_popup(self):
