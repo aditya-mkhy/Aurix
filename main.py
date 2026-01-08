@@ -373,8 +373,12 @@ class MusicMainWindow(QMainWindow):
         # next_song_id = self._get_track(song_id=song_id)
         next_index = self.current_index + 1
 
-        if len(self.context_queue) >= next_index:
+        print(f"next_index = {next_index}")
+        print(f"context_queue len = {len(self.context_queue)}")
+
+        if next_index >= len(self.context_queue):
             next_index = 0
+            # add priority queue play logic later
 
         self.current_index = next_index
         self.play_song(song_id=self.context_queue[self.current_index]) # play next track
