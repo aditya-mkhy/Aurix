@@ -34,7 +34,6 @@ class MusicMainWindow(QMainWindow):
         self.playerEngine = PlayerEngine(parent=self)
 
         self.playlist_paths = []
-        self.current_index = -1
 
         # Media Keys
         self.media_keys = MediaKeys(parent=self)
@@ -153,7 +152,12 @@ class MusicMainWindow(QMainWindow):
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
 
-
+        # Queues --->
+        self.context_queue: list = []
+        self.priority_queue: list = []
+        self.current_song: int = None
+        self.current_index: int = -1
+        
         QTimer.singleShot(10, self.load_basic_settings)
 
     def show_song_card_menu(self, song_id):
@@ -373,8 +377,14 @@ class MusicMainWindow(QMainWindow):
         return self.all_song_list[index]
 
     def play_next_track(self, song_id: int = None):
-        next_song_id = self._get_track(song_id=song_id)
-        self.play_song(song_id=next_song_id) # play next track
+        # next_song_id = self._get_track(song_id=song_id)
+        next_index = self.current_index + 1
+
+        if len(self.context_queue) >= next_index:
+            next_index = 0
+
+        self.current_index = next_index
+        self.play_song(song_id=self.context_queue[self.current_index]) # play next track
 
 
     def play_prevoius_track(self, song_id: int = None):
