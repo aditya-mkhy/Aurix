@@ -172,12 +172,12 @@ class MusicMainWindow(QMainWindow):
             self.priority_queue.append(song_id)
 
         elif btn == "queue":
-            if song_id in self.all_song_list:
+            if song_id in self.context_queue:
                 print("Song already in queue")
                 # later add ui to confirm that user still want it to add alt last
                 return
 
-            self.priority_queue.append(song_id)
+            self.context_queue.append(song_id)
             print(f"Song {song_id} added to priority_queue")
 
         elif btn == "playlist":
