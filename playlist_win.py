@@ -339,7 +339,7 @@ class SongRow(QWidget):
 
     def _play_requested(self):
         print(f"Request Play : {self.song_id} with index : {self.song_index}")
-        self.playRequested.emit(self.song_index, self.song_id)
+        self.playRequested.emit(self.song_id, self.song_index)
 
 
     def show_menu(self):
@@ -668,9 +668,9 @@ class PlaylistPlayerWindow(QWidget):
             del item
 
 
-    def request_play(self, song_index: int, song_id: int):
+    def request_play(self, song_id: int, song_index: int):
         print(f"Play requested song with id : {song_id}")
-        self.playRequested.emit(song_index, song_id)
+        self.playRequested.emit(song_id, song_index)
 
         # if self.song_id is not None: # previus id
         #     prev_row_obj = self.song_widgets[self.song_id]

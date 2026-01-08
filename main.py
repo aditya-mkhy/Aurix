@@ -495,7 +495,11 @@ class MusicMainWindow(QMainWindow):
         
         self.playerEngine.play(song_info)
 
-    def _play_requested(self, song_id: int):
+    def _play_requested(self, song_id: int, song_index: int = None):
+        if song_index != None:
+            print(f"SongIndex : {song_index} with song_id : {song_index}")
+            self.current_index = song_index
+
         self.play_song(song_id=song_id)
 
 
