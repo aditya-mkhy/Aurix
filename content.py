@@ -2,11 +2,10 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFrame, 
     QLabel, QPushButton, QScrollArea, QListWidgetItem, 
-    QListWidget, QListView, QMenu, QSizePolicy, 
+    QListWidget, QListView, QSizePolicy, 
 )
-from PyQt5.QtGui import QFont, QPixmap, QFontMetrics, QIcon
-from helper import LocalFilesLoader
-from helper import round_pix, round_pix_form_path
+from PyQt5.QtGui import QFont, QFontMetrics, QIcon
+from helper import round_pix_form_path
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):

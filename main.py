@@ -94,6 +94,7 @@ class MusicMainWindow(QMainWindow):
         # playlist player window...
         self.playlistPlayerWin = PlaylistPlayerWindow(parent=self)
         self.playlistPlayerWin.playRequested.connect(self._play_requested)
+        self.playlistPlayerWin.playPlaylistRequested.connect(self.play_playlist_requested)
         self.playlistPlayerWin.playToggleRequested.connect(self.playerEngine.play_toggled)
         self.playlistPlayerWin.navbarPlaylistBroadcast.connect(self.sidebar.set_navbar_playlist_status)
 
@@ -161,9 +162,18 @@ class MusicMainWindow(QMainWindow):
         
         QTimer.singleShot(10, self.load_basic_settings)
 
+    def play_playlist_requested(self, playlist_id: int):
+        print(f"Playlist Requested : {playlist_id}")
+
+        # change context_queue
+        self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
+        # play the first song from list
+        self._play_requested(self.context_queue[0], 0)
+
     def show_song_card_menu(self, song_id):
         print(f"Show SongCard menu for song : {song_id}")
         self.card_menu.show_at_cursor(song_id)
+
 
     def card_menu_btn_clicked(self, btn: str, song_id: int):
         print(f"Button : {btn} |  song_id : {song_id}")
@@ -347,26 +357,6 @@ class MusicMainWindow(QMainWindow):
         self.yt_screen.songAlreadyexists(item_id, song_id)
 
 
-    def _get_track(self, song_id: int = None, is_back: bool = False):
-        # retrun the next or previous song_id 
-        if song_id is None:
-            return self.all_song_list[0] # first song from list
-        
-        try:
-            index = self.all_song_list.index(song_id)
-        except:
-            index = -1
-
-        if is_back:
-            index -= 1
-        else:
-            index += 1
-
-        if index < 0 or index >= len(self.context_queue):
-            index = 0
-
-        return self.context_queue[index]
-
     def play_next_track(self, song_id: int = None):
         # play priority_queue first....
         if len(self.priority_queue) > 0:
@@ -395,6 +385,7 @@ class MusicMainWindow(QMainWindow):
 
         self.current_index = prev_index
         self.play_song(song_id=self.context_queue[prev_index]) # play prev track
+
 
     def on_finish_loader(self, status):
         if status:

@@ -356,6 +356,7 @@ class SongRow(QWidget):
 
 class PlaylistPlayerWindow(QWidget):
     playRequested = pyqtSignal(int, int)
+    playPlaylistRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
     navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
 
@@ -467,6 +468,8 @@ class PlaylistPlayerWindow(QWidget):
         play_btn_big.setIcon(QIcon("res/play.png"))  
         play_btn_big.setIconSize(QSize(50, 50))
         play_btn_big.setCursor(Qt.PointingHandCursor)
+        play_btn_big.clicked.connect(self.play_playlist)
+
         play_btn_big.setStyleSheet("""
             QPushButton {
                 background: white; color: black; border-radius: 42px; padding-left: 8px;
@@ -566,6 +569,10 @@ class PlaylistPlayerWindow(QWidget):
         self.is_playing = True # playing status
         self.song_id = None # current song_id
         self.batch_size = 5 # number of songs added to playlist in one shot
+
+    def play_playlist(self):
+        print(f"Playing playlist --> [{self.playlist_id}]")
+        self.playPlaylistRequested.emit(self.playlist_id)
 
     def set_broadcast(self, type: str, item_id: int, value: bool):
         item_obj = self.song_widgets.get(item_id)
