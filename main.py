@@ -169,17 +169,9 @@ class MusicMainWindow(QMainWindow):
         print(f"Button : {btn} |  song_id : {song_id}")
 
         if btn == "next":
-            current_song_id = self.playerEngine.song_id # playing song_id
-            try:
-                index = self.all_song_list.index(current_song_id)
-            except Exception as e:
-                print("UnknownError : Song must be the song list... please check..")
-                print(f"Error --> {e}")
-                return
-            
-            next_index = index + 1
+            next_index = self.current_index + 1
             # add song_id next to the current playing song
-            self.all_song_list.insert(next_index, song_id)
+            self.context_queue.insert(next_index, song_id)
 
         elif btn == "queue":
             if song_id in self.all_song_list:
@@ -187,8 +179,8 @@ class MusicMainWindow(QMainWindow):
                 # later add ui to confirm that user still want it to add alt last
                 return
 
-            self.all_song_list.append(song_id)
-            print(f"Song {song_id} added to queue")
+            self.priority_queue.append(song_id)
+            print(f"Song {song_id} added to priority_queue")
 
         elif btn == "playlist":
             print(f"Opening playlist popup to add song : {song_id}")
