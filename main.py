@@ -169,9 +169,7 @@ class MusicMainWindow(QMainWindow):
         print(f"Button : {btn} |  song_id : {song_id}")
 
         if btn == "next":
-            next_index = self.current_index + 1
-            # add song_id next to the current playing song
-            self.context_queue.insert(next_index, song_id)
+            self.priority_queue.append(song_id)
 
         elif btn == "queue":
             if song_id in self.all_song_list:
@@ -370,6 +368,12 @@ class MusicMainWindow(QMainWindow):
         return self.context_queue[index]
 
     def play_next_track(self, song_id: int = None):
+        # play priority_queue first....
+        if len(self.priority_queue) > 0:
+            song_id = self.priority_queue.pop()
+            self.play_song(song_id=song_id) # play next track
+            return
+
         # next_song_id = self._get_track(song_id=song_id)
         next_index = self.current_index + 1
 
