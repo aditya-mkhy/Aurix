@@ -159,14 +159,15 @@ class ClickableOverlay(QWidget):
 
 
 class SongCard(QWidget):
-    playRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int, int)
     playToggleRequested = pyqtSignal()
     showMenuRequested = pyqtSignal(int)
 
-    def __init__(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, parent=None):
+    def __init__(self, song_indx: int, song_id: int, title: str, subtitle: str, path: str, cover_path: str, parent=None):
         super().__init__(parent)
         # song id
         self.song_id = song_id
+        self.song_indx = song_indx
         self.title_text = title
         self.subtitle_text = subtitle
         self.mp3_path = path
@@ -402,7 +403,7 @@ class SongCard(QWidget):
             self.overlay.hide()
 
     def _on_play_clicked(self):
-        self.playRequested.emit(self.song_id)
+        self.playRequested.emit(self.song_indx, self.song_id)
         
 
     def _on_clicked(self):
@@ -410,7 +411,7 @@ class SongCard(QWidget):
 
 
 class PlaylistSection(QWidget):
-    playRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int, int)
     playToggleRequested = pyqtSignal()
     showMenuRequested = pyqtSignal(int)
 
@@ -473,17 +474,17 @@ class PlaylistSection(QWidget):
             print(f"[PlaylistSection][broadcast] => not implemented for type : {type}")
 
 
-    def request_play(self, song_id: int):
-        self.playRequested.emit(song_id)
+    def request_play(self, song_indx: int, song_id: int):
+        self.playRequested.emit(song_indx, song_id)
 
-    def add_song(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play = False):
+    def add_song(self, song_indx: int, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play = False):
         """
         Add a PlaylistCard title to this section.
         If top=True, inserts at top; otherwise appends at the end.
         """
         item = QListWidgetItem()
 
-        song_card = SongCard(song_id, title, subtitle, path, cover_path)
+        song_card = SongCard(song_indx, song_id, title, subtitle, path, cover_path)
         song_card.playRequested.connect(self.request_play)
         song_card.playToggleRequested.connect(self.playToggleRequested.emit)
         song_card.showMenuRequested.connect(self._on_show_menu_requested)
