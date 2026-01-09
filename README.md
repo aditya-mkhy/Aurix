@@ -4,17 +4,6 @@ Aurix is a modern desktop music player inspired by Spotify & YouTube Music,
 built using PyQt5 and pygame mixer.
 &nbsp; &nbsp; &nbsp; 
 
-
-### UI Preview
-<img width="1919" height="1019" alt="Screenshot 2025-12-07 032834" src="https://github.com/user-attachments/assets/665ab749-6fc9-4165-b18a-72ef6771fac9" />
-&nbsp; &nbsp; &nbsp; 
-
-<img width="1516" height="921" alt="image" src="https://github.com/user-attachments/assets/8fedc0a8-38f8-4c2c-9200-b4511dce2f9d" />
-&nbsp; &nbsp; &nbsp; 
-
-
-&nbsp; &nbsp; &nbsp; 
-
 ## Current Highlights
 
 ### Modern UI / UX
