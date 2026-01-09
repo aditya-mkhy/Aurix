@@ -53,8 +53,7 @@ def create_playlist_cover(image_paths, output_path, size=290):
 
 
 class LoadFiles(QObject):
-    config_one = pyqtSignal(str, str, str, object)
-    addOneSong = pyqtSignal(int, str, str, str, str)
+    addOneSong = pyqtSignal(int, int, str, str, str, str)
     finished = pyqtSignal(bool)
 
     def __init__(self, dataBase: DataBase = None, parent = None):
@@ -68,6 +67,7 @@ class LoadFiles(QObject):
 
         self.sleep_on_count = 10
         self.count = 0
+        self.song_index = -1
         self.batch_size = 10
 
         self.all_songs = []
@@ -76,8 +76,11 @@ class LoadFiles(QObject):
         end_index = start_index + self.batch_size
 
         for song in self.all_songs[start_index : end_index]:
+            self.song_index += 1
+            print("ide==> ", self.song_index)
+
             if not os.path.exists(song['path']):
-                print(f"PathNotFound => {song['path']}")
+                print(f"PathNotFound [{song['id']}] => {song['path']}")
                 # add to delete later
                 self._to_delete.append(song['id'])
                 continue
@@ -112,7 +115,7 @@ class LoadFiles(QObject):
                 self.dataBase.update_song(song_id=song['id'], cover_path=filename)
 
 
-            self.addOneSong.emit(song['id'], song['title'], song['subtitle'], song['path'], cover_path)
+            self.addOneSong.emit(self.song_index, song['id'], song['title'], song['subtitle'], song['path'], cover_path)
 
         if end_index < len(self.all_songs):
             QTimer.singleShot(300, lambda idx=end_index: self.add_song_batch(idx))

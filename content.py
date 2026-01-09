@@ -376,7 +376,6 @@ class SongCard(QWidget):
             self._active = True
             self.overlay.show()
 
-
         else:
             self.play_btn.clicked.disconnect()
             self.play_btn.clicked.connect(self._on_play_clicked)
@@ -403,7 +402,7 @@ class SongCard(QWidget):
             self.overlay.hide()
 
     def _on_play_clicked(self):
-        self.playRequested.emit(self.song_indx, self.song_id)
+        self.playRequested.emit(self.song_id, self.song_indx)
         
 
     def _on_clicked(self):
@@ -474,8 +473,8 @@ class PlaylistSection(QWidget):
             print(f"[PlaylistSection][broadcast] => not implemented for type : {type}")
 
 
-    def request_play(self, song_indx: int, song_id: int):
-        self.playRequested.emit(song_indx, song_id)
+    def request_play(self, song_id: int, song_indx: int):
+        self.playRequested.emit(song_id, song_indx)
 
     def add_song(self, song_indx: int, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play = False):
         """
@@ -537,7 +536,7 @@ class PlaylistSection(QWidget):
 
 
 class ContentArea(QFrame):
-    playRequested = pyqtSignal(int)
+    playRequested = pyqtSignal(int, int)
     playToggleRequested = pyqtSignal()
     showMenuRequested = pyqtSignal(int)
 
@@ -595,18 +594,16 @@ class ContentArea(QFrame):
         self.section_library.set_broadcast(type, song_id, value)
         
 
-    def play_requested(self, song_id: int):
+    def play_requested(self, song_id: int, song_indx: int):
         if song_id is None:
             print(f"Song id not found..")
             return
         
         print(f"Playing SongId : {song_id}")
-        self.playRequested.emit(song_id)
-        
+        self.playRequested.emit(song_id, song_indx)
 
 
-    def add_item(self, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play=False):
+    def add_item(self, song_indx: int, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play=False):
         # is play then add on top
-        self.section_library.add_song(song_id, title, subtitle, path, cover_path, play=play)
-
+        self.section_library.add_song(song_indx, song_id, title, subtitle, path, cover_path, play=play)
 
