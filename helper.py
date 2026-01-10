@@ -77,7 +77,6 @@ class LoadFiles(QObject):
 
         for song in self.all_songs[start_index : end_index]:
             self.song_index += 1
-            print("ide==> ", self.song_index)
 
             if not os.path.exists(song['path']):
                 print(f"PathNotFound [{song['id']}] => {song['path']}")

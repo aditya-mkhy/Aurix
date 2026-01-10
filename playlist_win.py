@@ -679,27 +679,9 @@ class PlaylistPlayerWindow(QWidget):
         print(f"Play requested song with id : {song_id}")
         self.playRequested.emit(song_id, song_index)
 
-        # if self.song_id is not None: # previus id
-        #     prev_row_obj = self.song_widgets[self.song_id]
-        #     prev_row_obj.set_broadcast("active", value=False) 
-
-        # row_obj = self.song_widgets[song_id]
-        # row_obj.set_broadcast("active", value=True)
-        # self.song_id = song_id
-        
-        # # on pause state...
-        # QTimer.singleShot(200, lambda row = row_obj : row.set_broadcast("playing", value=True))
-
+     
     def play_toogle(self):
         self.playToggleRequested.emit()
-
-        # if self.song_id is None:
-        #     return
-        
-        # self.is_playing = not self.is_playing
-        # row_obj = self.song_widgets[self.song_id]
-        # row_obj.set_broadcast("playing", value=self.is_playing)
-
 
     # cleanup
     def closeEvent(self, event):
