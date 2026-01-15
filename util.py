@@ -13,6 +13,9 @@ AURIX_DIR_PATH = os.path.join(Path.home(), ".aurix")
 COVER_DIR_PATH = os.path.join(AURIX_DIR_PATH, "cvr")
 DATABASE_PATH = os.path.join(AURIX_DIR_PATH, "aurix.db")
 
+#ffmpeg path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FFMPEG_DIR = os.path.join(BASE_DIR, "res", "ffmpeg")
 
 os.makedirs(COVER_DIR_PATH, exist_ok=True)
 

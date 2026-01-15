@@ -2,7 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+res/ffmpeg/
 # C extensions
 *.so
 t.html

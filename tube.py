@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3
 from requests  import get as get_request
-from util import make_title_path, gen_thumbnail_path, MUSIC_DIR_PATH
+from util import make_title_path, gen_thumbnail_path, MUSIC_DIR_PATH, FFMPEG_DIR
 from helper import crop_and_save_img
 
 class NoLogger:
@@ -229,6 +229,7 @@ class Dtube(QThread): # download tube
             'no_warnings': True,
             "logger": NoLogger(),
             'outtmpl': self.remove_ext_file_path(),
+            'ffmpeg_location': FFMPEG_DIR,
             "progress_hooks": [self._progress_hook], 
             # hide ffmpeg conversion messages
             "postprocessor_args": ['-hide_banner', '-loglevel', 'error'],

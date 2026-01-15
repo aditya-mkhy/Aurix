@@ -410,14 +410,15 @@ class MusicMainWindow(QMainWindow):
         song_id = self.dataBase.get_song_id(path=path)
 
         # add this to all_song_list at 0
-        self.all_song_list.insert(0, song_id)
+        self.all_song_list.append(song_id)
+        index = len(self.all_song_list) - 1
 
         # set play status in yt_screen for TrackRow
         if track_id is not None:
             # do not change mode to play.. as it already in play mode set after downloading
             self.yt_screen.songAlreadyexists(track_id, song_id, change_mode=False)
 
-        self.home_screen.add_item(song_id, title, subtitle, path, cover_path, play=True)
+        self.home_screen.add_item(index, song_id, title, subtitle, path, cover_path, play=True)
         self.play_song(song_id=song_id) # play song
 
 
