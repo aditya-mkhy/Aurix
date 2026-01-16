@@ -10,13 +10,6 @@ from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QIcon
 from util import format_time, trim_text
 from helper import round_pix_form_path
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RES_DIR = os.path.join(BASE_DIR, "res")
-
-
-def icon(name: str) -> QIcon:
-    return QIcon(os.path.join(RES_DIR, name))
-
 
 class SeekBar(QWidget):
     seekRequested = pyqtSignal(int)         # final seek (mouse release) in seconds
@@ -202,10 +195,10 @@ class BottomBar(QWidget):
         left_l.setContentsMargins(0, 0, 0, 10)
         left_l.setSpacing(15)
 
-        self.prev_btn = self._make_btn(icon("previous.png"), size=34)
-        self.play_btn = self._make_btn(icon("play-card.png"), size=44)
+        self.prev_btn = self._make_btn("res/previous.png", size=34)
+        self.play_btn = self._make_btn("res/play-card.png", size=44)
         self.play_btn.setCheckable(True)
-        self.next_btn = self._make_btn(icon("next.png"), size=34)
+        self.next_btn = self._make_btn("res/next.png", size=34)
 
         self.time_label = QLabel("0:00 / 0:00", left_w)
         self.time_label.setFont(QFont("Segoe UI", 9, QFont.DemiBold))
@@ -259,8 +252,8 @@ class BottomBar(QWidget):
         text_v.addWidget(self.title_label)
         text_v.addWidget(self.meta_label)
 
-        self.dislike_btn = self._make_btn(icon("dislike.png"), size=33)
-        self.like_btn = self._make_btn(icon("like.png"), size=33)
+        self.dislike_btn = self._make_btn("res/dislike.png", size=33)
+        self.like_btn = self._make_btn("res/like.png", size=33)
         # self.more_btn = self._make_btn(QIcon())  # placeholder
         # self.more_btn.setText("⋯")
 
@@ -316,7 +309,7 @@ class BottomBar(QWidget):
         """)
 
         # speaker button
-        self.volume_btn = self._make_btn(icon("volume.png"), size=33)
+        self.volume_btn = self._make_btn("res/volume.png", size=33)
         self.volume_btn.clicked.connect(self._on_volume_btn_clicked)
 
     
@@ -324,8 +317,8 @@ class BottomBar(QWidget):
         right_l.addWidget(self.volume_btn)
         right_l.addSpacing(15)
 
-        self.shuffle_btn = self._make_btn(icon("shuffle-off.png"), size=33)
-        self.repeat_btn = self._make_btn(icon("repeat-off.png"), size=33)
+        self.shuffle_btn = self._make_btn("res/shuffle-off.png", size=33)
+        self.repeat_btn = self._make_btn("res/repeat-off.png", size=33)
 
         right_l.addWidget(self.shuffle_btn)
         right_l.addSpacing(15)
@@ -418,10 +411,10 @@ class BottomBar(QWidget):
 
         self.play_btn.setChecked(self._playing)
         if self._playing:
-            self.play_btn.setIcon(icon("pause.png"))
+            self.play_btn.setIcon("res/pause.png")
 
         else:
-            self.play_btn.setIcon(icon("play-card.png"))
+            self.play_btn.setIcon("res/play-card.png")
 
 
     def set_volume(self, volume: float):
@@ -471,9 +464,9 @@ class BottomBar(QWidget):
 
     def _update_volume_icon(self):
         if self._volume <= 0.01:
-            self.volume_btn.setIcon(icon("volume-mute.png"))
+            self.volume_btn.setIcon("res/volume-mute.png")
         else:
-            self.volume_btn.setIcon(icon("volume.png"))
+            self.volume_btn.setIcon("res/volume.png")
 
     def set_like_dislike(self, value: int = 0, is_emmit = True):
         self._liked = value
@@ -481,16 +474,16 @@ class BottomBar(QWidget):
         print(f"settin the value ==> {value}")
 
         if value == 0:
-            self.dislike_btn.setIcon(icon("dislike.png"))
-            self.like_btn.setIcon(icon("like.png"))
+            self.dislike_btn.setIcon("res/dislike.png")
+            self.like_btn.setIcon("res/like.png")
 
         elif value == 1:
-            self.dislike_btn.setIcon(icon("dislike.png"))
-            self.like_btn.setIcon(icon("like-on.png"))
+            self.dislike_btn.setIcon("res/dislike.png")
+            self.like_btn.setIcon("res/like-on.png")
 
         elif value == 2:
-            self.like_btn.setIcon(icon("like.png"))
-            self.dislike_btn.setIcon(icon("dislike-on.png"))
+            self.like_btn.setIcon("res/like.png")
+            self.dislike_btn.setIcon("res/dislike-on.png")
 
         else:
             print(f"Error : Invalid value for like -> {value}")
@@ -518,7 +511,7 @@ class BottomBar(QWidget):
 
     def set_shuffle(self, value: bool):
         self._shuffle = value
-        self.shuffle_btn.setIcon(icon("shuffle-on.png" if self._shuffle else "shuffle-off.png"))
+        self.shuffle_btn.setIcon("res/shuffle-on.png" if self._shuffle else "res/shuffle-off.png")
 
 
     def _on_shuffle_clicked(self):
@@ -533,10 +526,10 @@ class BottomBar(QWidget):
         self._repeat_mode = value
 
         if self._repeat_mode == 0:
-            ic = "repeat-off.png"
+            ic = "res/repeat-off.png"
         elif self._repeat_mode == 1:
-            ic = "repeat-all.png"
+            ic = "res/repeat-all.png"
         else:
-            ic = "repeat-one.png"
-        self.repeat_btn.setIcon(icon(ic))
+            ic = "res/repeat-one.png"
+        self.repeat_btn.setIcon(ic)
 
