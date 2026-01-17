@@ -593,6 +593,8 @@ class PlaylistPlayerWindow(QWidget):
         self.playlist_desc.setText(desc)
         self.meta.setText(meta)
 
+        cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(cover_path))
+
         if cover_path != "":
             # set playlist cover img
             big_pix = round_pix_form_path(
@@ -633,7 +635,7 @@ class PlaylistPlayerWindow(QWidget):
                 continue
 
 
-            cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(song['cover_path']))
+            cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
             if not os.path.exists(cover_path):
                 # if cover path not found... 
                 # add logic later
