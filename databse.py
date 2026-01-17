@@ -371,3 +371,9 @@ if __name__ == "__main__":
     # db.update_playlist(playlist_id=1, count = count, duration = duration)
 
     # update song_path
+    songs = db.get_song()
+    for song in songs:
+        path = song["path"]
+        new_path = os.path.join(MUSIC_DIR_PATH, os.path.basename(path))
+
+        db.update_song(song_id=song['id'], path = new_path)

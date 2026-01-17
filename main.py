@@ -141,7 +141,7 @@ class MusicMainWindow(QMainWindow):
 
         self.is_setting = False
         self.is_suffle = False
-        self.picker_menu:  PlaylistPickerMenu = None
+        self.picker_menu: PlaylistPickerMenu = None
 
 
         # Thread to add files...
@@ -425,7 +425,6 @@ class MusicMainWindow(QMainWindow):
         basic_info = self.dataBase.get_basic()
         
         self.is_setting = True
-
         prev_song_id = None
 
         for key, value in basic_info.items():
