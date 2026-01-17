@@ -13,7 +13,6 @@ from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
 from playlist_win import PlaylistPlayerWindow
-from playlist import CreatePlaylistPopup
 from menu import CardMenu, PlaylistPickerMenu
 from helper import LoadFiles, create_playlist_cover
 
