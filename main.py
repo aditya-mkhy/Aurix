@@ -286,12 +286,7 @@ class MusicMainWindow(QMainWindow):
 
         meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
 
-        # init the playlist
-        cover_path = info['cover_path']
-        if playlist_id == 1:
-            cover_path = os.path.join("./res", cover_path)
-
-        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
+        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, info['cover_path'])
 
         self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
 

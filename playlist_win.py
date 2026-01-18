@@ -593,7 +593,11 @@ class PlaylistPlayerWindow(QWidget):
         self.playlist_desc.setText(desc)
         self.meta.setText(meta)
 
-        cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(cover_path))
+        # init the playlist
+        if playlist_id == 1:
+            cover_path = os.path.join("./res", os.path.basename(cover_path))
+        else:
+            cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(cover_path))
 
         if cover_path != "":
             # set playlist cover img
