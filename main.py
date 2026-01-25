@@ -267,7 +267,6 @@ class MusicMainWindow(QMainWindow):
     def on_new_playlist(self):
         print("[TEST] New playlist requested")
 
-
     def commit_song_info_status(self, song_id: str, type: str):
         print(f"Recv status form player for song : {song_id}  and type : {type}")
 
@@ -280,11 +279,8 @@ class MusicMainWindow(QMainWindow):
         print(f"Confuring PlayList with ID : {playlist_id}")
 
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
-
         meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
-
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, info['cover_path'])
-
         self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
 
         # add songs in the playlist UI
@@ -310,7 +306,6 @@ class MusicMainWindow(QMainWindow):
             # playlist is not create
             # maybe it already exists..
             playlist_id = self.dataBase.get_playlist_id_by_title(title=title)
-
             if playlist_id is None: # not found
                 print(f"Unknow Error while checking for existance for playlist : {title}")
                 return
@@ -322,7 +317,6 @@ class MusicMainWindow(QMainWindow):
         # create playlist on sidebar
         self.sidebar.create_playlist(playlist_id, title, desc)
 
-
     def save_like_dislike_song(self, song_id: int, value: int):
         self.dataBase.update_song(song_id, liked = value)
 
@@ -330,12 +324,10 @@ class MusicMainWindow(QMainWindow):
             # add into liked playlist
             # liked_playlist id = 1
             self.dataBase.add_playlist_song(1, song_id)
-
         else:
             # remove song from liked playlist
             self.dataBase.remove_playlist_song(1, song_id)
     
-
         if value == 2:
             # this means user dislike the song.. 
             # so skip this one and play next from all_song_list
@@ -358,7 +350,6 @@ class MusicMainWindow(QMainWindow):
 
         # next_song_id = self._get_track(song_id=song_id)
         next_index = self.current_index + 1
-
         print(f"next_index = {next_index}")
         print(f"context_queue len = {len(self.context_queue)}")
 
@@ -412,10 +403,8 @@ class MusicMainWindow(QMainWindow):
         self.home_screen.add_item(index, song_id, title, subtitle, path, cover_path, play=True)
         self.play_song(song_id=song_id) # play song
 
-
     def load_basic_settings(self):
         basic_info = self.dataBase.get_basic()
-        
         self.is_setting = True
         prev_song_id = None
 
