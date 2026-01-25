@@ -1,9 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QApplication, QStackedWidget
-from PyQt5.QtCore import QTimer, pyqtSignal, QObject
-
-# project import
+from PyQt5.QtCore import QTimer
 from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
@@ -15,7 +13,6 @@ from databse import DataBase
 from playlist_win import PlaylistPlayerWindow
 from menu import CardMenu, PlaylistPickerMenu
 from helper import LoadFiles, create_playlist_cover
-
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
