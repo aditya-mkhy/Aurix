@@ -78,7 +78,7 @@ class LoadFiles(QObject):
         for song in self.all_songs[start_index : end_index]:
             self.song_index += 1
 
-            if not os.path.exists(song['path']):
+            if not os.path.isfile(song['path']):
                 print(f"PathNotFound [{song['id']}] => {song['path']}")
                 # add to delete later
                 self._to_delete.append(song['id'])
