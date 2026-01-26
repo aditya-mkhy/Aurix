@@ -226,24 +226,32 @@ class MusicMainWindow(QMainWindow):
         self.dataBase.add_playlist_song(playlist_id, song_id)
         self.create_playlist_cover(playlist_id) # create cover
 
-    def create_playlist_cover(self, playlist_id: int):
+    def create_playlist_cover(self, playlist_id: int, cover_path: str = None):
         # skip liked playlist.. 
         if playlist_id == 1:
             return
-        
-        # create cover for playlist
-        playlist = self.dataBase.get_playlist(playlist_id=playlist_id)
 
         # song_id of top 4 songs
         song_id_list =[str(song_id) for song_id in self.dataBase.get_playlist_song(playlist_id)[:4]]
 
-        # expected playlist cover
-        # it gonna change if a song is deleted or song position is changed....
-        excepted_cover_path = "playlist_" + "".join(song_id_list) + ".jpg"
+        if not cover_path:
+            # create cover for playlist
+            playlist = self.dataBase.get_playlist(playlist_id=playlist_id)
 
-        if playlist['cover_path'] == excepted_cover_path:
-            return # cover already exists acc. to the current song in playlist
-        
+            # expected playlist cover
+            # it gonna change if a song is deleted or song position is changed....
+            excepted_cover_path = "playlist_" + "".join(song_id_list) + ".jpg"
+
+            if playlist['cover_path'] == excepted_cover_path:
+                return # cover already exists acc. to the current song in playlist
+            
+            
+            # absolute path
+            excepted_cover_path = os.path.join(COVER_DIR_PATH, excepted_cover_path)
+
+        else:
+            excepted_cover_path = cover_path
+            
         # get the cover image of the top 4 songs
         song_cover_list = []
         for song_id in song_id_list:
@@ -251,8 +259,6 @@ class MusicMainWindow(QMainWindow):
             if song_cover_path:
                 song_cover_list.append(os.path.join(COVER_DIR_PATH, song_cover_path))
 
-        # absolute path
-        excepted_cover_path = os.path.join(COVER_DIR_PATH, excepted_cover_path)
 
         # create a new cover
         playlist_cover_path = create_playlist_cover(song_cover_list, excepted_cover_path, size=712)
@@ -260,8 +266,9 @@ class MusicMainWindow(QMainWindow):
             print(f"Error in creating the playlist cover..")
             return
         
-        # update playlist cover in db
-        self.dataBase.update_playlist(playlist_id=playlist_id, cover_path = playlist_cover_path)
+        if not cover_path:
+            # update playlist cover in db
+            self.dataBase.update_playlist(playlist_id=playlist_id, cover_path = playlist_cover_path)
 
 
     def on_new_playlist(self):
@@ -280,7 +287,16 @@ class MusicMainWindow(QMainWindow):
 
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
         meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
-        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, info['cover_path'])
+
+        if playlist_id == 1:
+            cover_path = os.path.join("./res", os.path.basename(info['cover_path']))
+        else:
+            cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(info['cover_path']))
+
+        if not os.path.exists(cover_path):
+            self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path)
+
+        self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
         self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
 
         # add songs in the playlist UI
