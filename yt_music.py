@@ -10,7 +10,7 @@ from tube import Dtube
 from helper import get_pixmap, round_pix
 from common import ScrollArea
 from typing import List, Dict
-from util import trim_text, MUSIC_DIR_PATH, make_title_path
+from util import trim_text, MUSIC_DIR_PATH, make_title_path, resource_path
 
 
 class HoverThumb(QWidget):
@@ -71,9 +71,9 @@ class HoverThumb(QWidget):
         self.convering_spinner.hide()
 
         # play button---
-        self.play_icon = QIcon("res/play-card.png")
-        self.down_icon = QIcon("res/downloads.png")
-        self.pause_icon = QIcon("res/pause.png")
+        self.play_icon = QIcon(resource_path("res/play-card.png"))
+        self.down_icon = QIcon(resource_path("res/downloads.png"))
+        self.pause_icon = QIcon(resource_path("res/pause.png"))
 
 
         # download button
@@ -350,7 +350,7 @@ class TrackRow(QWidget):
         # spacer + menu button
         self.menu_btn = QPushButton(self)
         # self.menu_btn.setCursor(Qt.PointingHandCursor)
-        self.menu_btn.setIcon(QIcon("res/three-dot-menu.png"))
+        self.menu_btn.setIcon(QIcon(resource_path("res/three-dot-menu.png")))
         self.menu_btn.setFixedSize(48, 48)
         self.menu_btn.setIconSize(QSize(22, 22)) 
         self.menu_btn.setCursor(Qt.PointingHandCursor)

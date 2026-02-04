@@ -4,6 +4,7 @@ from PyQt5.QtGui import QColor, QFont, QCursor, QIcon
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QScrollArea, QFrame, QPushButton
 from helper import round_pix_form_path
+from util import resource_path
 
 
 class MenuItem(QWidget):
@@ -322,7 +323,7 @@ class PlaylistPickerMenu(QWidget):
 
         new_btn.setFont(QFont("Segoe UI", 12, QFont.Black))
         new_btn.setCursor(Qt.PointingHandCursor)
-        new_btn.setIcon(QIcon("./res/plus_black.png"))
+        new_btn.setIcon(QIcon(resource_path("res/plus_black.png")))
         new_btn.setIconSize(QSize(18, 18))
 
 

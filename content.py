@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QFontMetrics, QIcon
 from helper import round_pix_form_path
+from util import resource_path
 
 class HoverButton(QPushButton):
     def __init__(self, *args, size: int = 76, icon_size: int = 38, transform_scale = 5, **kwargs):
@@ -261,7 +262,7 @@ class SongCard(QWidget):
 
         self.menu_btn = QPushButton(self.overlay)
         self.menu_btn.setCursor(Qt.PointingHandCursor)
-        self.menu_btn.setIcon(QIcon("res/three-dot-menu.png"))  
+        self.menu_btn.setIcon(QIcon(resource_path("res/three-dot-menu.png")))  
         self.menu_btn.setFixedSize(46, 46)
         self.menu_btn.setIconSize(QSize(26, 26))
 
@@ -286,8 +287,8 @@ class SongCard(QWidget):
         ov.addStretch(1)
 
         # center play
-        self.play_icon = QIcon("res/play-card.png")
-        self.pause_icon = QIcon("res/pause.png")
+        self.play_icon = QIcon(resource_path("res/play-card.png"))
+        self.pause_icon = QIcon(resource_path("res/pause.png"))
         
         self.play_btn = HoverButton(parent=self.overlay, size=76, icon_size=38, transform_scale=6)
         self.play_btn.setCursor(Qt.PointingHandCursor)

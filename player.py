@@ -117,8 +117,7 @@ class PlayerEngine(QObject):
 
         if not os.path.isfile(path):
             raise ValueError(f"Path not exists or it's a directory.\nPath : {path}")
-        
-        
+
         # stop prevoius timer..
         self._timer.stop()
 

@@ -6,7 +6,7 @@ from sidebar import Sidebar
 from topbar import Topbar
 from bottom_bar import BottomBar
 from content import ContentArea
-from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH
+from util import dark_title_bar, get_music_path, MediaKeys, format_duration, COVER_DIR_PATH, resource_path
 from yt_music import YtScreen
 from player import PlayerEngine
 from databse import DataBase
@@ -207,7 +207,7 @@ class MusicMainWindow(QMainWindow):
             # init the playlist
             cover_path = playlist['cover_path']
             if playlist["id"] == 1:
-                cover_path = os.path.join("./res", cover_path)
+                cover_path = resource_path(os.path.join("res", cover_path))
             
             self.picker_menu.add_playlist(playlist["id"], playlist["title"], playlist["count"], cover_path)
 
@@ -289,7 +289,8 @@ class MusicMainWindow(QMainWindow):
         meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
 
         if playlist_id == 1:
-            cover_path = os.path.join("./res", os.path.basename(info['cover_path']))
+            cover_path = os.path.join("res", os.path.basename(info['cover_path']))
+            cover_path = resource_path(cover_path)
         else:
             cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(info['cover_path']))
 

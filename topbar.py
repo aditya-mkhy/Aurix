@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QSizePolicy, QToolButton
 )
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QColor, QPalette
-
+from util import resource_path
 
 class SearchSuggestionItem(QWidget):
     """Single suggestion row widget."""
@@ -152,11 +152,11 @@ class SearchBox(QWidget):
         # Search icon
         h.addSpacing(8)
         self.search_icon = QLabel()
-        search_pixmap = QPixmap("res/search.png")
+        search_pixmap = QPixmap(resource_path("res/search.png"))
         self.search_pixmap = search_pixmap.scaled(QSize(30, 30),Qt.KeepAspectRatio,Qt.SmoothTransformation)
 
         # active search icon
-        active_search_pixmap = QPixmap("res/active-search.png")
+        active_search_pixmap = QPixmap(resource_path("res/active-search.png"))
         self.active_search_pixmap = active_search_pixmap.scaled(QSize(30, 30),Qt.KeepAspectRatio,Qt.SmoothTransformation)
 
         self.search_icon.setPixmap(self.search_pixmap)
@@ -337,7 +337,7 @@ class Topbar(QFrame):
 
         # close sidebar button
         sidebar_btn = QPushButton()
-        sidebar_btn.setIcon(QIcon("./res/menu.png"))
+        sidebar_btn.setIcon(QIcon(resource_path("res/menu.png")))
         sidebar_btn.setIconSize(QSize(34, 34))
         sidebar_btn.setFixedSize(56, 56)
         sidebar_btn.setCursor(Qt.PointingHandCursor)
@@ -364,7 +364,7 @@ class Topbar(QFrame):
         # logo
         logo_btn = QPushButton("AURIX")  
         logo_btn.setFont(QFont("Segoe UI", 20, QFont.Black))
-        logo_btn.setIcon(QIcon("./res/pulse.png"))
+        logo_btn.setIcon(QIcon(resource_path("res/pulse.png")))
         logo_btn.setIconSize(QSize(52, 52))
         logo_btn.setFixedSize(180, 56) 
         logo_btn.setCursor(Qt.PointingHandCursor)
@@ -401,16 +401,17 @@ class Topbar(QFrame):
         profile_btn.setObjectName("profileButton")
         profile_btn.setFixedSize(40, 40)
         profile_btn.setCursor(Qt.PointingHandCursor)
+        profile_img = resource_path("res/profile.png")
 
-        profile_btn.setStyleSheet("""
-            QPushButton#profileButton {
+        profile_btn.setStyleSheet(f'''
+            QPushButton#profileButton {{
                 border: none;
                 padding: 0;
                 border-radius: 20px;
                 background-color: transparent;
-                border-image: url("res/profile.png") 0 fill;
-            }
-        """)
+                border-image: url("{profile_img}") 0 fill;
+            }}
+        ''')
 
         layout.addWidget(profile_btn)
 

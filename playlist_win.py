@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
 from helper import round_pix_form_path
 from common import ScrollArea
 from typing import Dict
-from util import trim_text, COVER_DIR_PATH
+from util import trim_text, COVER_DIR_PATH, resource_path
 from common import ScrollArea
 
 
@@ -62,8 +62,8 @@ class HoverThumb(QWidget):
 
 
         # play button---
-        self.play_icon = QIcon("res/play-card.png")
-        self.pause_icon = QIcon("res/pause.png")
+        self.play_icon = QIcon(resource_path("res/play-card.png"))
+        self.pause_icon = QIcon(resource_path("res/pause.png"))
 
 
         # download button
@@ -226,7 +226,7 @@ class SongRow(QWidget):
         # spacer + menu button
         self.menu_btn = QPushButton(self)
         # self.menu_btn.setCursor(Qt.PointingHandCursor)
-        self.menu_btn.setIcon(QIcon("res/three-dot-menu.png"))
+        self.menu_btn.setIcon(QIcon(resource_path("res/three-dot-menu.png")))
         self.menu_btn.setFixedSize(48, 48)
         self.menu_btn.setIconSize(QSize(22, 22)) 
         self.menu_btn.setCursor(Qt.PointingHandCursor)
@@ -394,7 +394,7 @@ class PlaylistPlayerWindow(QWidget):
         self.cover_radius = 18
 
         self.default_playlist_cover = round_pix_form_path(
-            path= "./res/playlist.png",
+            path= resource_path("res/playlist.png"),
             width=self.cover_size, 
             height=self.cover_size, 
             radius=self.cover_radius
@@ -443,7 +443,7 @@ class PlaylistPlayerWindow(QWidget):
 
         edit_btn = QPushButton()
         edit_btn.setFixedSize(54, 54)
-        edit_btn.setIcon(QIcon("res/edit.png"))  
+        edit_btn.setIcon(QIcon(resource_path("res/edit.png")))  
         edit_btn.setIconSize(QSize(32, 32))
         edit_btn.setCursor(Qt.PointingHandCursor)
         edit_btn.setStyleSheet("""
@@ -465,7 +465,7 @@ class PlaylistPlayerWindow(QWidget):
 
         play_btn_big = QPushButton()
         play_btn_big.setFixedSize(84, 84)
-        play_btn_big.setIcon(QIcon("res/play.png"))  
+        play_btn_big.setIcon(QIcon(resource_path("res/play.png")))  
         play_btn_big.setIconSize(QSize(50, 50))
         play_btn_big.setCursor(Qt.PointingHandCursor)
         play_btn_big.clicked.connect(self.play_playlist)
@@ -482,7 +482,7 @@ class PlaylistPlayerWindow(QWidget):
 
         more_btn = QPushButton()
         more_btn.setFixedSize(54, 54)
-        more_btn.setIcon(QIcon("res/three-dot-menu.png"))  
+        more_btn.setIcon(QIcon(resource_path("res/three-dot-menu.png")))  
         more_btn.setIconSize(QSize(26, 26))
         more_btn.setCursor(Qt.PointingHandCursor)
 

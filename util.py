@@ -15,10 +15,16 @@ DATABASE_PATH = os.path.join(AURIX_DIR_PATH, "aurix.db")
 
 #ffmpeg path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FFMPEG_DIR = os.path.join(BASE_DIR, "res", "ffmpeg")
+
+def resource_path(relative):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative)
+
+    return os.path.join(os.path.abspath("."), relative)
+
+FFMPEG_DIR = resource_path(os.path.join("res", "ffmpeg"))
 
 os.makedirs(COVER_DIR_PATH, exist_ok=True)
-
 
 def gen_unique_id(length=12) -> str:
     chars = "abcdefghijklmnopqrstuvwxyz1234567890"

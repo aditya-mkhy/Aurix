@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFrame, QLabel, Q
 from PyQt5.QtGui import QIcon, QFont
 from playlist import CreatePlaylistPopup
 from typing import Dict
+from util import resource_path
 
 class PlaylistArea(QScrollArea):
     def __init__(self, parent=None):
@@ -131,8 +132,8 @@ class PlaylistItem(QWidget):
         main.addLayout(text_box, 1)
 
         # ---- Right side: circular play button ----
-        self.play_icon = QIcon("res/play.png")
-        self.pause_icon = QIcon("res/pause.png")
+        self.play_icon = QIcon(resource_path("res/play.png"))
+        self.pause_icon = QIcon(resource_path("res/pause.png"))
 
         self.play_btn = QPushButton()
         self.play_btn.setCursor(Qt.PointingHandCursor)
@@ -404,16 +405,16 @@ class Sidebar(QFrame):
         layout.setContentsMargins(12, 8, 8, 8)
         layout.setSpacing(1)
     
-        self.home_nav_btn = NavButton(text="Home", icon="./res/home.png")
+        self.home_nav_btn = NavButton(text="Home", icon=resource_path("res/home.png"))
         layout.addWidget(self.home_nav_btn)
         self.home_nav_btn.activate()
         self.home_nav_btn.clicked.connect(self.show_home)
 
-        self.explore_nav_btn = NavButton(text="Explore", icon="./res/explore.png")
+        self.explore_nav_btn = NavButton(text="Explore", icon=resource_path("res/explore.png"))
         layout.addWidget(self.explore_nav_btn)
         self.explore_nav_btn.clicked.connect(self.show_explore)
 
-        self.library_nav_btn = NavButton(text="Library", icon="./res/library.png")
+        self.library_nav_btn = NavButton(text="Library", icon=resource_path("res/library.png"))
         layout.addWidget(self.library_nav_btn)
         self.library_nav_btn.clicked.connect(self.show_library)
 
@@ -433,7 +434,7 @@ class Sidebar(QFrame):
 
         self.add_playlist.setFont(QFont("Segoe UI", 12, QFont.Black))
         self.add_playlist.setCursor(Qt.PointingHandCursor)
-        self.add_playlist.setIcon(QIcon("./res/plus.png"))
+        self.add_playlist.setIcon(QIcon(resource_path("res/plus.png")))
         self.add_playlist.setIconSize(QSize(22, 22))
 
         self.add_playlist.clicked.connect(self.open_playlist_popup)
