@@ -56,6 +56,7 @@ def get_mp3_tags(file_path: str, *requested_tags):
                     return c.text
             return None
         
+        
         # RELEASE DATE
         if tag_name == "release_date":
             frame = tags.get("TDRC")

@@ -12,7 +12,9 @@ from player import PlayerEngine
 from databse import DataBase
 from playlist_win import PlaylistPlayerWindow
 from menu import CardMenu, PlaylistPickerMenu
-from helper import LoadFiles, create_playlist_cover
+from helper import LoadFiles, create_playlist_cover, extract_cover_save, get_mp3_metadata
+from tube import get_mp3_tags
+from util import gen_thumbnail_path, is_mp3
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
@@ -156,8 +158,53 @@ class MusicMainWindow(QMainWindow):
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
         self.context_queue = self.all_song_list.copy()
+
+        # load song.. if db is deleted
+        # song_dir = "C:\\Users\\anmol\\Music"
+        # self.__init_song_dir(song_dir)
         
         QTimer.singleShot(10, self.load_basic_settings)
+
+    def __init_song_dir(self, path: str):
+        """Add new folder to DataBase"""
+        if not os.path.isdir(path):
+            print(f"FolderNotFound : {path}")
+            return
+        
+        basename = path
+
+        filename_list = list(os.listdir(path))
+        filename_list.reverse()
+        
+        for filename in filename_list:
+            file_path = os.path.join(basename, filename)
+
+            if not is_mp3(file_path):
+                continue
+
+            print(f"AddingSong => {file_path}")
+
+            # get metadata from song file
+            tags = get_mp3_tags(file_path)
+
+            if tags["id"] == None:
+                # if song has to tags
+                print(f"InvalidSong : {file_path}")
+                continue
+
+            artist = ",".join(tags['artists']) # to store in database
+
+            meta = get_mp3_metadata(file_path)
+
+            thumbnail_path = gen_thumbnail_path()
+            cover_path = extract_cover_save(file_path, thumbnail_path)
+
+
+            self.dataBase.add_song(
+                tags["title"], tags["subtitle"], artist, 
+                tags["id"], meta["duration"], 0, 0, 0, file_path, cover_path
+            )
+
 
     def play_playlist_requested(self, playlist_id: int):
         print(f"Playlist Requested : {playlist_id}")
@@ -533,6 +580,13 @@ class MusicMainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    # use to create shortcut.....
+    project_path = sys.argv[0] if len(sys.argv) > 0 else None
+    if project_path:
+        project_dir = os.path.dirname(project_path)
+        print(f"Changing Working Directory : {project_dir}")
+        os.chdir(project_dir)
+
 
     app = QApplication(sys.argv)
     win = MusicMainWindow()

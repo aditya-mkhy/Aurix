@@ -409,9 +409,9 @@ class Topbar(QFrame):
                 padding: 0;
                 border-radius: 20px;
                 background-color: transparent;
-                border-image: url("{profile_img}") 0 fill;
             }}
-        ''')
+        ''')#                border-image: url("{profile_img}") 0 fill;
+
 
         layout.addWidget(profile_btn)
 

@@ -164,6 +164,7 @@ class SongRow(QWidget):
         self.song_index = song_index
         self.song_id = song_id
         self.duration = duration
+        self.cover_path = cover_path
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setFixedHeight(98)
@@ -575,12 +576,31 @@ class PlaylistPlayerWindow(QWidget):
         self.playPlaylistRequested.emit(self.playlist_id)
 
     def set_broadcast(self, type: str, item_id: int, value: bool):
-        item_obj = self.song_widgets.get(item_id)
+        print(f"ItemId ==> {item_id}")
+        item_obj: SongRow = self.song_widgets.get(item_id)
 
         if item_obj is None:
             return
         # transfer to that song...
         item_obj.set_broadcast(type, value)
+
+        if not value:
+            if self.big_pix:
+                self.big_cover.setPixmap(self.big_pix)
+            else:
+                self.big_cover.setPixmap(self.default_playlist_cover)
+
+        else:
+            song_cover_path = item_obj.cover_path
+            song_big_pix = round_pix_form_path(
+                path=song_cover_path, 
+                width=self.cover_size, 
+                height=self.cover_size, 
+                radius=self.cover_radius
+            )
+
+            self.big_cover.setPixmap(song_big_pix)
+
 
         # to change status on playlist navbutton...
         self.navbarPlaylistBroadcast.emit(type, self.playlist_id, value)
@@ -597,16 +617,17 @@ class PlaylistPlayerWindow(QWidget):
 
         if cover_path != "":
             # set playlist cover img
-            big_pix = round_pix_form_path(
+            self.big_pix = round_pix_form_path(
                 path=cover_path, 
                 width=self.cover_size, 
                 height=self.cover_size, 
                 radius=self.cover_radius
             )
 
-            self.big_cover.setPixmap(big_pix)
+            self.big_cover.setPixmap(self.big_pix)
         
         else:
+            self.big_pix = None
             # not cover image.. use default
             self.big_cover.setPixmap(self.default_playlist_cover)
 
