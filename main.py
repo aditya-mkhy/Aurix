@@ -492,8 +492,13 @@ class MusicMainWindow(QMainWindow):
 
         # loading the last played song
         if prev_song_id is not None:
+            print(f"prev_song_id => {prev_song_id}")
             song_info = self.dataBase.get_song(song_id=prev_song_id)
             QTimer.singleShot(10, lambda info = song_info: self.playerEngine.init_play(info))
+
+            # get the song index 
+            self.current_song = prev_song_id
+            self.current_index = self.all_song_list.index(prev_song_id)
 
         self.is_setting = False
 
@@ -580,7 +585,7 @@ class MusicMainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    # use to create shortcut.....
+    # use to create shortcut...../..........
     project_path = sys.argv[0] if len(sys.argv) > 0 else None
     if project_path:
         project_dir = os.path.dirname(project_path)
