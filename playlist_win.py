@@ -595,6 +595,14 @@ class PlaylistPlayerWindow(QWidget):
             else:
                 self.big_cover.setPixmap(self.default_playlist_cover)
 
+            self.play_btn_big.setIcon(self.play_icon)  
+            self.play_btn_big.setStyleSheet("""
+                QPushButton {
+                    background: white; color: black; border-radius: 42px; padding-left: 8px;
+                }
+                QPushButton:hover { background: #efefef; }
+            """)
+
         else:
             song_cover_path = item_obj.cover_path
             song_big_pix = round_pix_form_path(
