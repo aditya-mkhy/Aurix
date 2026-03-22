@@ -466,7 +466,12 @@ class PlaylistPlayerWindow(QWidget):
 
         play_btn_big = QPushButton()
         play_btn_big.setFixedSize(84, 84)
-        play_btn_big.setIcon(QIcon(resource_path("res/play.png")))  
+
+        # play icon
+        self.play_icon = QIcon(resource_path("res/play.png"))
+        self.pause_icon = QIcon(resource_path("res/pause_black.png"))
+
+        play_btn_big.setIcon(self.play_icon)  
         play_btn_big.setIconSize(QSize(50, 50))
         play_btn_big.setCursor(Qt.PointingHandCursor)
         play_btn_big.clicked.connect(self.play_playlist)
@@ -600,6 +605,8 @@ class PlaylistPlayerWindow(QWidget):
             )
 
             self.big_cover.setPixmap(song_big_pix)
+
+            # hide other icon
 
 
         # to change status on playlist navbutton...
