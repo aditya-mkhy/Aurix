@@ -464,25 +464,25 @@ class PlaylistPlayerWindow(QWidget):
         ctrl.addSpacing(40)
 
 
-        play_btn_big = QPushButton()
-        play_btn_big.setFixedSize(84, 84)
+        self.play_btn_big = QPushButton()
+        self.play_btn_big.setFixedSize(84, 84)
 
         # play icon
         self.play_icon = QIcon(resource_path("res/play.png"))
         self.pause_icon = QIcon(resource_path("res/pause_black.png"))
 
-        play_btn_big.setIcon(self.play_icon)  
-        play_btn_big.setIconSize(QSize(50, 50))
-        play_btn_big.setCursor(Qt.PointingHandCursor)
-        play_btn_big.clicked.connect(self.play_playlist)
+        self.play_btn_big.setIcon(self.play_icon)  
+        self.play_btn_big.setIconSize(QSize(50, 50))
+        self.play_btn_big.setCursor(Qt.PointingHandCursor)
+        self.play_btn_big.clicked.connect(self.play_playlist)
 
-        play_btn_big.setStyleSheet("""
+        self.play_btn_big.setStyleSheet("""
             QPushButton {
                 background: white; color: black; border-radius: 42px; padding-left: 8px;
             }
             QPushButton:hover { background: #efefef; }
         """)
-        ctrl.addWidget(play_btn_big)
+        ctrl.addWidget(self.play_btn_big)
         ctrl.addSpacing(40)
 
 
@@ -606,7 +606,14 @@ class PlaylistPlayerWindow(QWidget):
 
             self.big_cover.setPixmap(song_big_pix)
 
-            # hide other icon
+            # change play button to pause
+            self.play_btn_big.setIcon(self.pause_icon)  
+            self.play_btn_big.setStyleSheet("""
+                QPushButton {
+                    background: white; color: black; border-radius: 42px; padding-left: 0px;
+                }
+                QPushButton:hover { background: #efefef; }
+            """)
 
 
         # to change status on playlist navbutton...
