@@ -653,6 +653,15 @@ class PlaylistPlayerWindow(QWidget):
             # not cover image.. use default
             self.big_cover.setPixmap(self.default_playlist_cover)
 
+        # change playbtn
+        self.play_btn_big.setIcon(self.play_icon)  
+        self.play_btn_big.setStyleSheet("""
+            QPushButton {
+                background: white; color: black; border-radius: 42px; padding-left: 8px;
+            }
+            QPushButton:hover { background: #efefef; }
+        """)
+
         # clear_list
         self.clear_list()
 
