@@ -74,7 +74,7 @@ class MusicMainWindow(QMainWindow):
 
         # HOME SCREEN
         self.home_screen = ContentArea(music_dirs=music_dirs)
-        self.home_screen.playRequested.connect(self._play_requested)
+        self.home_screen.playRequested.connect(self._play_requested_from_home)
         self.home_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
         self.home_screen.showMenuRequested.connect(self.show_song_card_menu)
 
@@ -85,14 +85,14 @@ class MusicMainWindow(QMainWindow):
         # TY SCREEN
         self.yt_screen = YtScreen(parent=self)
         # call when yt want to all item to home screen and play
-        self.yt_screen.playRequested.connect(self._play_requested)
+        self.yt_screen.playRequested.connect(self._play_requested_from_explorer)
         self.yt_screen.addSongToDBandHome.connect(self.add_song_to_db_and_home)
         self.yt_screen.checkForExistance.connect(self.check_for_song_existance)
         self.yt_screen.playToggleRequested.connect(self.playerEngine.play_toggled)
 
         # playlist player window...
         self.playlistPlayerWin = PlaylistPlayerWindow(parent=self)
-        self.playlistPlayerWin.playRequested.connect(self._play_requested)
+        self.playlistPlayerWin.playRequested.connect(self._play_requested_from_playlist_win)
         self.playlistPlayerWin.playPlaylistRequested.connect(self.play_playlist_requested)
         self.playlistPlayerWin.playToggleRequested.connect(self.playerEngine.play_toggled)
         self.playlistPlayerWin.navbarPlaylistBroadcast.connect(self.sidebar.set_navbar_playlist_status)
@@ -155,6 +155,9 @@ class MusicMainWindow(QMainWindow):
         self.current_song: int = None
         self.current_index: int = -1
 
+        # current playing from
+        self.is_playlist_playing = False # when playlist is playing
+
         # all song_id list for playing song....
         self.all_song_list = self.dataBase.get_all_song_id()
         self.context_queue = self.all_song_list.copy()
@@ -208,6 +211,7 @@ class MusicMainWindow(QMainWindow):
 
     def play_playlist_requested(self, playlist_id: int):
         print(f"Playlist Requested : {playlist_id}")
+        self.is_playlist_playing = True
 
         # change context_queue
         self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
@@ -526,9 +530,13 @@ class MusicMainWindow(QMainWindow):
 
     def broadcast_msg(self, type: str, song_id: int, value: bool):
         # print(f"Boradcast[main] => {type} | {item_id} | {value}")
-        self.yt_screen.set_broadcast(type, song_id, value)
-        self.home_screen.set_broadcast(type, song_id, value)
-        self.playlistPlayerWin.set_broadcast(type, song_id, value)
+        if self.is_playlist_playing:
+            # only to plylist window....
+            self.playlistPlayerWin.set_broadcast(type, song_id, value)
+
+        else:
+            self.yt_screen.set_broadcast(type, song_id, value)
+            self.home_screen.set_broadcast(type, song_id, value)
 
         if type == "active" and value == True and not self.is_setting:
             # saving the current playing song path
@@ -545,6 +553,18 @@ class MusicMainWindow(QMainWindow):
             return
         
         self.playerEngine.play(song_info)
+
+    def _play_requested_from_playlist_win(self, song_id: int, song_index: int = None):
+        self.is_playlist_playing = True
+        self._play_requested(song_id, song_index)
+
+    def _play_requested_from_home(self, song_id: int, song_index: int = None):
+        self.is_playlist_playing = False
+        self._play_requested(song_id, song_index)
+
+    def _play_requested_from_explorer(self, song_id: int, song_index: int = None):
+        self.is_playlist_playing = False
+        self._play_requested(song_id, song_index)
 
     def _play_requested(self, song_id: int, song_index: int = None):
         if song_index != None:
