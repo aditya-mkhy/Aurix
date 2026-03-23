@@ -587,6 +587,14 @@ class PlaylistPlayerWindow(QWidget):
         self.playing_playlist_id = self.playlist_id
         self.playPlaylistRequested.emit(self.playlist_id)
 
+        # change behaviour of playbtn
+        try:
+            self.play_btn_big.clicked.disconnect(self.play_playlist)
+        except:
+            pass
+        
+        self.play_btn_big.clicked.connect(self.play_toogle)
+
     def request_play(self, song_id: int, song_index: int):
         # saving the current playing playlist
         self.is_active = True
@@ -683,6 +691,14 @@ class PlaylistPlayerWindow(QWidget):
             QPushButton:hover { background: #efefef; }
         """)
 
+        try:
+            self.play_btn_big.clicked.disconnect(self.play_toogle)
+        except:
+            pass
+
+        self.play_btn_big.clicked.connect(self.play_playlist)
+
+
         # clear_list
         self.clear_list()
 
@@ -691,6 +707,31 @@ class PlaylistPlayerWindow(QWidget):
         top_spacer.setSizeHint(QSize(0, 50))
         top_spacer.setFlags(Qt.NoItemFlags)
         self.list.addItem(top_spacer)
+
+        # if this is currrently playing
+        if self.playing_playlist_id != self.playlist_id:
+            return
+            
+        print(f"Got it => This one is playing")
+        if not self.is_active:
+            return
+        
+        if self.is_playing:
+            # chnaing the big playbtn.. status
+            self.play_btn_big.setIcon(self.pause_icon)  
+            self.play_btn_big.setStyleSheet("""
+                QPushButton {
+                    background: white; color: black; border-radius: 42px; padding-left: 0px;
+                }
+                QPushButton:hover { background: #efefef; }
+            """)
+
+            try:
+                self.play_btn_big.clicked.disconnect(self.play_playlist)
+            except:
+                pass
+            
+            self.play_btn_big.clicked.connect(self.play_toogle)
 
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
