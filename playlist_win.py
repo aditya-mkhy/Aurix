@@ -571,17 +571,38 @@ class PlaylistPlayerWindow(QWidget):
 
         main.addLayout(right_layout, 2)
 
-        self.playlist_id = None # current playlist id....
-        self.is_playing = True # playing status
+        self.playlist_id = None 
+
+        # saving the current playing
+        self.playing_playlist_id = None # current playing  playlist id....
+        self.is_active = False
+        self.is_playing = False # playing status
         self.song_id = None # current song_id
+
         self.batch_size = 5 # number of songs added to playlist in one shot
 
     def play_playlist(self):
         print(f"Playing playlist --> [{self.playlist_id}]")
+        self.is_active = True
+        self.playing_playlist_id = self.playlist_id
         self.playPlaylistRequested.emit(self.playlist_id)
 
+    def request_play(self, song_id: int, song_index: int):
+        # saving the current playing playlist
+        self.is_active = True
+        self.playing_playlist_id = self.playlist_id
+        print(f"---BOOMMMMMMMMMMMM==> play requested... {self.playing_playlist_id}")
+
+        self.playRequested.emit(song_id, song_index)
+
     def set_broadcast(self, type: str, item_id: int, value: bool):
-        print(f"ItemId ==> {item_id}")
+        print(f"ItemId ==> {item_id} and type ==> {type}")
+
+        # saving broadcast msg
+        # required to re-construct the playlist ui status
+        self.song_id = item_id
+        self.is_playing = value
+
         item_obj: SongRow = self.song_widgets.get(item_id)
 
         if item_obj is None:
@@ -727,11 +748,6 @@ class PlaylistPlayerWindow(QWidget):
             if widget:
                 widget.deleteLater()
             del item
-
-
-    def request_play(self, song_id: int, song_index: int):
-        print(f"Play requested song with id : {song_id}")
-        self.playRequested.emit(song_id, song_index)
 
      
     def play_toogle(self):
