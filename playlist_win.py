@@ -720,7 +720,7 @@ class PlaylistPlayerWindow(QWidget):
             if self.song_big_pix:
                 # add song cover....
                 self.big_cover.setPixmap(self.song_big_pix)
-                
+
 
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
@@ -753,6 +753,16 @@ class PlaylistPlayerWindow(QWidget):
             )
         else:
             print("Done Adding into playlist...")
+
+            # now change the song status
+            item_obj: SongRow = self.song_widgets.get(self.song_id)
+
+            if item_obj is None:
+                return
+            
+            item_obj.set_broadcast("active", True)
+            item_obj.set_broadcast("playing", self.is_playing)
+
 
 
     def add_song(self, song_index:int, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
