@@ -663,6 +663,7 @@ class PlaylistPlayerWindow(QWidget):
         self.playlist_title.setText(title)
         self.playlist_desc.setText(desc)
         self.meta.setText(meta)
+        self.is_active = False
 
         # init the playlist
 
@@ -706,8 +707,7 @@ class PlaylistPlayerWindow(QWidget):
             return
             
         print(f"Got it => This one is playing")
-        if not self.is_active:
-            return
+        self.is_active = True
         
         if self.is_playing:
             # chnaing the big playbtn.. status
