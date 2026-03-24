@@ -209,14 +209,16 @@ class MusicMainWindow(QMainWindow):
             )
 
 
-    def play_playlist_requested(self, playlist_id: int):
-        print(f"Playlist Requested : {playlist_id}")
+    def play_playlist_requested(self, playlist_id: int, play: bool):
+        print(f"\n\n 👍👍👍 👍👍👍 Playlist Requested : {playlist_id}")
         self.is_playlist_playing = True
 
         # change context_queue
         self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
-        # play the first song from list
-        self._play_requested(self.context_queue[0], 0)
+
+        if play:
+            # play the first song from list
+            self._play_requested(self.context_queue[0], 0)
 
     def show_song_card_menu(self, song_id):
         print(f"Show SongCard menu for song : {song_id}")
@@ -349,7 +351,6 @@ class MusicMainWindow(QMainWindow):
             self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path)
 
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
-        self.context_queue = self.dataBase.get_playlist_song(playlist_id=playlist_id)
 
         # add songs in the playlist UI
         song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)

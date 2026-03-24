@@ -357,7 +357,7 @@ class SongRow(QWidget):
 
 class PlaylistPlayerWindow(QWidget):
     playRequested = pyqtSignal(int, int)
-    playPlaylistRequested = pyqtSignal(int)
+    playPlaylistRequested = pyqtSignal(int, bool)
     playToggleRequested = pyqtSignal()
     navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
 
@@ -583,21 +583,23 @@ class PlaylistPlayerWindow(QWidget):
 
     def play_playlist(self):
         if not self.is_active:
-            print(f"😁😁😁  😁Playing playlist --> [{self.playlist_id}]")
+            print(f"Playing playlist --> [{self.playlist_id}]")
         
             self.is_active = True
             self.playing_playlist_id = self.playlist_id
-            self.playPlaylistRequested.emit(self.playlist_id)
+            self.playPlaylistRequested.emit(self.playlist_id, True)
 
         else:
-            print(f"😁😁😁  😁 pause emit --> [{self.playlist_id}]")
             self.playToggleRequested.emit()
 
     def request_play(self, song_id: int, song_index: int):
-        # saving the current playing playlist
-        self.is_active = True
-        self.playing_playlist_id = self.playlist_id
-        print(f"---BOOMMMMMMMMMMMM==> play requested... {self.playing_playlist_id}")
+        if not self.is_active:
+            # saving the current playing playlist
+            self.is_active = True
+            self.playing_playlist_id = self.playlist_id
+
+            # load the context menu song
+            self.playPlaylistRequested.emit(self.playlist_id, False) # False -> Not play
 
         self.playRequested.emit(song_id, song_index)
 

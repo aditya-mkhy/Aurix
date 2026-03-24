@@ -392,7 +392,7 @@ class Sidebar(QFrame):
     requestCreatePlaylist = pyqtSignal(str, str, str)
     navCall = pyqtSignal(str)
     openPlaylistRequested = pyqtSignal(int)
-    playPlaylistRequested = pyqtSignal(int)
+    playPlaylistRequested = pyqtSignal(int, bool)
     playToggleRequested = pyqtSignal()
 
     def __init__(self, parent = None):
@@ -490,7 +490,7 @@ class Sidebar(QFrame):
         self.playlists_by_id[playlist_id] = playlist_item
 
     def play_playlist_requested(self, playlist_id: int):
-        self.playPlaylistRequested.emit(playlist_id)
+        self.playPlaylistRequested.emit(playlist_id, True)
 
 
     def open_playlist_popup(self):
