@@ -469,6 +469,9 @@ class Sidebar(QFrame):
 
         self.playlists_by_id: Dict[int : PlaylistItem] = {}
 
+        # store the last active playlist button
+        self.last_playlist_btn_obj: PlaylistItem = None
+
     def set_navbar_playlist_status(self, type: str, playlist_id: int, value: bool):
         playlist_btn_obj: PlaylistItem = self.playlists_by_id.get(playlist_id)
         if playlist_btn_obj is None:
@@ -476,6 +479,20 @@ class Sidebar(QFrame):
             return
         
         playlist_btn_obj.set_broadcast(type, value)
+
+        if self.last_playlist_btn_obj == playlist_btn_obj:
+            print(f"Both are same")
+            return
+
+        # remove the prev active button
+        if self.last_playlist_btn_obj is None:
+            self.last_playlist_btn_obj = playlist_btn_obj
+            return
+        
+        self.last_playlist_btn_obj.set_broadcast("playing", False)
+        self.last_playlist_btn_obj.set_broadcast("active", False)
+        self.last_playlist_btn_obj = playlist_btn_obj
+        
 
 
     def create_playlist(self, playlist_id: int, title: str, subtitle: str):
