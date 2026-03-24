@@ -578,7 +578,7 @@ class PlaylistPlayerWindow(QWidget):
         self.is_active = False
         self.is_playing = False # playing status
         self.song_id = None # current song_id
-
+        self.song_big_pix = None
         self.batch_size = 5 # number of songs added to playlist in one shot
 
     def play_playlist(self):
@@ -632,14 +632,14 @@ class PlaylistPlayerWindow(QWidget):
 
         else:
             song_cover_path = item_obj.cover_path
-            song_big_pix = round_pix_form_path(
+            self.song_big_pix = round_pix_form_path(
                 path=song_cover_path, 
                 width=self.cover_size, 
                 height=self.cover_size, 
                 radius=self.cover_radius
             )
 
-            self.big_cover.setPixmap(song_big_pix)
+            self.big_cover.setPixmap(self.song_big_pix)
 
             # change play button to pause
             self.play_btn_big.setIcon(self.pause_icon)  
@@ -717,6 +717,10 @@ class PlaylistPlayerWindow(QWidget):
                 QPushButton:hover { background: #efefef; }
             """)
 
+            if self.song_big_pix:
+                # add song cover....
+                self.big_cover.setPixmap(self.song_big_pix)
+                
 
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
@@ -777,7 +781,6 @@ class PlaylistPlayerWindow(QWidget):
 
      
     def play_toogle(self):
-        print(f"\n\n\n***************  PlaylistToogested--> playlist  ****************************")
         self.playToggleRequested.emit()
 
     # cleanup
