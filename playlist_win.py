@@ -582,18 +582,16 @@ class PlaylistPlayerWindow(QWidget):
         self.batch_size = 5 # number of songs added to playlist in one shot
 
     def play_playlist(self):
-        print(f"Playing playlist --> [{self.playlist_id}]")
-        self.is_active = True
-        self.playing_playlist_id = self.playlist_id
-        self.playPlaylistRequested.emit(self.playlist_id)
-
-        # change behaviour of playbtn
-        try:
-            self.play_btn_big.clicked.disconnect(self.play_playlist)
-        except:
-            pass
+        if not self.is_active:
+            print(f"😁😁😁  😁Playing playlist --> [{self.playlist_id}]")
         
-        self.play_btn_big.clicked.connect(self.play_toogle)
+            self.is_active = True
+            self.playing_playlist_id = self.playlist_id
+            self.playPlaylistRequested.emit(self.playlist_id)
+
+        else:
+            print(f"😁😁😁  😁 pause emit --> [{self.playlist_id}]")
+            self.playToggleRequested.emit()
 
     def request_play(self, song_id: int, song_index: int):
         # saving the current playing playlist
@@ -691,13 +689,6 @@ class PlaylistPlayerWindow(QWidget):
             QPushButton:hover { background: #efefef; }
         """)
 
-        try:
-            self.play_btn_big.clicked.disconnect(self.play_toogle)
-        except:
-            pass
-
-        self.play_btn_big.clicked.connect(self.play_playlist)
-
 
         # clear_list
         self.clear_list()
@@ -726,12 +717,6 @@ class PlaylistPlayerWindow(QWidget):
                 QPushButton:hover { background: #efefef; }
             """)
 
-            try:
-                self.play_btn_big.clicked.disconnect(self.play_playlist)
-            except:
-                pass
-            
-            self.play_btn_big.clicked.connect(self.play_toogle)
 
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
@@ -792,6 +777,7 @@ class PlaylistPlayerWindow(QWidget):
 
      
     def play_toogle(self):
+        print(f"\n\n\n***************  PlaylistToogested--> playlist  ****************************")
         self.playToggleRequested.emit()
 
     # cleanup
