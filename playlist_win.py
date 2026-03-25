@@ -383,7 +383,7 @@ class PlaylistPlayerWindow(QWidget):
         left_panel.setMaximumWidth(500)
 
         left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(76, 40, 0, 14)
+        left_layout.setContentsMargins(96, 40, 0, 14)
         left_layout.setSpacing(0)
         left_layout.addSpacing(20)
 

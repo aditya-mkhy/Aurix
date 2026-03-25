@@ -339,7 +339,7 @@ class MusicMainWindow(QMainWindow):
         print(f"Confuring PlayList with ID : {playlist_id}")
 
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
-        meta = f"Playlist • Private • 2025\n{info['plays']} views • {info['count']} tracks • {format_duration(info['duration'])}"
+        meta = f"Playlist • Private • 2025\n{info['count']} tracks • {format_duration(info['duration'])}"
 
         if playlist_id == 1:
             cover_path = os.path.join("res", os.path.basename(info['cover_path']))
