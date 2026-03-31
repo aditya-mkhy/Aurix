@@ -223,9 +223,11 @@ class YTSearchThread(QThread):
             playlist_id = parse_qs(query).get("list", [None])[0]
 
             print(f"Playlist_id : {playlist_id}")
-            return
 
+            # search playlist...
+            playlist = YT_MUSIC.get_playlist(playlist_id, limit=None)
 
+            results = playlist["tracks"]
 
         else:
             results = YT_MUSIC.search(
@@ -238,53 +240,63 @@ class YTSearchThread(QThread):
         custom_result2 =[]
 
         count = 0
+        print(f"len = {len(results)}")
 
         for item in results:
+            try:
 
-            if count >= self.limit:
-                break
+                # if count >= self.limit:
+                #     break
 
-            thumbnail_url = ""
+                thumbnail_url = ""
 
-            for thumbnail in item["thumbnails"]:
-                thumbnail_url = thumbnail["url"]
-                if thumbnail["width"] ==  self.thumbnail_size:
-                    break
+                for thumbnail in item["thumbnails"]:
+                    thumbnail_url = thumbnail["url"]
+                    if thumbnail["width"] ==  self.thumbnail_size:
+                        break
 
-            artists = []
-            for artist in item["artists"]:
-                artists.append(artist["name"])
+                artists = []
+                for artist in item["artists"]:
+                    artists.append(artist["name"])
 
-            last = None
-            if len(artists) > 1:
-                last = artists.pop()
+                last = None
+                if len(artists) > 1:
+                    last = artists.pop()
 
-            all_artists = ", ".join(artists) + (f" & {last}" if last else "")
+                all_artists = ", ".join(artists) + (f" & {last}" if last else "")
 
-            result_type = "Song" if item["resultType"] == "song" else "Video"
+                result_type = item.get("resultType", item.get("videoType")) # for playlist search
+                result_type = "Song" if  result_type in ["song", "MUSIC_VIDEO_TYPE_ATV"] else "Video"
 
-            subtitle = f"{result_type} • " + all_artists + f" • {item["views"]} plays"
+                views = item.get("views")
+                if views is None:
+                    views = 0
 
-            #Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi 123M plays
+                subtitle = f"{result_type} • " + all_artists + f" • {views} plays"
 
-            if count % 2 == 0:
-                custom_result.append({
-                    "title" : item["title"],
-                    "subtitle" : subtitle,
-                    "artists" : item["artists"],
-                    "thumbnail_url" : thumbnail_url,
-                    "videoId" : item["videoId"]
-                })
+                #Song • Pritam, Kamaal Khan, Nakash Aziz & Dev Negi 123M plays
 
-            else:
-                
-                custom_result2.append({
-                    "title" : item["title"],
-                    "subtitle" : subtitle,
-                    "artists" : item["artists"],
-                    "thumbnail_url" : thumbnail_url,
-                    "videoId" : item["videoId"]
-                })
+                if count % 2 == 0:
+                    custom_result.append({
+                        "title" : item["title"],
+                        "subtitle" : subtitle,
+                        "artists" : item["artists"],
+                        "thumbnail_url" : thumbnail_url,
+                        "videoId" : item["videoId"]
+                    })
+
+                else:
+                    
+                    custom_result2.append({
+                        "title" : item["title"],
+                        "subtitle" : subtitle,
+                        "artists" : item["artists"],
+                        "thumbnail_url" : thumbnail_url,
+                        "videoId" : item["videoId"]
+                    })
+
+            except Exception as e:
+                print(f"Error: {e} \n {item}")
 
             count += 1
 
@@ -318,7 +330,8 @@ class ConfigResult(QThread):
                 self.add_one.emit(title, subtitle, artists, vid, pix)
 
             except Exception as e:
-                self.add_one.emit(title, subtitle, artists, vid, None)
+                pix = QPixmap()
+                self.add_one.emit(title, subtitle, artists, vid, pix)
 
         self.finished.emit(True)
 

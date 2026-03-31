@@ -513,7 +513,7 @@ class MusicMainWindow(QMainWindow):
             self.sidebar.create_playlist(playlist['id'], playlist['title'], playlist['subtitle'])
 
         # loading data.......
-        self.loader.run()
+        # self.loader.run()
 
 
     def set_shuffle(self, value: bool):
