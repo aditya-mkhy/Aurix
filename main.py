@@ -526,8 +526,6 @@ class MusicMainWindow(QMainWindow):
         # loading the last played song
         if prev_song_id is not None:
             print(f"prev_song_id => {prev_song_id}")
-            song_info = self.dataBase.get_song(song_id=prev_song_id)
-            QTimer.singleShot(10, lambda info = song_info: self.playerEngine.init_play(info))
 
             # get the song index 
             self.current_song = prev_song_id
@@ -536,6 +534,9 @@ class MusicMainWindow(QMainWindow):
             except:
                 self.current_index = 0
                 self.current_song = self.all_song_list[0]
+
+            song_info = self.dataBase.get_song(song_id=self.current_song)
+            QTimer.singleShot(10, lambda info = song_info: self.playerEngine.init_play(info))
 
         self.is_setting = False
 
