@@ -459,6 +459,31 @@ class PlaylistSection(QWidget):
     def _on_show_menu_requested(self, song_id):
         self.showMenuRequested.emit(song_id)
 
+    def remove_song(self, song_id: int):
+        card_obj = self.items.get(song_id)
+        if not card_obj:
+            return
+
+        # find QListWidgetItem that holds this widget
+        for i in range(self._list.count()):
+            item = self._list.item(i)
+            widget = self._list.itemWidget(item)
+
+            if widget is card_obj:
+                # remove from list
+                self._list.takeItem(i)
+
+                # delete widget safely
+                widget.deleteLater()
+                del item
+                break
+
+        # remove from dict
+        del self.items[song_id]
+
+        self._update_height_for_content()
+
+
     def set_broadcast(self, type: str, song_id: int, value: bool):
         card_obj = self.items.get(song_id)
         if not card_obj:
@@ -607,4 +632,7 @@ class ContentArea(QFrame):
     def add_item(self, song_indx: int, song_id: int, title: str, subtitle: str, path: str, cover_path: str, play=False):
         # is play then add on top
         self.section_library.add_song(song_indx, song_id, title, subtitle, path, cover_path, play=play)
+
+    def remove_song(self, song_id: int):
+        self.section_library.remove_song(song_id)
 

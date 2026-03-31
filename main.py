@@ -244,6 +244,34 @@ class MusicMainWindow(QMainWindow):
             print(f"Opening playlist popup to add song : {song_id}")
             self.show_picker_menu(song_id=song_id)
 
+        elif btn == "remove":
+            print(f"Removing the song....")
+            song_info = self.dataBase.get_song(song_id=song_id)
+            song_path = song_info["path"]
+            song_cover_path = song_info["cover_path"]
+
+            self.dataBase.delete_song(song_id)
+            self.home_screen.remove_song(song_id)
+
+            print(f"song_path ===> {song_path}")
+            print(f"self.current_song ===> {self.current_song}")
+
+
+            if self.current_song == song_id:
+                
+                # need to stop the player
+                self.play_next_track()
+
+            try:
+                os.remove(os.path.join(COVER_DIR_PATH, song_cover_path))
+            except:
+                pass
+            try:
+                os.remove(song_path)
+            except:
+                pass
+            
+
     def show_picker_menu(self, song_id: int):
         if self.picker_menu:
             self.picker_menu.close()
@@ -503,7 +531,11 @@ class MusicMainWindow(QMainWindow):
 
             # get the song index 
             self.current_song = prev_song_id
-            self.current_index = self.all_song_list.index(prev_song_id)
+            try:
+                self.current_index = self.all_song_list.index(prev_song_id)
+            except:
+                self.current_index = 0
+                self.current_song = self.all_song_list[0]
 
         self.is_setting = False
 
