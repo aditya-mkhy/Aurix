@@ -340,6 +340,8 @@ class Dtube(QThread): # download tube
                     url_thmb = url
 
         return url_thmb
+    
+    
 
     def _extract_info(self, info: dict):
         import json
@@ -352,12 +354,23 @@ class Dtube(QThread): # download tube
             useful_info["file_path"] = info["requested_downloads"][0]["filepath"]
 
         # useful_info["available_at"] = info["available_at"]
-        useful_info["artists"] = info["artists"]
+        artists = info.get("artists")
+        if artists is None:
+            artists = info.get("uploader")
+            if artists is None:
+                artists = info.get("channel")
+
+            artists = [artists]
+                
+
+        useful_info["artists"] = artists
+
+
         # useful_info["creators"] = info["creators"]
         # useful_info["fulltitle"] = info["fulltitle"]
         # useful_info["original_url"] = info["original_url"]
 
-        useful_info["album"] = info["album"]
+        useful_info["album"] = info.get("album", info.get("channel"))
         # useful_info["categories"] = info["categories"]
         useful_info["duration"] = info["duration"]
 
@@ -365,7 +378,7 @@ class Dtube(QThread): # download tube
         useful_info["title"] = info["title"]
         useful_info["description"] = info["description"]
         # useful_info["view_count"] = info["view_count"]
-        useful_info["release_date"] = info["release_date"]
+        useful_info["release_date"] = info.get("release_date")
 
         # get best thumbnail in jpg format
         useful_info["thumbnail"] = self._get_thumbnail(info)
@@ -376,7 +389,7 @@ class Dtube(QThread): # download tube
 
         # gen new subtitle
         if self.subtitle.endswith("0 plays"):
-            artists = info["artists"]
+            artists = useful_info["artists"]
 
             last = None
             if len(artists) > 1:
