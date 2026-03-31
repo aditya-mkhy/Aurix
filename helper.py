@@ -11,6 +11,7 @@ from databse import DataBase
 from typing import List
 from util import gen_thumbnail_path, COVER_DIR_PATH
 from PIL import Image
+from urllib.parse import urlparse, parse_qs
 
 YT_MUSIC = YTMusic()
 
@@ -205,7 +206,7 @@ class YTSearchThread(QThread):
         self.filter = "songs"
         self.limit = 20
         self.thumbnail_size = 120
-        self.query = query
+        self.query = query.strip()
 
     def run(self):
         try:
@@ -216,11 +217,22 @@ class YTSearchThread(QThread):
 
 
     def search(self) -> list:
-        results = YT_MUSIC.search(
-            self.query, 
-            filter=self.filter, 
-            limit=self.limit,
-        )
+        if self.query.startswith("https://music.youtube.com/playlist?list="):
+            # found playlist search
+            query = urlparse(self.query).query
+            playlist_id = parse_qs(query).get("list", [None])[0]
+
+            print(f"Playlist_id : {playlist_id}")
+            return
+
+
+
+        else:
+            results = YT_MUSIC.search(
+                self.query, 
+                filter=self.filter, 
+                limit=self.limit,
+            )
 
         custom_result = []
         custom_result2 =[]

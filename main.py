@@ -163,7 +163,7 @@ class MusicMainWindow(QMainWindow):
         self.context_queue = self.all_song_list.copy()
 
         # load song.. if db is deleted
-        # song_dir = "C:\\Users\\anmol\\Music"
+        # song_dir = "C:\\Users\\admin\\Music"
         # self.__init_song_dir(song_dir)
         
         QTimer.singleShot(10, self.load_basic_settings)
@@ -619,3 +619,4 @@ if __name__ == "__main__":
     win.show()
     dark_title_bar(win) # make Windows title_bar dark
     sys.exit(app.exec())
+
