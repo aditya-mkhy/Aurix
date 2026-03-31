@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 from mutagen.id3 import ID3, TIT2, TIT3, TPE1, TALB, APIC, COMM, TDRC, TXXX
 from mutagen.mp3 import MP3
 from requests  import get as get_request
-from util import make_title_path, gen_thumbnail_path, MUSIC_DIR_PATH, FFMPEG_DIR
+from util import make_title_path, gen_thumbnail_path, MUSIC_DIR_PATH, FFMPEG_DIR, format_views
 from helper import crop_and_save_img
 
 class NoLogger:
@@ -342,6 +342,9 @@ class Dtube(QThread): # download tube
         return url_thmb
 
     def _extract_info(self, info: dict):
+        import json
+        with open("t.json", "w") as tf:
+            tf.write(json.dumps(info))
         useful_info = {}
 
         if "requested_downloads" in info:
@@ -370,6 +373,23 @@ class Dtube(QThread): # download tube
         if not useful_info["thumbnail"]:
             # if not found.. use the default one
             useful_info["thumbnail"] = info["thumbnail"]
+
+        # gen new subtitle
+        if self.subtitle.endswith("0 plays"):
+            artists = info["artists"]
+
+            last = None
+            if len(artists) > 1:
+                last = artists.pop()
+
+            all_artists = ", ".join(artists) + (f" & {last}" if last else "")
+            views = info.get("view_count")
+            if views is None:
+                views = 0
+
+            self.subtitle = all_artists + f" • {format_views(views)} plays"
+                
+
     
         return useful_info
 
