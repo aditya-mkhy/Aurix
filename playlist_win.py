@@ -269,7 +269,7 @@ class SongRow(QWidget):
         self.menu.addAction("Play next")
         self.menu.addAction("Add to queue")
         self.menu.addSeparator()
-        self.menu.addAction("Remove from Playlist")
+        self.menu.addAction("Remove song")
         self.menu.setStyleSheet("""
             QMenu#SearchMenu {
                 background-color: transparent; 
