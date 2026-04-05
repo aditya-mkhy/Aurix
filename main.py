@@ -244,8 +244,8 @@ class MusicMainWindow(QMainWindow):
             print(f"Opening playlist popup to add song : {song_id}")
             self.show_picker_menu(song_id=song_id)
 
-        elif btn == "remove":
-            print(f"Removing the song....")
+        elif btn == "delete":
+            print(f"Delete the song....")
             song_info = self.dataBase.get_song(song_id=song_id)
             song_path = song_info["path"]
             song_cover_path = song_info["cover_path"]
