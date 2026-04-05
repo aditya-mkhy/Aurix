@@ -151,6 +151,7 @@ class HoverThumb(QWidget):
     
 class SongRow(QWidget):
     playRequested = pyqtSignal(int, int)
+    menuActionCall = pyqtSignal(str, int, int)
     playToggleRequested = pyqtSignal()
 
 
@@ -266,10 +267,10 @@ class SongRow(QWidget):
         # simple menu
         self.menu = QMenu(self)
         self.menu.setObjectName("SearchMenu")
-        self.menu.addAction("Play next")
-        self.menu.addAction("Add to queue")
+        self.menu.addAction("Play next", lambda: self.menu_call("play_next"))
+        self.menu.addAction("Add to queue", lambda: self.menu_call("add_queue"))
         self.menu.addSeparator()
-        self.menu.addAction("Remove song")
+        self.menu.addAction("Remove song", lambda: self.menu_call("remove"))
         self.menu.setStyleSheet("""
             QMenu#SearchMenu {
                 background-color: transparent; 
@@ -346,6 +347,10 @@ class SongRow(QWidget):
     def show_menu(self):
         self.menu.exec_(self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight()))
 
+    def menu_call(self, action: str):
+        print(f"Action = {action}")
+        self.menuActionCall.emit(action, self.song_id, self.song_index)
+
     def enterEvent(self, event):
         self.setStyleSheet(self._hover_style)
         super().enterEvent(event)
@@ -360,6 +365,7 @@ class PlaylistPlayerWindow(QWidget):
     playPlaylistRequested = pyqtSignal(int, bool)
     playToggleRequested = pyqtSignal()
     navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
+    menuActionCall = pyqtSignal(str, int, int)
 
     def __init__(self, parent = None):
         super().__init__(parent=parent)
@@ -770,10 +776,12 @@ class PlaylistPlayerWindow(QWidget):
     def add_song(self, song_index:int, song_id: int, title: str, subtitle: str, duration: str, cover_path: str):
         item = QListWidgetItem()
         row = SongRow(song_index, song_id, title, subtitle,  duration, cover_path, self)
+        
         item.setSizeHint(row.size())
         # connects
         row.playRequested.connect(self.request_play)
         row.playToggleRequested.connect(self.playToggleRequested.emit)
+        row.menuActionCall.connect(self.handle_menu_action)
 
         self.song_widgets[song_id] = row
         self.list.addItem(item)
@@ -802,3 +810,7 @@ class PlaylistPlayerWindow(QWidget):
         except Exception:
             pass
         super().closeEvent(event)
+
+
+    def handle_menu_action(self, action, song_id,  song_indx):
+        print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
