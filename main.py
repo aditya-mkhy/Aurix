@@ -220,6 +220,9 @@ class MusicMainWindow(QMainWindow):
             # play the first song from list
             self._play_requested(self.context_queue[0], 0)
 
+            # Change repeat mode to "repeat playlist" when a playlist is selected
+            self.bottom_bar.set_repeat_mode(1)
+
     def show_song_card_menu(self, song_id):
         print(f"Show SongCard menu for song : {song_id}")
         self.card_menu.show_at_cursor(song_id)
@@ -652,4 +655,5 @@ if __name__ == "__main__":
     win.show()
     dark_title_bar(win) # make Windows title_bar dark
     sys.exit(app.exec())
+
 
