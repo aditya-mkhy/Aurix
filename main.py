@@ -15,6 +15,7 @@ from menu import CardMenu, PlaylistPickerMenu
 from helper import LoadFiles, create_playlist_cover, extract_cover_save, get_mp3_metadata
 from tube import get_mp3_tags
 from util import gen_thumbnail_path, is_mp3
+from random import randint
 
 class MusicMainWindow(QMainWindow):
     def __init__(self):
@@ -152,6 +153,7 @@ class MusicMainWindow(QMainWindow):
         # Queues --->
         self.context_queue: list = []
         self.priority_queue: list = []
+        self.shuffle_value = False
         self.current_song: int = None
         self.current_index: int = -1
 
@@ -447,15 +449,18 @@ class MusicMainWindow(QMainWindow):
             song_id = self.priority_queue.pop()
             self.play_song(song_id=song_id) # play next track
             return
+        
+        if self.shuffle_value:
+            # choose the rndom song every time from playlist
+            random_index = randint(0, len(self.context_queue) - 1)
+            next_index = random_index
+        
+        else:
+            next_index = self.current_index + 1
 
-        # next_song_id = self._get_track(song_id=song_id)
-        next_index = self.current_index + 1
-        print(f"next_index = {next_index}")
-        print(f"context_queue len = {len(self.context_queue)}")
-
-        if next_index >= len(self.context_queue):
-            next_index = 0
-            # add priority queue play logic later
+            if next_index >= len(self.context_queue):
+                next_index = 0
+                # add priority queue play logic later
 
         self.current_index = next_index
         self.play_song(song_id=self.context_queue[self.current_index]) # play next track
@@ -518,6 +523,7 @@ class MusicMainWindow(QMainWindow):
                 value =  True if int(value) else False
                 self.set_shuffle(value)
 
+
             elif key == "current_song":
                 # saving it to play after all settings done
                 try:
@@ -554,6 +560,7 @@ class MusicMainWindow(QMainWindow):
 
     def set_shuffle(self, value: bool):
         self.bottom_bar.set_shuffle(value)
+        self.shuffle_value = value
 
         if not self.is_setting:
             value = 1 if value else 0
@@ -626,6 +633,7 @@ class MusicMainWindow(QMainWindow):
         elif name == "library":
             self.content_area.setCurrentIndex(1)
 
+
         elif name == "yt":
             self.content_area.setCurrentIndex(2)
 
@@ -633,9 +641,11 @@ class MusicMainWindow(QMainWindow):
             self.content_area.setCurrentIndex(3)
 
 
+
     def nativeEvent(self, eventType, message):
         return self.media_keys.nativeEvent(eventType, message)
     
+
     def closeEvent(self, event):
         self.media_keys.unregister()
         super().closeEvent(event)
@@ -655,5 +665,3 @@ if __name__ == "__main__":
     win.show()
     dark_title_bar(win) # make Windows title_bar dark
     sys.exit(app.exec())
-
-
