@@ -97,6 +97,7 @@ class MusicMainWindow(QMainWindow):
         self.playlistPlayerWin.playPlaylistRequested.connect(self.play_playlist_requested)
         self.playlistPlayerWin.playToggleRequested.connect(self.playerEngine.play_toggled)
         self.playlistPlayerWin.navbarPlaylistBroadcast.connect(self.sidebar.set_navbar_playlist_status)
+        self.playlistPlayerWin.menuActionCall.connect(self.handle_playlist_menu_action)
 
         outer.addWidget(middle_frame, 1)
 
@@ -209,6 +210,10 @@ class MusicMainWindow(QMainWindow):
                 tags["title"], tags["subtitle"], artist, 
                 tags["id"], meta["duration"], 0, 0, 0, file_path, cover_path
             )
+
+
+    def handle_playlist_menu_action(self, action, song_id,  song_indx):
+        print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
 
 
     def play_playlist_requested(self, playlist_id: int, play: bool):

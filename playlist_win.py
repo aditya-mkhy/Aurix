@@ -813,7 +813,6 @@ class PlaylistPlayerWindow(QWidget):
 
 
     def handle_menu_action(self, action, song_id,  song_indx):
-        print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
         self.menuActionCall.emit(action, song_id,  song_indx)
 
         if action == "remove":
