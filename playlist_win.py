@@ -814,3 +814,25 @@ class PlaylistPlayerWindow(QWidget):
 
     def handle_menu_action(self, action, song_id,  song_indx):
         print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
+        self.menuActionCall.emit(action, song_id,  song_indx)
+
+        if action == "remove":
+            self.remove_song_row(song_id)
+
+    def remove_song_row(self, song_id):
+        if song_id not in self.song_widgets:
+            return False
+
+        row_widget = self.song_widgets[song_id]
+
+        # find matching QListWidgetItem
+        for i in range(self.list.count()):
+            item = self.list.item(i)
+
+            if self.list.itemWidget(item) == row_widget:
+                self.list.takeItem(i)   # removes row
+                row_widget.deleteLater()
+                del self.song_widgets[song_id]
+                return True
+
+        return False
