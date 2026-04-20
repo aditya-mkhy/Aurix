@@ -212,7 +212,7 @@ class MusicMainWindow(QMainWindow):
             )
 
 
-    def handle_playlist_menu_action(self, action, song_id,  song_indx):
+    def handle_playlist_menu_action(self, action: str, playlist_id: int, song_id: int):
         print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
 
 
