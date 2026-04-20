@@ -215,6 +215,10 @@ class MusicMainWindow(QMainWindow):
     def handle_playlist_menu_action(self, action: str, playlist_id: int, song_id: int):
         print(f"Handled => action : {action}, song_id : {song_id}, song_indx : {song_indx}")
 
+        # remove song from playlist
+        self.dataBase.remove_playlist_song(playlist_id, song_id)
+
+
 
     def play_playlist_requested(self, playlist_id: int, play: bool):
         print(f"\n\n 👍👍👍 👍👍👍 Playlist Requested : {playlist_id}")
