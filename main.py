@@ -218,6 +218,11 @@ class MusicMainWindow(QMainWindow):
         # remove song from playlist
         self.dataBase.remove_playlist_song(playlist_id, song_id)
 
+        # get updated info and updated
+        info = self.dataBase.get_playlist(playlist_id=playlist_id)
+        meta = f"Playlist • Private • 2025\n{info['count']} tracks • {format_duration(info['duration'])}"
+        self.playlistPlayerWin.update_meta(meta)
+
 
 
     def play_playlist_requested(self, playlist_id: int, play: bool):

@@ -729,7 +729,8 @@ class PlaylistPlayerWindow(QWidget):
                 # add song cover....
                 self.big_cover.setPixmap(self.song_big_pix)
 
-
+    def update_meta(self, meta: str):
+        self.meta.setText(meta)
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
         if playlist_id != self.playlist_id:
