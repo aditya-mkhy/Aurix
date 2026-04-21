@@ -365,7 +365,7 @@ class PlaylistPlayerWindow(QWidget):
     playPlaylistRequested = pyqtSignal(int, bool)
     playToggleRequested = pyqtSignal()
     navbarPlaylistBroadcast = pyqtSignal(str, int, bool)
-    menuActionCall = pyqtSignal(str, int, int)
+    menuActionCall = pyqtSignal(str, int, int, int)
 
     def __init__(self, parent = None):
         super().__init__(parent=parent)

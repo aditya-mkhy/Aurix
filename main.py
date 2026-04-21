@@ -212,8 +212,8 @@ class MusicMainWindow(QMainWindow):
             )
 
 
-    def handle_playlist_menu_action(self, action: str, playlist_id: int, song_id: int):
-        print(f"Handled => action : {action}, song_id : {song_id}, playlist_id : {playlist_id}")
+    def handle_playlist_menu_action(self, action: str, playlist_id: int, song_id: int, song_index: int):
+        print(f"Handled => action : {action}, song_id : {song_id}, playlist_id : {playlist_id}, song_index : {song_index}")
 
         # remove song from playlist
         self.dataBase.remove_playlist_song(playlist_id, song_id)
@@ -222,6 +222,17 @@ class MusicMainWindow(QMainWindow):
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
         meta = f"Playlist • Private • 2025\n{info['count']} tracks • {format_duration(info['duration'])}"
         self.playlistPlayerWin.update_meta(meta)
+
+        # handle cover change... if song idex < 4... then create and update song
+        if song_index > 3:
+            return
+        
+        info = self.dataBase.get_playlist(playlist_id=playlist_id)
+        prev_cover_path = os.path.join(COVER_DIR_PATH, info['cover_path'])
+
+        
+
+        
 
 
 
@@ -345,7 +356,6 @@ class MusicMainWindow(QMainWindow):
             if playlist['cover_path'] == excepted_cover_path:
                 return # cover already exists acc. to the current song in playlist
             
-            
             # absolute path
             excepted_cover_path = os.path.join(COVER_DIR_PATH, excepted_cover_path)
 
@@ -368,8 +378,9 @@ class MusicMainWindow(QMainWindow):
         
         if not cover_path:
             # update playlist cover in db
-            self.dataBase.update_playlist(playlist_id=playlist_id, cover_path = playlist_cover_path)
-
+            cover_base_path = os.path.basename(playlist_cover_path)
+            self.dataBase.update_playlist(playlist_id=playlist_id, cover_path = cover_base_path)
+            return playlist_cover_path
 
     def on_new_playlist(self):
         print("[TEST] New playlist requested")
@@ -392,7 +403,7 @@ class MusicMainWindow(QMainWindow):
             cover_path = os.path.join("res", os.path.basename(info['cover_path']))
             cover_path = resource_path(cover_path)
         else:
-            cover_path = os.path.join(COVER_DIR_PATH, os.path.basename(info['cover_path']))
+            cover_path = os.path.join(COVER_DIR_PATH, info['cover_path'])
 
         if not os.path.exists(cover_path):
             self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path)
