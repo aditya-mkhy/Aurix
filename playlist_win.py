@@ -814,7 +814,8 @@ class PlaylistPlayerWindow(QWidget):
 
 
     def handle_menu_action(self, action, song_id,  song_indx):
-        self.menuActionCall.emit(action, self.playlist_id, song_id)
+        # song_index to creeate cover......
+        self.menuActionCall.emit(action, self.playlist_id, song_id, song_indx)
 
         if action == "remove":
             self.remove_song_row(song_id)
