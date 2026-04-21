@@ -230,9 +230,10 @@ class MusicMainWindow(QMainWindow):
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
         prev_cover_path = os.path.join(COVER_DIR_PATH, info['cover_path'])
 
-        
-
-        
+        # create new one and save
+        cover_path = self.create_playlist_cover(playlist_id)
+        if cover_path:
+            self.playlistPlayerWin.update_cover(cover_path)
 
 
 
@@ -354,6 +355,7 @@ class MusicMainWindow(QMainWindow):
             excepted_cover_path = "playlist_" + "".join(song_id_list) + ".jpg"
 
             if playlist['cover_path'] == excepted_cover_path:
+                print(f"excepted_cover_path is same as soted one...")
                 return # cover already exists acc. to the current song in playlist
             
             # absolute path
@@ -405,8 +407,9 @@ class MusicMainWindow(QMainWindow):
         else:
             cover_path = os.path.join(COVER_DIR_PATH, info['cover_path'])
 
-        if not os.path.exists(cover_path):
-            self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path)
+        if not os.path.isfile(cover_path):
+            self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path) 
+
 
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
 

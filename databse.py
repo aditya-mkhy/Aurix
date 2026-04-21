@@ -378,7 +378,14 @@ if __name__ == "__main__":
 
     #     db.update_song(song_id=song['id'], path = new_path)
 
-    playlists = db.get_playlist()
-    print(dict_format(playlists))
+    # playlists = db.get_playlist()
+    # print(dict_format(playlists))
 
+    # for plst in playlists:
+    #     try:
+    #         os.remove(plst['cover_path'])
+    #     except:
+    #         pass
 
+    #     db.update_playlist(plst['id'], cover_path = "")
+    
