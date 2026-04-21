@@ -662,6 +662,17 @@ class PlaylistPlayerWindow(QWidget):
         # to change status on playlist navbutton...
         self.navbarPlaylistBroadcast.emit(type, self.playlist_id, value)
 
+    def update_cover(self, cover_path):
+        # set playlist cover img
+        self.big_pix = round_pix_form_path(
+            path=cover_path, 
+            width=self.cover_size, 
+            height=self.cover_size, 
+            radius=self.cover_radius
+        )
+
+        self.big_cover.setPixmap(self.big_pix)
+
 
     def init_playlist(self, playlist_id: int, title: str, desc: str, meta: str, cover_path: str):
         self.playlist_id = playlist_id
@@ -675,14 +686,7 @@ class PlaylistPlayerWindow(QWidget):
 
         if cover_path != "":
             # set playlist cover img
-            self.big_pix = round_pix_form_path(
-                path=cover_path, 
-                width=self.cover_size, 
-                height=self.cover_size, 
-                radius=self.cover_radius
-            )
-
-            self.big_cover.setPixmap(self.big_pix)
+            self.update_cover(cover_path)
         
         else:
             self.big_pix = None
