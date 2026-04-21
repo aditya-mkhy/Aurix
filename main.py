@@ -238,6 +238,11 @@ class MusicMainWindow(QMainWindow):
         else:
             print(f"Error[0093] => Not bale to create playlist cover.. for : {playlist_id}")
 
+        # remove prev cover
+        try:
+            os.remove(prev_cover_path)
+        except:
+            pass
 
 
 
