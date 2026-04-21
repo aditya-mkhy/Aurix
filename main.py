@@ -235,6 +235,10 @@ class MusicMainWindow(QMainWindow):
         if cover_path:
             self.playlistPlayerWin.update_cover(cover_path)
 
+        else:
+            print(f"Error[0093] => Not bale to create playlist cover.. for : {playlist_id}")
+
+
 
 
     def play_playlist_requested(self, playlist_id: int, play: bool):
