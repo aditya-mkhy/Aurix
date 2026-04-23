@@ -226,8 +226,7 @@ class MusicMainWindow(QMainWindow):
         # handle cover change... if song idex < 4... then create and update song
         if song_index > 3:
             return
-        
-        info = self.dataBase.get_playlist(playlist_id=playlist_id)
+            
         prev_cover_path = os.path.join(COVER_DIR_PATH, info['cover_path'])
 
         # create new one and save
