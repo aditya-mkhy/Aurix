@@ -274,14 +274,11 @@ class MusicMainWindow(QMainWindow):
                 return
 
             self.context_queue.append(song_id)
-            print(f"Song {song_id} added to priority_queue")
 
         elif btn == "playlist":
-            print(f"Opening playlist popup to add song : {song_id}")
             self.show_picker_menu(song_id=song_id)
 
         elif btn == "delete":
-            print(f"Delete the song....")
             song_info = self.dataBase.get_song(song_id=song_id)
             song_path = song_info["path"]
             song_cover_path = song_info["cover_path"]
@@ -330,9 +327,7 @@ class MusicMainWindow(QMainWindow):
 
 
     def on_playlist_selected(self, playlist_id: int, song_id: int):
-        print(f"[TEST] Playlist selected → ID: {playlist_id} and song_id : {song_id}")
         self.picker_menu.close()
-
         # add song to playlist in database
         self.dataBase.add_playlist_song(playlist_id, song_id)
         self.create_playlist_cover(playlist_id) # create cover
@@ -341,7 +336,6 @@ class MusicMainWindow(QMainWindow):
         # skip liked playlist.. 
         if playlist_id == 1:
             return
-
         # song_id of top 4 songs
         song_id_list =[str(song_id) for song_id in self.dataBase.get_playlist_song(playlist_id)[:4]]
 
@@ -354,12 +348,10 @@ class MusicMainWindow(QMainWindow):
             excepted_cover_path = "playlist_" + "".join(song_id_list) + ".jpg"
 
             if playlist['cover_path'] == excepted_cover_path:
-                print(f"excepted_cover_path is same as soted one...")
                 return # cover already exists acc. to the current song in playlist
             
             # absolute path
             excepted_cover_path = os.path.join(COVER_DIR_PATH, excepted_cover_path)
-
         else:
             excepted_cover_path = cover_path
             
@@ -370,11 +362,9 @@ class MusicMainWindow(QMainWindow):
             if song_cover_path:
                 song_cover_list.append(os.path.join(COVER_DIR_PATH, song_cover_path))
 
-
         # create a new cover
         playlist_cover_path = create_playlist_cover(song_cover_list, excepted_cover_path, size=712)
         if not playlist_cover_path:
-            print(f"Error in creating the playlist cover..")
             return
         
         if not cover_path:
@@ -387,16 +377,12 @@ class MusicMainWindow(QMainWindow):
         print("[TEST] New playlist requested")
 
     def commit_song_info_status(self, song_id: str, type: str):
-        print(f"Recv status form player for song : {song_id}  and type : {type}")
-
         if type == "finished":
             # song is finished...
             # increasing play count.. in db
             self.dataBase.increament_play_count(song_id=song_id)
 
     def open_playlist(self, playlist_id: int):
-        print(f"Confuring PlayList with ID : {playlist_id}")
-
         info = self.dataBase.get_playlist(playlist_id=playlist_id)
         meta = f"Playlist • Private • 2025\n{info['count']} tracks • {format_duration(info['duration'])}"
 
@@ -409,16 +395,12 @@ class MusicMainWindow(QMainWindow):
         if not os.path.isfile(cover_path):
             self.create_playlist_cover(playlist_id=playlist_id, cover_path=cover_path) 
 
-
         self.playlistPlayerWin.init_playlist(playlist_id, info['title'], info['subtitle'], meta, cover_path)
-
         # add songs in the playlist UI
         song_list = self.dataBase.get_playlist_song(playlist_id, detailed=True)
         self.playlistPlayerWin.add_in_batch(song_list, playlist_id)
 
-        
     def save_playlist(self, title: str, desc: str, privacy: str):
-
         playlist_id = self.dataBase.add_playlist(
             title=title,
             subtitle=desc,
@@ -430,8 +412,6 @@ class MusicMainWindow(QMainWindow):
         )
 
         if playlist_id is None:
-            print(f"Failed to create Playlist : {title}")
-
             # playlist is not create
             # maybe it already exists..
             playlist_id = self.dataBase.get_playlist_id_by_title(title=title)
@@ -448,7 +428,6 @@ class MusicMainWindow(QMainWindow):
 
     def save_like_dislike_song(self, song_id: int, value: int):
         self.dataBase.update_song(song_id, liked = value)
-
         if value == 1:
             # add into liked playlist
             # liked_playlist id = 1
@@ -468,7 +447,6 @@ class MusicMainWindow(QMainWindow):
             return
         
         self.yt_screen.songAlreadyexists(item_id, song_id)
-
 
     def play_next_track(self, song_id: int = None):
         # play priority_queue first....
@@ -499,10 +477,7 @@ class MusicMainWindow(QMainWindow):
             prev_index = 0
 
         self.current_index = prev_index
-        print(f"self.context_queue[prev_index] : {self.context_queue[prev_index]} and prev_index : {prev_index}")
-        self.play_song(song_id=self.context_queue[prev_index]) # play prev track
-
-
+        self.play_song(song_id=self.context_queue[prev_index])
 
     def on_finish_loader(self, status):
         if status:
@@ -541,7 +516,6 @@ class MusicMainWindow(QMainWindow):
         prev_song_id = None
 
         for key, value in basic_info.items():
-            
             # setting the repeat mode as prev
             if key == "repeat":
                 self.playerEngine.set_repeat_mode(int(value))
@@ -549,7 +523,6 @@ class MusicMainWindow(QMainWindow):
             elif key == "suffle":
                 value =  True if int(value) else False
                 self.set_shuffle(value)
-
 
             elif key == "current_song":
                 # saving it to play after all settings done
@@ -562,7 +535,6 @@ class MusicMainWindow(QMainWindow):
         # loading the last played song
         if prev_song_id is not None:
             print(f"prev_song_id => {prev_song_id}")
-
             # get the song index 
             self.current_song = prev_song_id
             try:
@@ -618,9 +590,7 @@ class MusicMainWindow(QMainWindow):
     def play_song(self, song_id: int):
         song_info = self.dataBase.get_song(song_id=song_id)
         if song_info is None:
-            print(f"***************************")
             print(f"Could't find the song with id : {song_id}")
-            print("****************************")
             return
         
         self.playerEngine.play(song_info)
@@ -648,7 +618,6 @@ class MusicMainWindow(QMainWindow):
     def search_call(self, query: str):
         self.yt_screen.search_call(query)
 
-
     # call this fun when nav button clicked...
     def _nav_call(self, name: str):
         print(f"Navigation clicked : {name}")
@@ -660,19 +629,15 @@ class MusicMainWindow(QMainWindow):
         elif name == "library":
             self.content_area.setCurrentIndex(1)
 
-
         elif name == "yt":
             self.content_area.setCurrentIndex(2)
 
         elif name == "playlist":
             self.content_area.setCurrentIndex(3)
 
-
-
     def nativeEvent(self, eventType, message):
         return self.media_keys.nativeEvent(eventType, message)
     
-
     def closeEvent(self, event):
         self.media_keys.unregister()
         super().closeEvent(event)
