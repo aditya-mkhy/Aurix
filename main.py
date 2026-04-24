@@ -246,7 +246,6 @@ class MusicMainWindow(QMainWindow):
 
 
     def play_playlist_requested(self, playlist_id: int, play: bool):
-        print(f"\n\n 👍👍👍 👍👍👍 Playlist Requested : {playlist_id}")
         self.is_playlist_playing = True
 
         # change context_queue
@@ -260,12 +259,10 @@ class MusicMainWindow(QMainWindow):
             self.bottom_bar.set_repeat_mode(1)
 
     def show_song_card_menu(self, song_id):
-        print(f"Show SongCard menu for song : {song_id}")
         self.card_menu.show_at_cursor(song_id)
 
 
     def card_menu_btn_clicked(self, btn: str, song_id: int):
-        print(f"Button : {btn} |  song_id : {song_id}")
 
         if btn == "next":
             self.priority_queue.append(song_id)
@@ -292,12 +289,7 @@ class MusicMainWindow(QMainWindow):
             self.dataBase.delete_song(song_id)
             self.home_screen.remove_song(song_id)
 
-            print(f"song_path ===> {song_path}")
-            print(f"self.current_song ===> {self.current_song}")
-
-
             if self.current_song == song_id:
-                
                 # need to stop the player
                 self.play_next_track()
 
@@ -334,7 +326,6 @@ class MusicMainWindow(QMainWindow):
         # ---- signals ----
         self.picker_menu.playlistSelected.connect(self.on_playlist_selected)
         self.picker_menu.newPlaylistRequested.connect(self.on_new_playlist)
-
         self.picker_menu.show()
 
 
