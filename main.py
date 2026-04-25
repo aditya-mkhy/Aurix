@@ -188,8 +188,6 @@ class MusicMainWindow(QMainWindow):
             if not is_mp3(file_path):
                 continue
 
-            print(f"AddingSong => {file_path}")
-
             # get metadata from song file
             tags = get_mp3_tags(file_path)
 
@@ -213,8 +211,6 @@ class MusicMainWindow(QMainWindow):
 
 
     def handle_playlist_menu_action(self, action: str, playlist_id: int, song_id: int, song_index: int):
-        print(f"Handled => action : {action}, song_id : {song_id}, playlist_id : {playlist_id}, song_index : {song_index}")
-
         # remove song from playlist
         self.dataBase.remove_playlist_song(playlist_id, song_id)
 
@@ -261,7 +257,6 @@ class MusicMainWindow(QMainWindow):
     def show_song_card_menu(self, song_id):
         self.card_menu.show_at_cursor(song_id)
 
-
     def card_menu_btn_clicked(self, btn: str, song_id: int):
 
         if btn == "next":
@@ -269,7 +264,6 @@ class MusicMainWindow(QMainWindow):
 
         elif btn == "queue":
             if song_id in self.context_queue:
-                print("Song already in queue")
                 # later add ui to confirm that user still want it to add alt last
                 return
 
@@ -416,9 +410,8 @@ class MusicMainWindow(QMainWindow):
             # maybe it already exists..
             playlist_id = self.dataBase.get_playlist_id_by_title(title=title)
             if playlist_id is None: # not found
-                print(f"Unknow Error while checking for existance for playlist : {title}")
                 return
-            
+                
             # found... then open that playlist.....
             # logic will be added later
             return
@@ -462,7 +455,6 @@ class MusicMainWindow(QMainWindow):
         
         else:
             next_index = self.current_index + 1
-
             if next_index >= len(self.context_queue):
                 next_index = 0
                 # add priority queue play logic later
@@ -534,7 +526,6 @@ class MusicMainWindow(QMainWindow):
 
         # loading the last played song
         if prev_song_id is not None:
-            print(f"prev_song_id => {prev_song_id}")
             # get the song index 
             self.current_song = prev_song_id
             try:
@@ -590,9 +581,8 @@ class MusicMainWindow(QMainWindow):
     def play_song(self, song_id: int):
         song_info = self.dataBase.get_song(song_id=song_id)
         if song_info is None:
-            print(f"Could't find the song with id : {song_id}")
             return
-        
+            
         self.playerEngine.play(song_info)
 
     def _play_requested_from_playlist_win(self, song_id: int, song_index: int = None):
@@ -609,7 +599,6 @@ class MusicMainWindow(QMainWindow):
 
     def _play_requested(self, song_id: int, song_index: int = None):
         if song_index != None:
-            print(f"SongIndex : {song_index} with song_id : {song_id}")
             self.current_index = song_index
 
         self.play_song(song_id=song_id)
@@ -620,8 +609,6 @@ class MusicMainWindow(QMainWindow):
 
     # call this fun when nav button clicked...
     def _nav_call(self, name: str):
-        print(f"Navigation clicked : {name}")
-        
         if name == "home":
             self.content_area.setCurrentIndex(0)
             self.context_queue = self.all_song_list.copy()
