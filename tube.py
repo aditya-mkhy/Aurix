@@ -320,7 +320,6 @@ class Dtube(QThread): # download tube
             return
 
         if d['status'] == 'error':
-            print("Error Occured...")
             self._emit_progress_hook("error")
 
     
@@ -341,8 +340,6 @@ class Dtube(QThread): # download tube
 
         return url_thmb
     
-    
-
     def _extract_info(self, info: dict):
         import json
         with open("t.json", "w") as tf:
@@ -364,8 +361,6 @@ class Dtube(QThread): # download tube
                 
 
         useful_info["artists"] = artists
-
-
         # useful_info["creators"] = info["creators"]
         # useful_info["fulltitle"] = info["fulltitle"]
         # useful_info["original_url"] = info["original_url"]
@@ -471,7 +466,6 @@ class Dtube(QThread): # download tube
 
             self.tags.add(TXXX(encoding=3, desc="YT_ID", text=str(video_id),))
 
-
         # add cover image...
         try:
             # save the cropped thumbanil into folder
@@ -492,8 +486,3 @@ class Dtube(QThread): # download tube
         response = get_request(url)
         path = crop_and_save_img(img_data=response.content, out_path=path, from_left=284, from_right=284)
         return path
-
-
-
-if __name__ == "__main__":
-    url = "https://i.ytimg.com/vi/r7Rn4ryE_w8/maxresdefault.jpg"
