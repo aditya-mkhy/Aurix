@@ -119,19 +119,13 @@ class HoverThumb(QWidget):
 
 
     def _download_requested(self):
-        print("...PlaySignalOriginated... Down")
         self.downloadRequested.emit("down")
 
     def _play_requested(self):
-        print("...PlaySignalOriginated... Play")
         self.playRequested.emit("play")
 
-
     def setProgress(self, value: int):
-        """Call from your yt-dlp progress hook."""
         self.progress.setValue(value)
-
-    # -------- Internal state logic -------- #
 
     def set_mode(self, mode: str):
         self._set_mode(mode=mode)
@@ -194,7 +188,6 @@ class HoverThumb(QWidget):
         self.fade_anim.start()
 
     def _on_fade_finished(self):
-        print(f"AfterFade---> mode ==> {self.mode}")
         if self.mode == "done":
             self._set_mode("play")
 
@@ -223,12 +216,9 @@ class HoverThumb(QWidget):
 
             self.download_btn.clicked.connect(self._play_toggle_request)
             self.mode = "active"
-
-            print(f"SettingValue[Ative] for => {self}")
-
+            
         else:
             self.mode = "play"
-
             # remove active...
             self.overlay.hide()
             self.download_btn.show()
@@ -277,7 +267,6 @@ class TrackRow(QWidget):
     downloadRequested = pyqtSignal(str, str, list, str, int)
     playRequested = pyqtSignal(int)
     playToggleRequested = pyqtSignal()
-
 
     def __init__(self, title: str, subtitle: str, artists: list, vid: str, pix: QPixmap, track_id: int, parent=None):
         super().__init__(parent)
@@ -442,8 +431,6 @@ class TrackRow(QWidget):
 
 
     def set_broadcast(self, type: str, value: bool):
-        print(f"[atTrackRow] [broadcast] => type : {type}, value : {value}")
-
         if type == "active":
             self.thumb.set_active(value)
 
@@ -455,27 +442,22 @@ class TrackRow(QWidget):
 
 
     def set_mode(self, mode: str):
-        print(f"Setting State : {mode}")
         self.thumb.set_mode(mode)
 
     def get_mode(self):
         return self.thumb.mode
     
     def set_song_id(self, song_id: int):
-        print(f"set_song_id ==> {song_id}")
         self.song_id = song_id
 
     def setProgress(self, value: int):
         self.thumb.setProgress(value)
 
     def _download_requested(self, txt):
-        print(f"Recieved [TrackRow] : {txt}")
         self.downloadRequested.emit(self.title_txt, self.subtitle_txt, self.artists, self.vid, self.track_id)
 
     def _play_requested(self, txt):
-        print(f"Play Requested : {txt}")
         self.playRequested.emit(self.song_id)
-
 
     def show_menu(self):
         self.menu.exec_(self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight()))
@@ -547,7 +529,6 @@ class YtScreen(QFrame):
  
     def set_broadcast(self, type: str, item_id: int, value: bool):
         item_obj = self.downloaded_items.get(item_id)
-
         if item_obj is None:
             return
         # transfer to that song...
@@ -612,15 +593,11 @@ class YtScreen(QFrame):
 
 
     def config_search(self, result1: list, result2: list):
-        print(f"Search Done : TotalResutl => {len(result1) + len(result2)}")
-        print(f"Clearing prevois data...")
         self.clear_results()
-        print("cleared...")
-
+        
         config_result = ConfigResult(result=result1, parent=self)
         config_result.add_one.connect(self.config_one)
         config_result.finished.connect(self.config_finished)
-
 
         config_result2 = ConfigResult(result=result2, parent=self)
         config_result2.add_one.connect(self.config_one)
@@ -636,12 +613,7 @@ class YtScreen(QFrame):
         self._config_threads.append(config_result)
         self._config_threads.append(config_result2)
 
-        print(f"currentThread -> {self._config_threads}")
-    
-
     def search_call(self, query: str):
-        print(f"YTSearch Query : {query}")
-
         thread = YTSearchThread(query=query, parent=self)
         thread.finished.connect(self.config_search)
         thread.start()
@@ -654,17 +626,14 @@ class YtScreen(QFrame):
             self, title: str, subtitle: str, artist: str, vid: str, 
             path: str, cover_path: str, duration: int, track_id: int
         ):
-
-        print(f"FileDownloaded : {path} and track_id => {track_id}")
-
+            
         self.addSongToDBandHome.emit(title, subtitle, artist, vid, path, cover_path, duration, track_id)
 
         thread = self.sender()
         if hasattr(self, "_down_threads") and thread in self._down_threads:
             self._down_threads.remove(thread)
-
+            
         thread.deleteLater()
-
 
     def download_progress(self, track_id, mode, value: int = 0):
         if mode == "error":
@@ -677,22 +646,18 @@ class YtScreen(QFrame):
         if mode != "percentage":
             item_obj.set_mode(mode)
             return
-
+            
         # set progess value
         item_obj.setProgress(int(value))
     
     def _play_requested(self, song_id: int):
         if not song_id:
-            print(f"Can't play a song with an empty song_id")
             return
-        
-        print(f"sending request to play : {song_id}")
+            
         self.playRequested.emit(song_id)
 
 
     def _download_requested(self, title: str, subtitle: str, artists: list, vid: str, track_id: int):
-        print(f"TRACK[{track_id}] [download request] VID[{vid}] => {title}")
-
         if not vid:
             print(f"===> Path is empty")
             return
@@ -701,8 +666,6 @@ class YtScreen(QFrame):
         thread.finished.connect(self.download_finished)
         thread.progress.connect(self.download_progress)
         thread.start()
-        
-        print(f"start thread_id ==> {thread}")
 
         if not hasattr(self, "_down_threads"):
             self._down_threads = []
