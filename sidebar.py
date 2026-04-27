@@ -270,7 +270,6 @@ class PlaylistItem(QWidget):
             """)
 
     def _request_toogle(self):
-        print(f"SideBar : toogle emmted...")
         self.playToggleRequested.emit()
 
     # ---------- interactions ----------
@@ -282,7 +281,6 @@ class PlaylistItem(QWidget):
                 # emit playlist id...
                 if not self.is_active:
                     self.openRequested.emit(self.playlist_id)
-                    print(f"[UI] open playlist: {self.title_text}")
                 else:
                     print(f"Already opend : {self.title_text}")
 
@@ -296,14 +294,11 @@ class PlaylistItem(QWidget):
         
         # send the play song request
         self.playRequested.emit(self.playlist_id)
-        print(f"[UI] play playlist: {self.title_text}")
-
 
     def enterEvent(self, event):
         if not self.is_active:
             self.setStyleSheet(self.hover_style)
             self.play_btn.show()
-
         super().enterEvent(event)
 
     def leaveEvent(self, event):
@@ -333,10 +328,8 @@ class NavButton(QPushButton):
 
         else:
             self.active_icon = self.normal_icon
-
+            
         self.setIconSize(QSize(30, 30))
-
-
         self.setStyleSheet("""
             QPushButton {
                 text-align: left;
@@ -424,9 +417,7 @@ class Sidebar(QFrame):
         line.setStyleSheet("background-color: #262626; margin: 16px")
         line.setFixedHeight(1)
         layout.addWidget(line)
-
         layout.addSpacing(20)
-
 
         # New Playlist button
         self.add_playlist = QPushButton(" New Playlist")       
@@ -436,7 +427,6 @@ class Sidebar(QFrame):
         self.add_playlist.setCursor(Qt.PointingHandCursor)
         self.add_playlist.setIcon(QIcon(resource_path("res/plus.png")))
         self.add_playlist.setIconSize(QSize(22, 22))
-
         self.add_playlist.clicked.connect(self.open_playlist_popup)
 
         self.add_playlist.setStyleSheet("""
@@ -460,15 +450,12 @@ class Sidebar(QFrame):
         """)
 
         layout.addWidget(self.add_playlist)
-
-
         layout.addSpacing(20)
 
         self.playlist_scroll = PlaylistArea()
         layout.addWidget(self.playlist_scroll)
 
         self.playlists_by_id: Dict[int : PlaylistItem] = {}
-
         # store the last active playlist button
         self.last_playlist_btn_obj: PlaylistItem = None
 
@@ -481,7 +468,6 @@ class Sidebar(QFrame):
         playlist_btn_obj.set_broadcast(type, value)
 
         if self.last_playlist_btn_obj == playlist_btn_obj:
-            print(f"Both are same")
             return
 
         # remove the prev active button
@@ -525,14 +511,12 @@ class Sidebar(QFrame):
 
         createPlaylist.show()
 
-
     def show_home(self):
         self.de_activate_playlist()
         self.explore_nav_btn.de_activate()
         self.library_nav_btn.de_activate()
         self.home_nav_btn.activate()
         self.navCall.emit("home")
-        
 
     def show_library(self):
         self.de_activate_playlist()
@@ -540,7 +524,6 @@ class Sidebar(QFrame):
         self.home_nav_btn.de_activate()
         self.library_nav_btn.activate()
         self.navCall.emit("library")
-
 
     def show_explore(self):
         self.de_activate_playlist()
@@ -551,11 +534,8 @@ class Sidebar(QFrame):
 
 
     def show_paylist(self, playlist_id: int):
-        print(f"ShowPlaylistRequest with id : {playlist_id}")
-
         playlist_obj: PlaylistItem = self.playlists_by_id.get(playlist_id)
         if playlist_obj is None:
-            print(f"Error ==> No playlist exists with id : {playlist_id}")
             return
         
         # de_activate other nav buttons...
