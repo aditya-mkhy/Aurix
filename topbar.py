@@ -169,7 +169,6 @@ class SearchBox(QWidget):
         self.input = QLineEdit()
         self.input.setPlaceholderText("Search songs, albums, artists, playlist")
 
-
         self.input.setStyleSheet("""
             QLineEdit {
                 background: transparent;
@@ -331,9 +330,7 @@ class Topbar(QFrame):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(18, 10, 18, 10)
         layout.setSpacing(20)
-
         layout.addSpacing(10)
-
 
         # close sidebar button
         sidebar_btn = QPushButton()
@@ -396,13 +393,11 @@ class Topbar(QFrame):
         # Add spacer before the profile button
         layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
-
         profile_btn = QPushButton()
         profile_btn.setObjectName("profileButton")
         profile_btn.setFixedSize(40, 40)
         profile_btn.setCursor(Qt.PointingHandCursor)
         profile_img = resource_path("res/profile.png")
-
         profile_btn.setStyleSheet(f'''
             QPushButton#profileButton {{
                 border: none;
