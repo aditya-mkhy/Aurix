@@ -69,10 +69,8 @@ class PlayerEngine(QObject):
         self.elapsed_sec = 0
         self.duration = 0
 
-
     def init(self):
         global MIXER
-    
         if MIXER is not None:
             return
         
@@ -101,18 +99,14 @@ class PlayerEngine(QObject):
 
         if out_dev != "default":
             MIXER.init(devicename=self._out_dev, frequency=self._freq, channels = self._channels)
-
         else:
             MIXER.init(frequency=freq, channels=channels)
 
         # set the prevous or default volume
         MIXER.music.set_volume(self._volume)
-
-
      
     def play(self, song_info: dict, out_dev = None):
-        self.song_info = song_info # song info
-        
+        self.song_info = song_info # song info        
         path = song_info['path']
 
         if not os.path.isfile(path):
@@ -120,7 +114,6 @@ class PlayerEngine(QObject):
 
         # stop prevoius timer..
         self._timer.stop()
-
         meta = get_mp3_metadata(path)
         channels = meta["channels"]
         freq = meta["sample_rate"]
@@ -152,7 +145,7 @@ class PlayerEngine(QObject):
         MIXER.music.play()
         self.elapsed_sec = 0
         self._timer.start()
-
+        
         self._is_paused = False
         self._is_skip = False
         self.setPlaying.emit(self.is_playing())
@@ -269,9 +262,7 @@ class PlayerEngine(QObject):
                 if not self._is_skip:
                     # if song is not skipped... 
                     # only then increase play count
-                    print(f"Adding play count for song_id : {self.song_id}")
                     self.infoPlayingStatus.emit(self.song_id, "finished")
-
                 else:
                     print(f"Song is skipped.. so not increasing the play count")
                     
