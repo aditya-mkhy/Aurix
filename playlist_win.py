@@ -77,10 +77,8 @@ class HoverThumb(QWidget):
 
         self.play_btn.setStyleSheet("color: white;")
         ov_layout.addWidget(self.play_btn)
-
         # internal mode
         self.mode = "idle"
-
 
     def set_mode(self, mode: str):
         self.mode = mode
@@ -105,11 +103,9 @@ class HoverThumb(QWidget):
                 pass
 
             self.play_btn.clicked.connect(self._play_toggle_request)
-            print(f"SettingValue[Ative] for => {self}")
 
     def _play_requested(self):
         self.playRequested.emit()
-
 
     def set_active(self, value):
         # setactive staus if this song is playing
@@ -147,7 +143,6 @@ class HoverThumb(QWidget):
         if self.mode  == "idle":
             self.overlay.hide()
         super().leaveEvent(event)
-
     
 class SongRow(QWidget):
     playRequested = pyqtSignal(int, int)
@@ -186,7 +181,6 @@ class SongRow(QWidget):
         text_col.setContentsMargins(5, 10, 0, 15)
         text_col.setSpacing(1)
         
-
         self.title_lbl = QLabel(trim_text(self.title_txt, 62))
         self.title_lbl.setFont(QFont("Segoe UI", 13))
         self.title_lbl.setStyleSheet("""
@@ -221,9 +215,7 @@ class SongRow(QWidget):
 
         text_col.addWidget(self.title_lbl)
         text_col.addWidget(self.subtitle_lbl)
-
         main.addLayout(text_col, 1)
-
 
         # spacer + menu button
         self.menu_btn = QPushButton(self)
@@ -320,8 +312,6 @@ class SongRow(QWidget):
 
 
     def set_broadcast(self, type: str, value: bool):
-        print(f"[atTrackRow] [broadcast] => type : {type}, value : {value}")
-
         if type == "active":
             self.thumb.set_active(value)
 
@@ -333,14 +323,12 @@ class SongRow(QWidget):
 
 
     def set_mode(self, mode: str):
-        print(f"Setting State : {mode}")
         self.thumb.set_mode(mode)
 
     def get_mode(self):
         return self.thumb.mode
 
     def _play_requested(self):
-        print(f"Request Play : {self.song_id} with index : {self.song_index}")
         self.playRequested.emit(self.song_id, self.song_index)
 
 
@@ -348,7 +336,6 @@ class SongRow(QWidget):
         self.menu.exec_(self.menu_btn.mapToGlobal(self.menu_btn.rect().bottomRight()))
 
     def menu_call(self, action: str):
-        print(f"Action = {action}")
         self.menuActionCall.emit(action, self.song_id, self.song_index)
 
     def enterEvent(self, event):
@@ -407,7 +394,6 @@ class PlaylistPlayerWindow(QWidget):
             radius=self.cover_radius
         )
 
-
         self.big_cover.setFixedHeight(self.cover_size)
         self.big_cover.setPixmap(self.default_playlist_cover)
         self.big_cover.setStyleSheet(f"border-radius: {self.cover_radius}px; background-color: transparent; width: 100%;")
@@ -416,15 +402,12 @@ class PlaylistPlayerWindow(QWidget):
 
         left_layout.addSpacing(18)
 
-
         self.playlist_title = QLabel()
         self.playlist_title.setFont(QFont("Segoe UI", 18, QFont.Bold))
         self.playlist_title.setStyleSheet("background-color: transparent;")
         self.playlist_title.setAlignment(Qt.AlignCenter)
         left_layout.addWidget(self.playlist_title)
-
         left_layout.addSpacing(2)
-
 
         self.playlist_desc = QLabel()
         self.playlist_desc.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
@@ -447,7 +430,6 @@ class PlaylistPlayerWindow(QWidget):
         ctrl = QHBoxLayout()
         ctrl.addStretch()
 
-
         edit_btn = QPushButton()
         edit_btn.setFixedSize(54, 54)
         edit_btn.setIcon(QIcon(resource_path("res/edit.png")))  
@@ -468,7 +450,6 @@ class PlaylistPlayerWindow(QWidget):
         """)
         ctrl.addWidget(edit_btn)
         ctrl.addSpacing(40)
-
 
         self.play_btn_big = QPushButton()
         self.play_btn_big.setFixedSize(84, 84)
@@ -525,18 +506,14 @@ class PlaylistPlayerWindow(QWidget):
         right_layout = QVBoxLayout()
         right_layout.setSpacing(0)
         
-
-
         # Scroll area (only vertical)
         scroll = ScrollArea()
         right_layout.addWidget(scroll, 2)
 
         container = QWidget()
-
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(76, 40, 50, 50)  # 👈 margins
         container_layout.setSpacing(0)
-
 
         self.list = QListWidget()
         self.list.setContentsMargins(76, 40, 0, 14)
@@ -545,7 +522,6 @@ class PlaylistPlayerWindow(QWidget):
 
         # Optional but recommended
         self.list.setSelectionMode(QListWidget.NoSelection)
-
         self.list.setStyleSheet("""
             QListWidget {
                 background: transparent;
@@ -610,13 +586,10 @@ class PlaylistPlayerWindow(QWidget):
         self.playRequested.emit(song_id, song_index)
 
     def set_broadcast(self, type: str, item_id: int, value: bool):
-        print(f"ItemId ==> {item_id} and type ==> {type}")
-
         # saving broadcast msg
         # required to re-construct the playlist ui status
         self.song_id = item_id
         self.is_playing = value
-
         item_obj: SongRow = self.song_widgets.get(item_id)
 
         if item_obj is None:
@@ -658,7 +631,6 @@ class PlaylistPlayerWindow(QWidget):
                 QPushButton:hover { background: #efefef; }
             """)
 
-
         # to change status on playlist navbutton...
         self.navbarPlaylistBroadcast.emit(type, self.playlist_id, value)
 
@@ -683,7 +655,6 @@ class PlaylistPlayerWindow(QWidget):
         self.is_active = False
 
         # init the playlist
-
         if cover_path != "":
             # set playlist cover img
             self.update_cover(cover_path)
@@ -701,8 +672,7 @@ class PlaylistPlayerWindow(QWidget):
             }
             QPushButton:hover { background: #efefef; }
         """)
-
-
+        
         # clear_list
         self.clear_list()
 
@@ -716,7 +686,6 @@ class PlaylistPlayerWindow(QWidget):
         if self.playing_playlist_id != self.playlist_id:
             return
             
-        print(f"Got it => This one is playing")
         self.is_active = True
         
         if self.is_playing:
@@ -738,19 +707,16 @@ class PlaylistPlayerWindow(QWidget):
 
     def add_in_batch(self, song_list: list, playlist_id: int, song_index: int = -1):
         if playlist_id != self.playlist_id:
-            print("another playlist is switched..")
             return
 
         for song in song_list[ :self.batch_size]:
             song_index += 1 # this song song_index
 
             if not os.path.exists(song['path']):
-                print(f"PathNotFound => {song['path']}")
                 # add to delete later
                 # self._to_delete.append(song['id'])
                 continue
-
-
+                
             cover_path = os.path.join(COVER_DIR_PATH, song['cover_path'])
             if not os.path.exists(cover_path):
                 # if cover path not found... 
@@ -769,7 +735,6 @@ class PlaylistPlayerWindow(QWidget):
 
             # now change the song status
             item_obj: SongRow = self.song_widgets.get(self.song_id)
-
             if item_obj is None:
                 return
             
