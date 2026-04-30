@@ -552,7 +552,6 @@ class PlaylistSection(QWidget):
 
     def _on_item_clicked(self, item: QListWidgetItem):
         clicked_title = self._list.itemWidget(item)
-        print(f"[UI] open playlist: {clicked_title.title_text}")
 
         # # mark only one as active
         # for i in range(self._list.count()):
@@ -622,10 +621,8 @@ class ContentArea(QFrame):
 
     def play_requested(self, song_id: int, song_indx: int):
         if song_id is None:
-            print(f"Song id not found..")
             return
         
-        print(f"Playing SongId : {song_id}")
         self.playRequested.emit(song_id, song_indx)
 
 
