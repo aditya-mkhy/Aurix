@@ -134,7 +134,6 @@ class ScrollArea(QScrollArea):
             }
         """)
 
-
 class HoverFrame(QFrame):
     def __init__(self, enter_event, leave_event, parent=None):
         super().__init__(parent)
@@ -148,7 +147,6 @@ class HoverFrame(QFrame):
     def leaveEvent(self, event):
         self.leave_event_call()
         super().leaveEvent(event)
-
 
 
 class ClickableOverlay(QWidget):
@@ -452,8 +450,6 @@ class PlaylistSection(QWidget):
         self._list.setDragEnabled(False)
         self._list.setAcceptDrops(False)
         self._list.setDropIndicatorShown(False)
-        # self._list.setDragDropMode(QAbstractItemView.InternalMove)
-
         layout.addWidget(self._list)
 
     def _on_show_menu_requested(self, song_id):
@@ -595,21 +591,8 @@ class ContentArea(QFrame):
         self.section_library.showMenuRequested.connect(self._on_show_menu_requested)
 
         main_layout.addWidget(self.section_library)
-
-        # # Section 2
-        # self.section_featured = PlaylistSection("Featured playlists for you")
-        # main_layout.addWidget(self.section_featured)
-
         # keep sections pinned to top if there are few
-        main_layout.addStretch(1)
-
-
-        # load local mp3 files....
-        # self.local_file_loader = LocalFilesLoader(music_dirs, parent=self)
-        # self.local_file_loader.config_one.connect(self.add_item)
-        # self.local_file_loader.finished.connect(self._finish_adding_loc_files)
-        # self.local_file_loader.start()
-
+        main_layout.addS
     def _on_show_menu_requested(self, song_id):
         self.showMenuRequested.emit(song_id)
 
